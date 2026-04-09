@@ -1,0 +1,24 @@
+-s dir
+-t rpm
+--name Pororoca
+--license gpl3
+--version 3.9.1
+--architecture amd64
+--depends ca-certificates
+--depends glibc
+--depends krb5-libs
+--depends libgcc
+--depends libstdc++
+--depends libicu
+--depends openssl-libs
+--depends tzdata
+--depends libICE
+--depends libSM
+--depends fontconfig
+--depends libX11
+--description "This is Pororoca, an HTTP inspection tool."
+--url "https://pororoca.io"
+--maintainer "Alexandre H. T. R. Bonfitto <alexandrehtrb@outlook.com>"
+--rpm-compression gzip
+--rpm-compression-level 9
+--rpm-use-file-permissions

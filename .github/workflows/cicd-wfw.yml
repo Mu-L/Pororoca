@@ -33,11 +33,11 @@ on:
         required: false
         default: false
         type: boolean
-      produceDesktopLinuxX64:
+      produceDesktopLinuxPortableX64:
         required: false
         default: false
         type: boolean
-      produceDesktopDebianX64:
+      produceDesktopLinuxInstallersX64:
         required: false
         default: false
         type: boolean
@@ -182,7 +182,7 @@ jobs:
     # start CD steps - desktop
 
     - name: Read desktop program version
-      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxX64 || inputs.produceDesktopDebianX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
       run: |
         ([XML]$desktopCsprojXml = Get-Content ./src/Pororoca.Desktop/Pororoca.Desktop.csproj)
@@ -190,35 +190,35 @@ jobs:
         echo "VERSION_NAME=${versionName}" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Generate Pororoca.Desktop SBOM file
-      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxX64 || inputs.produceDesktopDebianX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
       run: dotnet CycloneDX ./src/Pororoca.Desktop/Pororoca.Desktop.csproj -o ./out/ -fn sbom_pororoca_desktop.json -sv $env:VERSION_NAME -F UnsafeJson
 
     - name: Generate Pororoca Desktop dlls
-      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxX64 || inputs.produceDesktopDebianX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
       run: |
         $arr = @()
-        if ($env:LINUX_X64 -eq 'true')         { $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64"         ; packaging=$null   } };
-        if ($env:DEBIAN_X64 -eq 'true')        { $arr += @{ rid="linux-x64"; outputFolder="./out/debian-x64"        ; packaging="debian"   } };
-        if ($env:OSX -eq 'true')               { $arr += @{   rid="osx-x64"; outputFolder="./out/osx-x64"           ; packaging=$null   } };
-        if ($env:WIN_X64_INSTALLER -eq 'true') { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-installer" ; packaging="nsis"   } };
-        if ($env:WIN_X64_PORTABLE -eq 'true')  { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-portable"  ; packaging=$null   } };
-        if ($env:WIN_X86_INSTALLER -eq 'true') { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-installer" ; packaging="nsis"   } };
-        if ($env:WIN_X86_PORTABLE -eq 'true')  { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-portable"  ; packaging=$null   } };
+        if ($env:LINUX_X64_PORTABLE -eq 'true') { $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-portable"  ; packaging=$null   } };
+        if ($env:LINUX_X64_INSTALLER -eq 'true'){ $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-installer" ; packaging="linux-installers"   } };
+        if ($env:OSX -eq 'true')                { $arr += @{   rid="osx-x64"; outputFolder="./out/osx-x64"             ; packaging=$null   } };
+        if ($env:WIN_X64_INSTALLER -eq 'true')  { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-installer"   ; packaging="nsis"   } };
+        if ($env:WIN_X64_PORTABLE -eq 'true')   { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-portable"    ; packaging=$null   } };
+        if ($env:WIN_X86_INSTALLER -eq 'true')  { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-installer"   ; packaging="nsis"   } };
+        if ($env:WIN_X86_PORTABLE -eq 'true')   { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-portable"    ; packaging=$null   } };
 
         foreach ($artifact in $arr)
         {
           $OUTPUT_FOLDER = $artifact.outputFolder
           $PUBLISH_SINGLE_FILE = (($artifact.rid -ne $null) -and ((($artifact.rid -like "win*") -and ($artifact.packaging -eq $null)) -or ($artifact.rid -like "linux*")));
           $WINDOWS_INSTALLER_RELEASE = $artifact.packaging -eq "nsis";
-          $DEBIAN_INSTALLER_RELEASE = $artifact.packaging -eq "debian";
+          $LINUX_INSTALLER_RELEASE = ($artifact.packaging -eq "debian") -or ($artifact.packaging -eq "fedora") -or ($artifact.packaging -eq "opensuse") -or ($artifact.packaging -eq "redhat");
 
           Write-Host "Generating Pororoca.Desktop DLLs for $($artifact.rid)."
           Write-Host "Output folder: $OUTPUT_FOLDER"
           Write-Host "Publish single file: $PUBLISH_SINGLE_FILE"
           Write-Host "Win installer release: $WINDOWS_INSTALLER_RELEASE"
-          Write-Host "Debian installer release: $DEBIAN_INSTALLER_RELEASE"
+          Write-Host "Linux installer release: $LINUX_INSTALLER_RELEASE"
 
           [void](New-Item $OUTPUT_FOLDER -ItemType Directory -ErrorAction Ignore);
           dotnet publish ./src/Pororoca.Desktop/Pororoca.Desktop.csproj `
@@ -227,7 +227,7 @@ jobs:
           --configuration Release `
           -p:PublishSingleFile=$PUBLISH_SINGLE_FILE `
           -p:PublishForInstallOnWindows=$WINDOWS_INSTALLER_RELEASE `
-          -p:PublishForInstallOnDebian=$DEBIAN_INSTALLER_RELEASE `
+          -p:PublishForInstallOnLinux=$LINUX_INSTALLER_RELEASE `
           -p:UITestsEnabled=${env:ENABLE_UI_TESTING} `
           --self-contained true `
           --runtime $artifact.rid `
@@ -257,8 +257,8 @@ jobs:
         }
       env:
         ENABLE_UI_TESTING: ${{ inputs.enableUITesting }}
-        LINUX_X64: ${{ inputs.produceDesktopLinuxX64 }}
-        DEBIAN_X64: ${{ inputs.produceDesktopDebianX64 }}
+        LINUX_X64_PORTABLE: ${{ inputs.produceDesktopLinuxPortableX64 }}
+        LINUX_X64_INSTALLER: ${{ inputs.produceDesktopLinuxInstallersX64 }}
         OSX: ${{ inputs.produceDesktopMacOSX }}
         WIN_X64_PORTABLE: ${{ inputs.produceDesktopWinX64Portable }}
         WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
@@ -287,13 +287,13 @@ jobs:
 
     # so Linux users can create desktop launchers
     - name: Copy logo (Linux portable only)
-      if: ${{ inputs.runCD && inputs.produceDesktopLinuxX64 }}
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxPortableX64 }}
       shell: pwsh
       run: |
-        $OUTPUT_FOLDER = "./out/linux-x64"
+        $OUTPUT_FOLDER = "./out/linux-x64-portable"
         Copy-Item -Path "./pororoca.png" -Destination $OUTPUT_FOLDER
       env:
-        LINUX_X64: ${{ inputs.produceDesktopLinuxX64 }}
+        LINUX_X64: ${{ inputs.produceDesktopLinuxPortableX64 }}
 
     - name: Copy icon for Windows installer
       if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Installer) }}
@@ -312,7 +312,7 @@ jobs:
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
 
     - name: Copy licence
-      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxX64 || inputs.produceDesktopDebianX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopFedoraX64 || inputs.produceDesktopOpenSuseX64 || inputs.produceDesktopRedHatX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
       run: |
         $arr = @(Get-ChildItem "./out/" -Directory | Select FullName)
@@ -322,11 +322,11 @@ jobs:
         }
 
     - name: Compress package
-      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX86Portable) }}
+      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX86Portable) }}
       shell: pwsh
       run: |
         $arr = @()
-        if ($env:LINUX_X64 -eq 'true')         { $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64"         } };
+        if ($env:LINUX_X64_PORTABLE -eq 'true'){ $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-portable"} };
         if ($env:OSX -eq 'true')               { $arr += @{   rid="osx-x64"; outputFolder="./out/osx-x64"           } };
         if ($env:WIN_X64_PORTABLE -eq 'true')  { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-portable"  } };
         if ($env:WIN_X86_PORTABLE -eq 'true')  { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-portable"  } };
@@ -350,7 +350,7 @@ jobs:
           Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
         }
       env:
-        LINUX_X64: ${{ inputs.produceDesktopLinuxX64 }}
+        LINUX_X64: ${{ inputs.produceDesktopLinuxPortableX64 }}
         OSX: ${{ inputs.produceDesktopMacOSX }}
         WIN_X64_PORTABLE: ${{ inputs.produceDesktopWinX64Portable }}
         WIN_X86_PORTABLE: ${{ inputs.produceDesktopWinX86Portable }}
@@ -385,19 +385,19 @@ jobs:
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
 
     - name: Make Debian .deb package
-      if: ${{ inputs.runCD && inputs.produceDesktopDebianX64 }}
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        $OUTPUT_FOLDER = "./out/debian-x64";
+        $OUTPUT_FOLDER = "./out/linux-x64-installer";
         $debPackageName = "Pororoca_${env:VERSION_NAME}_amd64.deb";
         [void](mkdir "./out/deb")
         # Debian control file
         [void](mkdir "./out/deb/DEBIAN")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/control" -Destination "./out/deb/DEBIAN"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/control" -Destination "./out/deb/DEBIAN"
         # Starter script
         [void](mkdir "./out/deb/usr")
         [void](mkdir "./out/deb/usr/bin")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca.sh" -Destination "./out/deb/usr/bin/pororoca"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh" -Destination "./out/deb/usr/bin/pororoca"
         chmod +x "./out/deb/usr/bin/pororoca" # set executable permissions to starter script
         # Other files
         [void](mkdir "./out/deb/usr/lib")
@@ -408,42 +408,42 @@ jobs:
         # Desktop shortcut
         [void](mkdir "./out/deb/usr/share")
         [void](mkdir "./out/deb/usr/share/applications")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/Pororoca.desktop" -Destination "./out/deb/usr/share/applications/Pororoca.desktop"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Pororoca.desktop" -Destination "./out/deb/usr/share/applications/Pororoca.desktop"
         # Desktop icon
         # A 32x32 px XPM file in /usr/share/pixmaps/ (using 1024x1024 px PNG instead, like VS Code uses for its icon)
         [void](mkdir "./out/deb/usr/share/pixmaps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_1024px.png" -Destination "./out/deb/usr/share/pixmaps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_1024px.png" -Destination "./out/deb/usr/share/pixmaps/pororoca.png"
         # Hicolor icons
         [void](mkdir "./out/deb/usr/share/icons")
         [void](mkdir "./out/deb/usr/share/icons/hicolor")
         # A 16x16 px PNG file in /usr/share/icons/hicolor/16x16/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/16x16")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/16x16/apps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_16px.png" -Destination "./out/deb/usr/share/icons/hicolor/16x16/apps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_16px.png" -Destination "./out/deb/usr/share/icons/hicolor/16x16/apps/pororoca.png"
         # A 32x32 px PNG file in /usr/share/icons/hicolor/32x32/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/32x32")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/32x32/apps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_32px.png" -Destination "./out/deb/usr/share/icons/hicolor/32x32/apps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_32px.png" -Destination "./out/deb/usr/share/icons/hicolor/32x32/apps/pororoca.png"
         # A 48x48 px PNG file in /usr/share/icons/hicolor/48x48/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/48x48")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/48x48/apps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_48px.png" -Destination "./out/deb/usr/share/icons/hicolor/48x48/apps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_48px.png" -Destination "./out/deb/usr/share/icons/hicolor/48x48/apps/pororoca.png"
         # A 64x64 px PNG file in /usr/share/icons/hicolor/64x64/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/64x64")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/64x64/apps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_64px.png" -Destination "./out/deb/usr/share/icons/hicolor/64x64/apps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_64px.png" -Destination "./out/deb/usr/share/icons/hicolor/64x64/apps/pororoca.png"
         # A 128x128 px PNG file in /usr/share/icons/hicolor/128x128/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/128x128")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/128x128/apps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_128px.png" -Destination "./out/deb/usr/share/icons/hicolor/128x128/apps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_128px.png" -Destination "./out/deb/usr/share/icons/hicolor/128x128/apps/pororoca.png"
         # A 256x256 px PNG file in /usr/share/icons/hicolor/256x256/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/256x256")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/256x256/apps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_256px.png" -Destination "./out/deb/usr/share/icons/hicolor/256x256/apps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_256px.png" -Destination "./out/deb/usr/share/icons/hicolor/256x256/apps/pororoca.png"
         # A 512x512 px PNG file in /usr/share/icons/hicolor/512x512/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/512x512")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/512x512/apps")
-        Copy-Item -Path "./src/Pororoca.Desktop.Debian/pororoca_icon_512px.png" -Destination "./out/deb/usr/share/icons/hicolor/512x512/apps/pororoca.png"
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_512px.png" -Destination "./out/deb/usr/share/icons/hicolor/512x512/apps/pororoca.png"
         # Optionally, an SVG file in /usr/share/icons/hicolor/scalable/apps/
         [void](mkdir "./out/deb/usr/share/icons/hicolor/scalable")
         [void](mkdir "./out/deb/usr/share/icons/hicolor/scalable/apps")
@@ -451,7 +451,36 @@ jobs:
         # Make .deb file
         dpkg-deb --root-owner-group --build "./out/deb/" "./out/${debPackageName}"
         Remove-Item "./out/deb" -Force -Recurse -ErrorAction Ignore
-        Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
+        # Don't delete the output folder, it will be reused for RPM packages
+        # Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
+    
+    - name: Make RPM packages
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        $OUTPUT_FOLDER = "./out/linux-x64-installer";
+        $distros = @("Fedora", "openSUSE", "RedHat")
+        chmod +x "./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh" # set executable permissions to starter script
+        chmod -R a+rX $OUTPUT_FOLDER # set read permissions to all files
+        chmod +x "${OUTPUT_FOLDER}/Pororoca" # set executable permissions to main executable
+        foreach ($distroName in $distros)
+        {
+          $packageFileDestPath = "./out/Pororoca_${versionName}_${distroName}-amd64.rpm"
+          fpm --fpm-options-file "./src/Pororoca.Desktop.LinuxDesktop/${distroName}.fpm" `
+              --package $packageFileDestPath `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh=/usr/bin/pororoca `
+            "${installerFilesFolder}/"=/usr/lib/pororoca/ `
+            ./src/Pororoca.Desktop.LinuxDesktop/Pororoca.desktop=usr/share/applications/Pororoca.desktop `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_1024px.png=usr/share/pixmaps/pororoca.png `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_16px.png=usr/share/icons/hicolor/16x16/apps/pororoca.png `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_21px.png=usr/share/icons/hicolor/32x32/apps/pororoca.png `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_48px.png=usr/share/icons/hicolor/48x48/apps/pororoca.png `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_64px.png=usr/share/icons/hicolor/64x64/apps/pororoca.png `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_128px.png=usr/share/icons/hicolor/128x128/apps/pororoca.png `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_256px.png=usr/share/icons/hicolor/256x256/apps/pororoca.png `
+            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_512px.png=usr/share/icons/hicolor/512x512/apps/pororoca.png `
+            ./misc/pororoca_logo.svg=usr/share/icons/hicolor/scalable/apps/pororoca.svg
+        }
 
     # finished CD steps - desktop
 
