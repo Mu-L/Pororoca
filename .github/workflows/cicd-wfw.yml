@@ -212,7 +212,7 @@ jobs:
           $OUTPUT_FOLDER = $artifact.outputFolder
           $PUBLISH_SINGLE_FILE = (($artifact.rid -ne $null) -and ((($artifact.rid -like "win*") -and ($artifact.packaging -eq $null)) -or ($artifact.rid -like "linux*")));
           $WINDOWS_INSTALLER_RELEASE = $artifact.packaging -eq "nsis";
-          $LINUX_INSTALLER_RELEASE = ($artifact.packaging -eq "debian") -or ($artifact.packaging -eq "fedora") -or ($artifact.packaging -eq "opensuse") -or ($artifact.packaging -eq "redhat");
+          $LINUX_INSTALLER_RELEASE = $artifact.packaging -eq "linux-installers";
 
           Write-Host "Generating Pororoca.Desktop DLLs for $($artifact.rid)."
           Write-Host "Output folder: $OUTPUT_FOLDER"
