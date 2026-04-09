@@ -458,6 +458,8 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
+        sudo apt-get install ruby ruby-dev rubygems gcc make
+        gem install --no-ri --no-rdoc fpm
         $OUTPUT_FOLDER = "./out/linux-x64-installer";
         $distros = @("Fedora", "openSUSE", "RedHat")
         chmod +x "./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh" # set executable permissions to starter script
