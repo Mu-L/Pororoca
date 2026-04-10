@@ -479,7 +479,7 @@ jobs:
         Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "$rpmStagingOthersDir/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination $rpmStagingBinariesDir -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")
-        rpmbuild -bb --quiet --define '_topdir $rpmBuildRoot' --buildroot '$rpmBuildRoot/BUILDROOT' '$specFile'
+        rpmbuild -bb --quiet --define '_topdir $rpmBuildRoot' --buildroot '$rpmBuildRoot/BUILDROOT' '$specFilePath'
 
     # finished CD steps - desktop
 
