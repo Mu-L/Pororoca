@@ -458,7 +458,9 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        sudo apt-get install rpm
+        sudo apt update
+        sudo apt install rpm
+        rpmbuild --version
         $OUTPUT_FOLDER = "./out/linux-x64-installer";
         [void](mkdir "./out/rpmbuild_fedora")
         [void](mkdir "./out/rpmbuild_fedora/BUILD")
