@@ -454,35 +454,24 @@ jobs:
         # Don't delete the output folder, it will be reused for RPM packages
         # Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
     
-    - name: Make RPM packages
+    - name: Make Fedora RPM package
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        sudo apt-get install ruby ruby-dev rubygems gcc make
-        sudo gem install fpm
+        sudo apt-get install rpm
         $OUTPUT_FOLDER = "./out/linux-x64-installer";
-        $distros = @("Fedora", "openSUSE", "RedHat")
-        chmod +x "./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh" # set executable permissions to starter script
-        chmod -R a+rX $OUTPUT_FOLDER # set read permissions to all files
-        chmod +x "${OUTPUT_FOLDER}/Pororoca" # set executable permissions to main executable
-        foreach ($distroName in $distros)
-        {
-          $packageFileDestPath = "./out/Pororoca_${versionName}_${distroName}-amd64.rpm"
-          fpm --fpm-options-file "./src/Pororoca.Desktop.LinuxDesktop/${distroName}.fpm" `
-              --package $packageFileDestPath `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh=/usr/bin/pororoca `
-            "${installerFilesFolder}/"=/usr/lib/pororoca/ `
-            ./src/Pororoca.Desktop.LinuxDesktop/Pororoca.desktop=usr/share/applications/Pororoca.desktop `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_1024px.png=usr/share/pixmaps/pororoca.png `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_16px.png=usr/share/icons/hicolor/16x16/apps/pororoca.png `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_21px.png=usr/share/icons/hicolor/32x32/apps/pororoca.png `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_48px.png=usr/share/icons/hicolor/48x48/apps/pororoca.png `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_64px.png=usr/share/icons/hicolor/64x64/apps/pororoca.png `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_128px.png=usr/share/icons/hicolor/128x128/apps/pororoca.png `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_256px.png=usr/share/icons/hicolor/256x256/apps/pororoca.png `
-            ./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_512px.png=usr/share/icons/hicolor/512x512/apps/pororoca.png `
-            ./misc/pororoca_logo.svg=usr/share/icons/hicolor/scalable/apps/pororoca.svg
-        }
+        [void](mkdir "./out/rpmbuild_fedora")
+        [void](mkdir "./out/rpmbuild_fedora/BUILD")
+        [void](mkdir "./out/rpmbuild_fedora/BUILDROOT")
+        [void](mkdir "./out/rpmbuild_fedora/RPMS")
+        [void](mkdir "./out/rpmbuild_fedora/SOURCES")
+        [void](mkdir "./out/rpmbuild_fedora/SPECS")
+        [void](mkdir "./out/rpmbuild_fedora/SRPMS")
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination "./out/rpmbuild_fedora/SOURCES/others" -Recurse -Force
+        Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "./out/rpmbuild_fedora/SOURCES/others/pororoca_logo.svg"
+        Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination "./out/rpmbuild_fedora/SOURCES/binaries" -Recurse -Force
+        # $distros = @("Fedora", "openSUSE", "RedHat")        
+        rpmbuild --define "_topdir `pwd`" -v -bb ./SPECS/Fedora.spec
 
     # finished CD steps - desktop
 
