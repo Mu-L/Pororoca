@@ -470,6 +470,7 @@ jobs:
         [void](mkdir "./out/rpmbuild_fedora/SOURCES/binaries")
         [void](mkdir "./out/rpmbuild_fedora/SPECS")
         [void](mkdir "./out/rpmbuild_fedora/SRPMS")
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination "./out/rpmbuild_fedora/SPECS/Fedora.spec"
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination "./out/rpmbuild_fedora/SOURCES/others" -Recurse -Force
         Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "./out/rpmbuild_fedora/SOURCES/others/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination "./out/rpmbuild_fedora/SOURCES/binaries" -Recurse -Force
