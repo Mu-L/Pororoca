@@ -461,21 +461,25 @@ jobs:
         # rpmbuild comes pre-installed on Ubuntu runners
         rpmbuild --version
         $OUTPUT_FOLDER = "./out/linux-x64-installer";
-        [void](mkdir "~/rpmbuild")
-        [void](mkdir "~/rpmbuild/BUILD")
-        [void](mkdir "~/rpmbuild/BUILDROOT")
-        [void](mkdir "~/rpmbuild/RPMS")
-        [void](mkdir "~/rpmbuild/SOURCES")
-        [void](mkdir "~/rpmbuild/SPECS")
-        [void](mkdir "~/rpmstaging")
-        [void](mkdir "~/rpmstaging/others")
-        [void](mkdir "~/rpmstaging/binaries")
-        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination "~/rpmbuild/SPECS/Fedora.spec"
-        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination "~/rpmstaging/others" -Recurse -Force
-        Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "~/rpmstaging/others/pororoca_logo.svg"
-        Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination "~/rpmstaging/binaries" -Recurse -Force
+        $rpmBuildRoot = Join-Path $env:HOME "rpmbuild"
+        $specsDir = Join-Path $rpmBuildRoot "SPECS"
+        $specFilePath = Join-Path $specsDir "Fedora.spec"
+        $rpmsDir = Join-Path $rpmBuildRoot "RPMS"
+        $rpmStagingDir = Join-Path $env:HOME "rpmstaging"
+        $rpmStagingBinariesDir = Join-Path $rpmStagingDir "binaries"
+        $rpmStagingOthersDir = Join-Path $rpmStagingDir "others"
+        [void](mkdir $rpmBuildRoot)
+        [void](mkdir $specsDir)
+        [void](mkdir $rpmsDir)
+        [void](mkdir $rpmStagingDir)
+        [void](mkdir $rpmStagingBinariesDir)
+        [void](mkdir $rpmStagingOthersDir)
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination $specFilePath
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination $rpmStagingOthersDir -Recurse -Force
+        Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "$rpmStagingOthersDir/pororoca_logo.svg"
+        Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination $rpmStagingBinariesDir -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")
-        rpmbuild -bb --quiet --define '_topdir ~/rpmbuild' --buildroot '~/rpmbuild/BUILDROOT' '~/rpmbuild/SPECS/Fedora.spec'
+        rpmbuild -bb --quiet --define '_topdir $rpmBuildRoot' --buildroot '$rpmBuildRoot/BUILDROOT' '$specFile'
 
     # finished CD steps - desktop
 
