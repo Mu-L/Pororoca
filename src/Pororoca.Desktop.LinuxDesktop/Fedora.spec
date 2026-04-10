@@ -3,7 +3,7 @@ Version:    3.9.1
 Release:    1%{?dist}
 Summary:    This is Pororoca, an HTTP inspection tool.
 License:    GPLv3+
-BuildArch:  amd64
+BuildArch:  x86_64
 URL:        https://pororoca.io
 Requires: ca-certificates
 Requires: glibc
