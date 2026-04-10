@@ -474,7 +474,7 @@ jobs:
         Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "./out/rpmbuild_fedora/SOURCES/others/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination "./out/rpmbuild_fedora/SOURCES/binaries" -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")        
-        rpmbuild --define '_topdir `pwd`' -v -bb ./SPECS/Fedora.spec
+        rpmbuild --define '_topdir `pwd`' -v -bb ./out/rpmbuild_fedora/SPECS/Fedora.spec
 
     # finished CD steps - desktop
 
