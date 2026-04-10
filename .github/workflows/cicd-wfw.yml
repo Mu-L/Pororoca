@@ -199,18 +199,18 @@ jobs:
       shell: pwsh
       run: |
         $arr = @()
-        if ($env:LINUX_X64_PORTABLE -eq 'true') { $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-portable"  ; packaging=$null   } };
+        if ($env:LINUX_X64_PORTABLE -eq 'true') { $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-portable"  ; packaging="portable"   } };
         if ($env:LINUX_X64_INSTALLER -eq 'true'){ $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-installer" ; packaging="linux-installers"   } };
-        if ($env:OSX -eq 'true')                { $arr += @{   rid="osx-x64"; outputFolder="./out/osx-x64"             ; packaging=$null   } };
+        if ($env:OSX -eq 'true')                { $arr += @{   rid="osx-x64"; outputFolder="./out/osx-x64"             ; packaging="osx-app"   } };
         if ($env:WIN_X64_INSTALLER -eq 'true')  { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-installer"   ; packaging="nsis"   } };
-        if ($env:WIN_X64_PORTABLE -eq 'true')   { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-portable"    ; packaging=$null   } };
+        if ($env:WIN_X64_PORTABLE -eq 'true')   { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-portable"    ; packaging="portable"   } };
         if ($env:WIN_X86_INSTALLER -eq 'true')  { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-installer"   ; packaging="nsis"   } };
-        if ($env:WIN_X86_PORTABLE -eq 'true')   { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-portable"    ; packaging=$null   } };
+        if ($env:WIN_X86_PORTABLE -eq 'true')   { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-portable"    ; packaging="portable"   } };
 
         foreach ($artifact in $arr)
         {
           $OUTPUT_FOLDER = $artifact.outputFolder
-          $PUBLISH_SINGLE_FILE = (($artifact.rid -ne $null) -and ((($artifact.rid -like "win*") -and ($artifact.packaging -eq $null)) -or ($artifact.rid -like "linux*")));
+          $PUBLISH_SINGLE_FILE = $artifact.packaging -eq "portable";
           $WINDOWS_INSTALLER_RELEASE = $artifact.packaging -eq "nsis";
           $LINUX_INSTALLER_RELEASE = $artifact.packaging -eq "linux-installers";
 
@@ -471,7 +471,7 @@ jobs:
         Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "./out/rpmbuild_fedora/SOURCES/others/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination "./out/rpmbuild_fedora/SOURCES/binaries" -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")        
-        rpmbuild --define "_topdir `pwd`" -v -bb ./SPECS/Fedora.spec
+        rpmbuild --define '_topdir `pwd`' -v -bb ./SPECS/Fedora.spec
 
     # finished CD steps - desktop
 
