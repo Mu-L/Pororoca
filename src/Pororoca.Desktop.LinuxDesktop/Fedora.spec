@@ -28,18 +28,30 @@ This is Pororoca, an HTTP inspection tool.
 # No build needed - binaries are pre-built
 
 %install
+mkdir -p %{buildroot}/usr/bin/pororoca
 install -m 755 ~/rpmstaging/others/pororoca.sh %{buildroot}/usr/bin/pororoca
+mkdir -p %{buildroot}/usr/lib/pororoca
 install -m 666 -D ~/rpmstaging/binaries/* -t %{buildroot}/usr/lib/pororoca/
 chmod +x %{buildroot}/usr/lib/pororoca/Pororoca
+mkdir -p %{buildroot}/usr/share/applications
 install -m 666 ~/rpmstaging/others/Pororoca.desktop %{buildroot}/usr/share/applications/Pororoca.desktop
+mkdir -p %{buildroot}/usr/share/pixmaps
 install -m 666 ~/rpmstaging/others/pororoca_icon_1024px.png %{buildroot}/usr/share/pixmaps/pororoca.png
+mkdir -p %{buildroot}/usr/share/icons/hicolor/scalable/apps
 install -m 666 ~/rpmstaging/others/pororoca_logo.svg %{buildroot}/usr/share/icons/hicolor/scalable/apps/pororoca.svg
+mkdir -p %{buildroot}/usr/share/icons/hicolor/16x16/apps
 install -m 666 ~/rpmstaging/others/pororoca_icon_16px.png %{buildroot}/usr/share/icons/hicolor/16x16/apps/pororoca.png
+mkdir -p %{buildroot}/usr/share/icons/hicolor/32x32/apps
 install -m 666 ~/rpmstaging/others/pororoca_icon_32px.png %{buildroot}/usr/share/icons/hicolor/32x32/apps/pororoca.png
+mkdir -p %{buildroot}/usr/share/icons/hicolor/48x48/apps
 install -m 666 ~/rpmstaging/others/pororoca_icon_48px.png %{buildroot}/usr/share/icons/hicolor/48x48/apps/pororoca.png
+mkdir -p %{buildroot}/usr/share/icons/hicolor/64x64/apps
 install -m 666 ~/rpmstaging/others/pororoca_icon_64px.png %{buildroot}/usr/share/icons/hicolor/64x64/apps/pororoca.png
+mkdir -p %{buildroot}/usr/share/icons/hicolor/128x128/apps
 install -m 666 ~/rpmstaging/others/pororoca_icon_128px.png %{buildroot}/usr/share/icons/hicolor/128x128/apps/pororoca.png
+mkdir -p %{buildroot}/usr/share/icons/hicolor/256x256/apps
 install -m 666 ~/rpmstaging/others/pororoca_icon_256px.png %{buildroot}/usr/share/icons/hicolor/256x256/apps/pororoca.png
+mkdir -p %{buildroot}/usr/share/icons/hicolor/512x512/apps
 install -m 666 ~/rpmstaging/others/pororoca_icon_512px.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/pororoca.png
 
 %files
