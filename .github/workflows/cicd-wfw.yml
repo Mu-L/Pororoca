@@ -476,10 +476,10 @@ jobs:
         [void](mkdir $rpmStagingOthersDir)
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination $specFilePath
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination $rpmStagingOthersDir -Recurse -Force
-        Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "$rpmStagingOthersDir/pororoca_logo.svg"
+        Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "${rpmStagingOthersDir}/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination $rpmStagingBinariesDir -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")
-        rpmbuild -bb --quiet --define '_topdir $rpmBuildRoot' --buildroot '$rpmBuildRoot/BUILDROOT' '$specFilePath'
+        rpmbuild -bb --quiet --define "_topdir ${rpmBuildRoot}" --buildroot "${rpmBuildRoot}/BUILDROOT" $specFilePath
 
     # finished CD steps - desktop
 
