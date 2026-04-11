@@ -384,7 +384,7 @@ jobs:
         WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
 
-    - name: Make Debian .deb package
+    - name: Make Debian / Ubuntu package
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
@@ -454,6 +454,10 @@ jobs:
         # Don't delete the output folder, it will be reused for RPM packages
         # Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
     
+    # code below taken from:
+    # https://github.com/PowerShell/PowerShell/pull/26337
+    # https://github.com/PowerShell/PowerShell/blob/master/tools/packaging/packaging.psm1
+    # https://janikvonrotz.ch/2019/03/20/the-final-rpm-packaging-guide/
     - name: Make Fedora RPM package
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
@@ -482,6 +486,8 @@ jobs:
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination $rpmStagingBinariesDir -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")
         rpmbuild -bb --quiet --define "_topdir ${rpmbuildDir}" --buildroot "${rpmbuildDir}/BUILDROOT" $specFilePath
+        Copy-Item -Path "${rpmsDir}/*" -Destination "./out/" -Recurse -Force
+        Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
 
     # finished CD steps - desktop
 
