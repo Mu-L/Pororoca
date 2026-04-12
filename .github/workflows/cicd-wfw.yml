@@ -313,7 +313,7 @@ jobs:
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
 
     - name: Copy licence
-      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopFedoraX64 || inputs.produceDesktopOpenSuseX64 || inputs.produceDesktopRedHatX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
       run: |
         $arr = @(Get-ChildItem "./out/" -Directory | Select FullName)
