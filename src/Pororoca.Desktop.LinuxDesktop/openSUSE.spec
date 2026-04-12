@@ -1,28 +1,36 @@
+# This spec file is for openSUSE.
+
+# .NET Linux required packages: https://github.com/dotnet/core/blob/main/release-notes/8.0/os-packages.md
+# Avalonia required packages: https://docs.avaloniaui.net/tools/parcel/packaging-for-linux#avalonia-specific-dependencies
+
+# package compression algorithm and level
+# https://stackoverflow.com/questions/9292243/rpmbuild-change-compression-format
+
 %define _source_payload w7T16.xzdio
 %define _binary_payload w7T16.xzdio
 
 Name:       Pororoca
 Version:    3.9.1
 Release:    1%{?dist}
-Summary:    This is Pororoca, an HTTP inspection tool.
+Summary:    This is Pororoca, an HTTP testing tool.
 License:    GPLv3+
 BuildArch:  x86_64
 URL:        https://pororoca.io
 Requires: ca-certificates
 Requires: glibc
-Requires: krb5-libs
-Requires: libgcc
-Requires: libstdc++
+Requires: krb5
+Requires: libgcc_s1
+Requires: libstdc++6
 Requires: libicu
-Requires: openssl-libs
-Requires: tzdata
-Requires: libICE
-Requires: libSM
-Requires: fontconfig
-Requires: libX11
+Requires: libopenssl3
+Requires: timezone
+Requires: libICE6
+Requires: libSM6
+Requires: libfontconfig1
+Requires: libX11-6
 
 %description
-This is Pororoca, an HTTP inspection tool.
+This is Pororoca, an HTTP testing tool.
 
 %prep
 # No prep needed - files are already staged

@@ -458,7 +458,7 @@ jobs:
     # https://github.com/PowerShell/PowerShell/pull/26337
     # https://github.com/PowerShell/PowerShell/blob/master/tools/packaging/packaging.psm1
     # https://janikvonrotz.ch/2019/03/20/the-final-rpm-packaging-guide/
-    - name: Make Fedora RPM package
+    - name: Make RHEL and openSUSE packages
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
@@ -469,21 +469,23 @@ jobs:
         $rpmbuildSpecsDir = Join-Path $rpmbuildMainDir "SPECS"
         $rpmbuildBuildRootDir = Join-Path $rpmbuildMainDir "BUILDROOT"
         $rpmbuildRpmsDir = Join-Path $rpmbuildMainDir "RPMS"
-        $rpmbuildSpecFilePath = Join-Path $rpmbuildSpecsDir "Fedora.spec"
         [void](mkdir $rpmbuildMainDir $rpmbuildSpecsDir $rpmbuildBuildRootDir $rpmbuildRpmsDir)
         $rpmStagingDir = Join-Path $env:HOME "rpmstaging"
         $rpmStagingBinariesDir = Join-Path $rpmStagingDir "binaries"
         $rpmStagingOthersDir = Join-Path $rpmStagingDir "others"
         [void](mkdir $rpmStagingDir $rpmStagingBinariesDir $rpmStagingOthersDir)
-        ls -R $rpmbuildMainDir
-        ls -R $rpmStagingDir
-        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination $rpmbuildSpecFilePath
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination $rpmStagingOthersDir -Recurse -Force
         Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "${rpmStagingOthersDir}/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination $rpmStagingBinariesDir -Recurse -Force
-        # $distros = @("Fedora", "openSUSE", "RedHat")
-        rpmbuild -bb -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $rpmbuildSpecFilePath
-        Copy-Item -Path "${rpmbuildRpmsDir}/*" -Destination "./out/" -Recurse -Force
+        
+        $distros = @("openSUSE", "RHEL")
+        foreach ($distro in $distros)
+        {
+          $rpmbuildSpecFilePath = Join-Path $rpmbuildSpecsDir "${distro}.spec"
+          Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/${distro}.spec" -Destination $rpmbuildSpecFilePath
+          rpmbuild -bb -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $rpmbuildSpecFilePath
+          Copy-Item -Path "${rpmbuildRpmsDir}/x86_64/Pororoca-${env:VERSION_NAME}-1.x86_64.rpm" -Destination "./out/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
+        }
         Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
 
     # finished CD steps - desktop

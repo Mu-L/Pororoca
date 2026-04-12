@@ -34,13 +34,10 @@ function Get-RuntimesToPublishFor
 	# osx-arm64 is now supported (2022-11-30), thanks to AvaloniaEdit version 11.0.0-preview2
 
 	# osx-arm64 doesn't work for some reason,
-	# but osx-x64 works on Mac OSes with Apple Silicon (arm64)
+	# but osx-x64 works on macOS with Apple Silicon (arm64)
 	$unixRuntimes = @(`
-		'linux-x64' `
-		,'debian-x64' `
-		,'fedora-x64' `
-		,'redhat-x64' `
-		,'opensuse-x64' `
+		'linux-x64_portable' `
+		,'linux-x64_installers' `
 		#,'linux-arm64' `
 		,'osx-x64' `
 		#,'osx-arm64' `
@@ -59,10 +56,11 @@ function Get-RuntimesToPublishFor
 		#,'win-arm64_installer' `
 	)
 
-	# Windows releases should be built on a Windows machine, because of dotnet
-	# Linux and Mac OS releases should be built on one of those OSs, because of chmod and zip
-	#return $IsWindows ? $windowsRuntimes : $unixRuntimes
+	# Windows installer releases should be built on a Windows machine, because of NSIS
+	# Windows portable releases can be built on either Windows or Linux (since .NET 8)
+	# Linux and macOS releases should be built on one of those OSs, because of chmod and zip
 	return @("win-x64_portable")
+	#return $IsWindows ? $windowsRuntimes : $unixRuntimes
 }
 
 #################### Pre-release build and tests ####################
@@ -214,11 +212,9 @@ function Generate-PororocaDesktopRelease {
 	$fullAppReleaseName = "Pororoca_${versionName}_${runtime}"
 	$outputFolder = "./out/${fullAppReleaseName}"
 	$zipName = "${fullAppReleaseName}.zip"
-	$isInstallOnWindowsRelease = ($runtime -like "*_installer")
-	$isDebianDpkgRelease = ($runtime -like "debian*")
-	$isRpmRelease = ($runtime -like "fedora*") -or ($runtime -like "redhat*") -or ($runtime -like "opensuse*")
-	$isInstallOnLinuxRelease = $isDebianDpkgRelease -or $isRpmRelease
-	$dotnetRid = $runtime.Replace("_installer","").Replace("_portable","").Replace("debian","linux").Replace("fedora","linux").Replace("redhat","linux").Replace("opensuse","linux")
+	$isInstallOnWindowsRelease = ($runtime -like "win**_installer")
+	$isInstallOnLinuxRelease = $runtime -eq "linux-x64_installers"
+	$dotnetRid = $runtime.Replace("_installer","").Replace("_portable","")
 
 	Write-Host "Publishing Pororoca.Desktop for ${runtime}..." -ForegroundColor DarkYellow
 
@@ -237,26 +233,23 @@ function Generate-PororocaDesktopRelease {
 		Write-Host "Generating Windows installer for ${runtime}..." -ForegroundColor DarkYellow
 		Pack-ReleaseInWindowsInstaller -GeneralOutFolder ".\out" -InstallerFilesFolder $outputFolder -InstallerFileName "${fullAppReleaseName}.exe" -VersionName $versionName
 		$stopwatch.Stop()
-		Write-Host "Windows installer for ${dotnetRid} created: ./out/${fullAppReleaseName}.exe ($($stopwatch.Elapsed.TotalSeconds.ToString("#"))s)." -ForegroundColor DarkGreen
+		Write-Host "Windows installer created: ./out/${fullAppReleaseName}.exe ($($stopwatch.Elapsed.TotalSeconds.ToString("#"))s)." -ForegroundColor DarkGreen
 	}
-	elseif ($isDebianDpkgRelease)
+	elseif ($isInstallOnLinuxRelease)
 	{
-		Write-Host "Generating package for ${runtime}..." -ForegroundColor DarkYellow
+		# comment blocks below for only Debian or only RPM
+		
+		# Debian / Ubuntu
+		Write-Host "Generating Debian package for ${runtime}..." -ForegroundColor DarkYellow
 		Pack-ReleaseInDebianDpkg -GeneralOutFolder "./out" -InstallerFilesFolder $outputFolder -VersionName $versionName
 		$stopwatch.Stop()
-		Write-Host "Debian package for ${dotnetRid} created: ./out/${fullAppReleaseName}.deb ($($stopwatch.Elapsed.TotalSeconds.ToString("#"))s)." -ForegroundColor DarkGreen
-	}
-	elseif ($isRpmRelease)
-	{
-		$distroName = switch ($runtime) {
-			{$_ -like "fedora*"} { "Fedora" }
-			{$_ -like "redhat*"} { "RedHat" }
-			{$_ -like "opensuse*"} { "openSUSE" }
-		};
-		Write-Host "Generating ${distroName} package for ${runtime}..." -ForegroundColor DarkYellow
-		Pack-ReleaseInRpm -DistroName $distroName -GeneralOutFolder "./out" -InstallerFilesFolder $outputFolder -VersionName $versionName
+		Write-Host "Debian package created: ./out/${fullAppReleaseName}.deb ($($stopwatch.Elapsed.TotalSeconds.ToString("#"))s)." -ForegroundColor DarkGreen
+		
+		# RHEL and openSUSE
+		Write-Host "Generating RHEL and openSUSE packages for ${runtime}..." -ForegroundColor DarkYellow
+		Pack-ReleaseInRpms -GeneralOutFolder "./out" -InstallerFilesFolder $outputFolder -VersionName $versionName
 		$stopwatch.Stop()
-		Write-Host "RPM package for ${distroName} created ($($stopwatch.Elapsed.TotalSeconds.ToString("#"))s)." -ForegroundColor DarkGreen
+		Write-Host "RHEL and openSUSE packages created: ($($stopwatch.Elapsed.TotalSeconds.ToString("#"))s)." -ForegroundColor DarkGreen
 	}
 	else
 	{
@@ -556,6 +549,7 @@ function Pack-ReleaseInDebianDpkg
 	Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "${generalOutFolder}/deb/usr/share/icons/hicolor/scalable/apps/pororoca.svg"
 
 	# Make .deb file
+	# dpkg-deb is necessary.
 	dpkg-deb --root-owner-group --build "./out/deb/" "./out/Pororoca_${versionName}_amd64.deb"
 
 	# To run Pororoca from the Terminal, on Debian-installed version:
@@ -571,36 +565,37 @@ function Pack-ReleaseInDebianDpkg
 	Remove-Item "./out/deb" -Force -Recurse -ErrorAction Ignore
 }
 
-function Pack-ReleaseInRpm
+function Pack-ReleaseInRpms
 {
 	param (
 		[string]$generalOutFolder, # the "./out" folder
-		[string]$installerFilesFolder, # the "./out/Pororoca_x.y.z_fedora-x64/" folder
-		[string]$distroName, # redhat, fedora, opensuse
+		[string]$installerFilesFolder, # the "./out/Pororoca_x.y.z_linux-x64-installers/" folder
 		[string]$versionName
     )
 
-	$packageFileDestPath = "${generalOutFolder}/Pororoca_${versionName}_${distroName}-amd64.rpm"
-
-	chmod +x "./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh" # set executable permissions to starter script
-	chmod -R a+rX $installerFilesFolder # set read permissions to all files
-    chmod +x "${installerFilesFolder}/Pororoca" # set executable permissions to main executable
-
-	fpm --fpm-options-file "./src/Pororoca.Desktop.LinuxDesktop/${distroName}.fpm" `
-	    --package $packageFileDestPath `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca.sh=/usr/bin/pororoca `
-		"${installerFilesFolder}/"=/usr/lib/pororoca/ `
-		./src/Pororoca.Desktop.LinuxDesktop/Pororoca.desktop=usr/share/applications/Pororoca.desktop `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_1024px.png=usr/share/pixmaps/pororoca.png `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_16px.png=usr/share/icons/hicolor/16x16/apps/pororoca.png `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_21px.png=usr/share/icons/hicolor/32x32/apps/pororoca.png `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_48px.png=usr/share/icons/hicolor/48x48/apps/pororoca.png `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_64px.png=usr/share/icons/hicolor/64x64/apps/pororoca.png `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_128px.png=usr/share/icons/hicolor/128x128/apps/pororoca.png `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_256px.png=usr/share/icons/hicolor/256x256/apps/pororoca.png `
-		./src/Pororoca.Desktop.LinuxDesktop/pororoca_icon_512px.png=usr/share/icons/hicolor/512x512/apps/pororoca.png `
-		./misc/pororoca_logo.svg=usr/share/icons/hicolor/scalable/apps/pororoca.svg
+	# rpmbuild is necessary. Can be installed and run on Ubuntu
+	rpmbuild --version
+	$rpmbuildMainDir = Join-Path $env:HOME "rpmbuild"
+	$rpmbuildSpecsDir = Join-Path $rpmbuildMainDir "SPECS"
+	$rpmbuildBuildRootDir = Join-Path $rpmbuildMainDir "BUILDROOT"
+	$rpmbuildRpmsDir = Join-Path $rpmbuildMainDir "RPMS"
+	[void](mkdir $rpmbuildMainDir $rpmbuildSpecsDir $rpmbuildBuildRootDir $rpmbuildRpmsDir)
+	$rpmStagingDir = Join-Path $env:HOME "rpmstaging"
+	$rpmStagingBinariesDir = Join-Path $rpmStagingDir "binaries"
+	$rpmStagingOthersDir = Join-Path $rpmStagingDir "others"
+	[void](mkdir $rpmStagingDir $rpmStagingBinariesDir $rpmStagingOthersDir)
+	Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination $rpmStagingOthersDir -Recurse -Force
+	Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "${rpmStagingOthersDir}/pororoca_logo.svg"
+	Copy-Item -Path "$installerFilesFolder/*" -Destination $rpmStagingBinariesDir -Recurse -Force
 	
+	$distros = @("openSUSE", "RHEL")
+	foreach ($distro in $distros)
+	{
+		$rpmbuildSpecFilePath = Join-Path $rpmbuildSpecsDir "${distro}.spec"
+		Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/${distro}.spec" -Destination $rpmbuildSpecFilePath
+		rpmbuild -bb -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $rpmbuildSpecFilePath
+		Copy-Item -Path "${rpmbuildRpmsDir}/x86_64/Pororoca-${versionName}-1.x86_64.rpm" -Destination "./${generalOutFolder}/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
+	}
 	Remove-Item $installerFilesFolder -Force -Recurse -ErrorAction Ignore
 }
 
