@@ -57,7 +57,8 @@ function Get-RuntimesToPublishFor
 	)
 
 	# Windows installer releases should be built on a Windows machine, because of NSIS
-	# Windows portable releases can be built on either Windows or Linux (since .NET 8)
+	# Windows portable releases can be built on either Windows or Linux,
+	# since .NET 8: https://github.com/dotnet/core/issues/8439#issuecomment-1688474268
 	# Linux and macOS releases should be built on one of those OSs, because of chmod and zip
 	return @("win-x64_portable")
 	#return $IsWindows ? $windowsRuntimes : $unixRuntimes
