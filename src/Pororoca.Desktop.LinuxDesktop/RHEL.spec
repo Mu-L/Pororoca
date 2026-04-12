@@ -9,6 +9,11 @@
 %define _source_payload w7T16.xzdio
 %define _binary_payload w7T16.xzdio
 
+# The line below removes liblttng-ust.so.0()(64bit) requirement from .NET 8.0,
+# which cannot be provided for Fedora, but it's also not needed for execution.
+# https://github.com/dotnet/runtime/issues/57784#issuecomment-3868191774
+%global __requires_exclude liblttng-ust.so.
+
 Name:       Pororoca
 Version:    3.9.1
 Release:    1%{?dist}
