@@ -470,11 +470,11 @@ jobs:
         $rpmbuildBuildRootDir = Join-Path $rpmbuildMainDir "BUILDROOT"
         $rpmbuildRpmsDir = Join-Path $rpmbuildMainDir "RPMS"
         $rpmbuildSpecFilePath = Join-Path $rpmbuildSpecsDir "Fedora.spec"
-        [void](mkdir $rpmbuildMainDir,$rpmbuildSpecsDir,$rpmbuildBuildRootDir,$rpmbuildRpmsDir)
+        [void](mkdir $rpmbuildMainDir $rpmbuildSpecsDir $rpmbuildBuildRootDir $rpmbuildRpmsDir)
         $rpmStagingDir = Join-Path $env:HOME "rpmstaging"
         $rpmStagingBinariesDir = Join-Path $rpmStagingDir "binaries"
         $rpmStagingOthersDir = Join-Path $rpmStagingDir "others"
-        [void](mkdir $rpmStagingDir,$rpmStagingBinariesDir,$rpmStagingOthersDir)
+        [void](mkdir $rpmStagingDir $rpmStagingBinariesDir $rpmStagingOthersDir)
         ls -R $rpmbuildMainDir
         ls -R $rpmStagingDir
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination $rpmbuildSpecFilePath
