@@ -465,28 +465,23 @@ jobs:
         # rpmbuild comes pre-installed on Ubuntu runners
         rpmbuild --version
         $OUTPUT_FOLDER = "./out/linux-x64-installer";
-        $rpmbuildDir = Join-Path $env:HOME "rpmbuild"
-        $specsDir = Join-Path $rpmbuildDir "SPECS"
-        $buildrootDir = Join-Path $rpmbuildDir "BUILDROOT"
-        $rpmsDir = Join-Path $rpmbuildDir "RPMS"
-        $specFilePath = Join-Path $specsDir "Fedora.spec"
+        $rpmbuildMainDir = Join-Path $env:HOME "rpmbuild"
+        $rpmbuildSpecsDir = Join-Path $rpmbuildMainDir "SPECS"
+        $rpmbuildBuildRootDir = Join-Path $rpmbuildMainDir "BUILDROOT"
+        $rpmbuildRpmsDir = Join-Path $rpmbuildMainDir "RPMS"
+        $specFilePath = Join-Path $rpmbuildSpecsDir "Fedora.spec"
+        [void](mkdir $rpmbuildMainDir,$rpmbuildSpecsDir,$rpmbuildBuildRootDir,$rpmbuildRpmsDir)
         $rpmStagingDir = Join-Path $env:HOME "rpmstaging"
         $rpmStagingBinariesDir = Join-Path $rpmStagingDir "binaries"
         $rpmStagingOthersDir = Join-Path $rpmStagingDir "others"
-        [void](mkdir $rpmbuildDir)
-        [void](mkdir $specsDir)
-        [void](mkdir $buildrootDir)
-        [void](mkdir $rpmsDir)
-        [void](mkdir $rpmStagingDir)
-        [void](mkdir $rpmStagingBinariesDir)
-        [void](mkdir $rpmStagingOthersDir)
+        [void](mkdir $rpmStagingDir,$rpmStagingBinariesDir,$rpmStagingOthersDir)
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination $specFilePath
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination $rpmStagingOthersDir -Recurse -Force
         Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "${rpmStagingOthersDir}/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination $rpmStagingBinariesDir -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")
-        rpmbuild -bb --quiet --define "_topdir ${rpmbuildDir}" --buildroot "${rpmbuildDir}/BUILDROOT" $specFilePath
-        Copy-Item -Path "${rpmsDir}/*" -Destination "./out/" -Recurse -Force
+        rpmbuild -bb -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $specFilePath
+        Copy-Item -Path "${rpmbuildRpmsDir}/*" -Destination "./out/" -Recurse -Force
         Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
 
     # finished CD steps - desktop

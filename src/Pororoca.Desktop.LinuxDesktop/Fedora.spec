@@ -1,3 +1,6 @@
+%define _source_payload w7T16.xzdio
+%define _binary_payload w7T16.xzdio
+
 Name:       Pororoca
 Version:    3.9.1
 Release:    1%{?dist}
