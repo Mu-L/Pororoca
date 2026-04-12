@@ -469,18 +469,20 @@ jobs:
         $rpmbuildSpecsDir = Join-Path $rpmbuildMainDir "SPECS"
         $rpmbuildBuildRootDir = Join-Path $rpmbuildMainDir "BUILDROOT"
         $rpmbuildRpmsDir = Join-Path $rpmbuildMainDir "RPMS"
-        $specFilePath = Join-Path $rpmbuildSpecsDir "Fedora.spec"
+        $rpmbuildSpecFilePath = Join-Path $rpmbuildSpecsDir "Fedora.spec"
         [void](mkdir $rpmbuildMainDir,$rpmbuildSpecsDir,$rpmbuildBuildRootDir,$rpmbuildRpmsDir)
         $rpmStagingDir = Join-Path $env:HOME "rpmstaging"
         $rpmStagingBinariesDir = Join-Path $rpmStagingDir "binaries"
         $rpmStagingOthersDir = Join-Path $rpmStagingDir "others"
         [void](mkdir $rpmStagingDir,$rpmStagingBinariesDir,$rpmStagingOthersDir)
-        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination $specFilePath
+        ls -R $rpmbuildMainDir
+        ls -R $rpmStagingDir
+        Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/Fedora.spec" -Destination $rpmbuildSpecFilePath
         Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/*" -Destination $rpmStagingOthersDir -Recurse -Force
         Copy-Item -Path "./misc/pororoca_logo.svg" -Destination "${rpmStagingOthersDir}/pororoca_logo.svg"
         Copy-Item -Path "$OUTPUT_FOLDER/*" -Destination $rpmStagingBinariesDir -Recurse -Force
         # $distros = @("Fedora", "openSUSE", "RedHat")
-        rpmbuild -bb -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $specFilePath
+        rpmbuild -bb -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $rpmbuildSpecFilePath
         Copy-Item -Path "${rpmbuildRpmsDir}/*" -Destination "./out/" -Recurse -Force
         Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
 
