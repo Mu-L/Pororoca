@@ -293,8 +293,6 @@ jobs:
       run: |
         $OUTPUT_FOLDER = "./out/linux-x64-portable"
         Copy-Item -Path "./pororoca.png" -Destination $OUTPUT_FOLDER
-      env:
-        LINUX_X64: ${{ inputs.produceDesktopLinuxPortableX64 }}
 
     - name: Copy icon for Windows installer
       if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Installer) }}
@@ -351,7 +349,7 @@ jobs:
           Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
         }
       env:
-        LINUX_X64: ${{ inputs.produceDesktopLinuxPortableX64 }}
+        LINUX_X64_PORTABLE: ${{ inputs.produceDesktopLinuxPortableX64 }}
         OSX: ${{ inputs.produceDesktopMacOSX }}
         WIN_X64_PORTABLE: ${{ inputs.produceDesktopWinX64Portable }}
         WIN_X86_PORTABLE: ${{ inputs.produceDesktopWinX86Portable }}
