@@ -44,6 +44,7 @@ This is Pororoca, an HTTP testing tool.
 # No build needed - binaries are pre-built
 
 %install
+mkdir -p %{buildroot}/usr/bin
 cp ~/rpmstaging/others/pororoca.sh %{buildroot}/usr/bin/pororoca
 chmod 755 %{buildroot}/usr/bin/pororoca
 mkdir -p %{buildroot}/usr/lib/pororoca
