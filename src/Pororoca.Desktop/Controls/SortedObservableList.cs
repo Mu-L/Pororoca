@@ -1,16 +1,6 @@
-using System;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Linq;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using DynamicData.Kernel;
 
 namespace Pororoca.Desktop.Controls;
 
@@ -531,7 +521,7 @@ public class SortedObservableList<T> : IList, IList<T>, INotifyCollectionChanged
             throw new ArgumentOutOfRangeException(nameof(count));
         var collectionChangedHandlers = this.CollectionChanged;
         var removedElements = collectionChangedHandlers != null
-                ? this.list[index..(index+count)].ToArray()
+                ? this.list[index..(index + count)].ToArray()
                 : null;
         this.list.RemoveRange(index, count);
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Count)));

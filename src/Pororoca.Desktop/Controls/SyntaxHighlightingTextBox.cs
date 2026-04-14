@@ -17,7 +17,7 @@ public class SyntaxHighlightingTextBox : TextBox
     /// <summary>
     /// Property of <see cref="DefinitionSet"/>.
     /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextBox, SyntaxHighlightingDefinitionSet?> DefinitionSetProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextBox, SyntaxHighlightingDefinitionSet?>(nameof(DefinitionSet), t => t.definitionSet, (t, ds) => t.DefinitionSet = ds);
+    public static readonly DirectProperty<SyntaxHighlightingTextBox, SyntaxHighlightingDefinitionSet?> DefinitionSetProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextBox, SyntaxHighlightingDefinitionSet?>(nameof(DefinitionSet), t => t.DefinitionSet, (t, ds) => t.DefinitionSet = ds);
     /// <summary>
     /// Property of <see cref="IsMaxTokenCountReached"/>.
     /// </summary>
@@ -25,44 +25,22 @@ public class SyntaxHighlightingTextBox : TextBox
     /// <summary>
     /// Property of <see cref="MaxTokenCount"/>.
     /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextBox, int> MaxTokenCountProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextBox, int>(nameof(MaxTokenCount), t => t.maxTokenCount, (t, count) => t.MaxTokenCount = count);
-
-    // Fields.
-    private SyntaxHighlightingDefinitionSet? definitionSet;
-    private int maxTokenCount = -1;
-    private SyntaxHighlightingTextPresenter? textPresenter;
-
-    /// <summary>
-    /// Initialize new <see cref="SyntaxHighlightingTextBox"/> instance.
-    /// </summary>
-    public SyntaxHighlightingTextBox()
-    {
-        this.PseudoClasses.Add(":syntaxHighlighted");
-        this.PseudoClasses.Add(":syntaxHighlightingTextBox");
-        this.PastingFromClipboard += async (_, e) =>
-        {
-            if (MainWindow.Instance!.Clipboard is IClipboard systemClipboard)
-            {
-                this.OnPastingFromClipboard(await systemClipboard.GetTextAsync());
-            }
-            e.Handled = true;
-        };
-    }
+    public static readonly DirectProperty<SyntaxHighlightingTextBox, int> MaxTokenCountProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextBox, int>(nameof(MaxTokenCount), t => t.MaxTokenCount, (t, count) => t.MaxTokenCount = count);
 
     /// <summary>
     /// Get or set syntax highlighting definition set.
     /// </summary>
     public SyntaxHighlightingDefinitionSet? DefinitionSet
     {
-        get => this.definitionSet;
+        get;
         set
         {
-            this.VerifyAccess();
-            if (this.definitionSet == value)
+            VerifyAccess();
+            if (field == value)
                 return;
-            this.SetAndRaise(DefinitionSetProperty, ref this.definitionSet, value);
+            SetAndRaise(DefinitionSetProperty, ref field, value);
             if (this.textPresenter is not null)
-                this.textPresenter.DefinitionSet = this.definitionSet;
+                this.textPresenter.DefinitionSet = field;
         }
     }
 
@@ -76,16 +54,36 @@ public class SyntaxHighlightingTextBox : TextBox
     /// </summary>
     public int MaxTokenCount
     {
-        get => this.maxTokenCount;
+        get;
         set
         {
-            this.VerifyAccess();
-            if (this.maxTokenCount == value)
+            VerifyAccess();
+            if (field == value)
                 return;
-            this.SetAndRaise(MaxTokenCountProperty, ref this.maxTokenCount, value);
+            SetAndRaise(MaxTokenCountProperty, ref field, value);
             if (this.textPresenter is not null)
-                this.textPresenter.MaxTokenCount = this.maxTokenCount;
+                this.textPresenter.MaxTokenCount = field;
         }
+    } = -1;
+
+    // Fields.
+    private SyntaxHighlightingTextPresenter? textPresenter;
+
+    /// <summary>
+    /// Initialize new <see cref="SyntaxHighlightingTextBox"/> instance.
+    /// </summary>
+    public SyntaxHighlightingTextBox()
+    {
+        PseudoClasses.Add(":syntaxHighlighted");
+        PseudoClasses.Add(":syntaxHighlightingTextBox");
+        PastingFromClipboard += async (_, e) =>
+        {
+            if (MainWindow.Instance!.Clipboard is IClipboard systemClipboard)
+            {
+                OnPastingFromClipboard(await systemClipboard.GetTextAsync());
+            }
+            e.Handled = true;
+        };
     }
 
     /// <inheritdoc/>
@@ -99,8 +97,8 @@ public class SyntaxHighlightingTextBox : TextBox
         this.textPresenter = e.NameScope.Find<SyntaxHighlightingTextPresenter>("PART_TextPresenter");
         if (this.textPresenter is not null)
         {
-            this.textPresenter.DefinitionSet = this.definitionSet;
-            this.textPresenter.MaxTokenCount = this.maxTokenCount;
+            this.textPresenter.DefinitionSet = DefinitionSet;
+            this.textPresenter.MaxTokenCount = MaxTokenCount;
             this.textPresenter.PropertyChanged += (_, e) =>
             {
                 if (e.Property == SyntaxHighlightingTextPresenter.IsMaxTokenCountReachedProperty)
@@ -110,11 +108,10 @@ public class SyntaxHighlightingTextBox : TextBox
             };
             if (this.textPresenter.IsMaxTokenCountReached)
             {
-                this.RaisePropertyChanged(IsMaxTokenCountReachedProperty, false, true);
+                RaisePropertyChanged(IsMaxTokenCountReachedProperty, false, true);
             }
         }
     }
-
 
     /// <summary>
     /// Called when pasting text from clipboard
@@ -125,7 +122,7 @@ public class SyntaxHighlightingTextBox : TextBox
         if (text is null)
             return;
 
-        this.SelectedText = this.AcceptsReturn ? text : RemoveLineBreaks(text);
+        SelectedText = AcceptsReturn ? text : RemoveLineBreaks(text);
     }
 
     private static string RemoveLineBreaks(string s) =>

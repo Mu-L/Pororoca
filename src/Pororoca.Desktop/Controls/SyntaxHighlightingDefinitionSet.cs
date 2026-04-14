@@ -28,7 +28,6 @@ public sealed class SyntaxHighlightingDefinitionSet
         this.attachedTokenDefinitions[this] = new();
     }
 
-
     // Attach to given span definition.
     private void AttachToSpanDefinition(SyntaxHighlightingSpan spanDefinition)
     {
@@ -81,35 +80,29 @@ public sealed class SyntaxHighlightingDefinitionSet
         attachedTokenDefinitions?.Remove(tokenDefinition);
     }
 
-
     /// <summary>
     /// Raised when one of definitions in the set has been changed.
     /// </summary>
     public event EventHandler? Changed;
-
 
     /// <summary>
     /// Check whether at least one token or span definition has been added to the set or not.
     /// </summary>
     public bool HasDefinitions => this.tokenDefinitions.Any() || this.spanDefinitions.Any();
 
-
     /// <summary>
     /// Check whether at least one token or span definition in the set is valid or not.
     /// </summary>
     public bool HasValidDefinitions => this.validDefinitionsCount > 0;
-
 
     /// <summary>
     /// Get name of the set.
     /// </summary>
     public string Name { get; }
 
-
     // Raise changed event.
     private void OnChanged() =>
         Changed?.Invoke(this, EventArgs.Empty);
-
 
     // Called when property of definition changed.
     private void OnDefinitionPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -127,7 +120,6 @@ public sealed class SyntaxHighlightingDefinitionSet
         else if (definition.IsValid)
             OnChanged();
     }
-
 
     // Called when collection of span definitions changed.
     private void OnSpanDefinitionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -170,7 +162,6 @@ public sealed class SyntaxHighlightingDefinitionSet
         }
         OnChanged();
     }
-
 
     // Called when collection of token definitions changed.
     private void OnTokenDefinitionsChanged(object? sender, NotifyCollectionChangedEventArgs e)

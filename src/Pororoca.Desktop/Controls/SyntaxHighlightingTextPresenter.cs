@@ -156,15 +156,6 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
         }
     }
 
-    /// <summary>
-    /// Find corresponding span and token which contains the character at specific position.
-    /// </summary>
-    /// <param name="characterIndex">Index of character.</param>
-    /// <param name="span">Span which contains the character.</param>
-    /// <param name="token">Token which contains the character.</param>
-    public void FindSpanAndToken(int characterIndex, out SyntaxHighlightingSpan? span, out SyntaxHighlightingToken? token) =>
-        this.syntaxHighlighter.FindSpanAndToken(characterIndex, out span, out token);
-
     /// <inheritdoc/>
     protected override Size MeasureOverride(Size availableSize)
     {
