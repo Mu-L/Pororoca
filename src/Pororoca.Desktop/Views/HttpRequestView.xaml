@@ -73,7 +73,7 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch">
 
-          <TextBox
+          <controls:SyntaxHighlightingTextBox
               x:Name="tbUrl"
               Height="40"
               Text="{Binding RequestUrl}"

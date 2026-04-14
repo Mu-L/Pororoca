@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Entities.Pororoca.Http;
@@ -26,6 +27,9 @@ public sealed class HttpRequestView : UserControl
         InitializeComponent();
 
         var varResolverObtainer = () => ((HttpRequestViewModel)DataContext!).col;
+
+        var urlInput = this.FindControl<SyntaxHighlightingTextBox>("tbUrl")!;
+        urlInput.DefinitionSet = PororocaVariableSyntaxHighlightingDefinitionSet.Create();
 
         var httpReqRawBodyEditor = this.FindControl<TextEditor>("teReqBodyRawContent")!;
         this.httpReqRawBodyEditorTextMateInstallation = TextEditorConfiguration.Setup(httpReqRawBodyEditor, true, varResolverObtainer);
