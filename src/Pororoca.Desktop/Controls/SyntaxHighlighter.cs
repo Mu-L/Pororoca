@@ -1,16 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
-using DynamicData;
+using ReactiveUI;
 
 namespace Pororoca.Desktop.Controls;
 
@@ -143,7 +136,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
 
     // Fields.
     private IBrush? background;
-    private IDisposable backgroundPropertyChangedHandlerToken = EmptyDisposable.Default;
+    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken = null;
     private SortedObservableList<Span>? candidateSpans;
     private readonly Dictionary<SyntaxHighlightingSpan, SortedObservableList<Token>> candidateTokens = new();
     private SortedObservableList<Token>? defaultCandidateTokens;
@@ -156,7 +149,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     private FontStyle fontStyle = FontStyle.Normal;
     private FontWeight fontWeight = FontWeight.Normal;
     private IBrush? foreground;
-    private IDisposable foregroundPropertyChangedHandlerToken = EmptyDisposable.Default;
+    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
     private readonly bool isDebugMode =
 #if DEBUG
         true;
@@ -174,10 +167,10 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     private readonly Dictionary<SyntaxHighlightingSpan, TextRunProperties> runPropertiesMap = new();
     private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> runPropertiesMapInSpan = new();
     private IBrush? selectionBackground;
-    private IDisposable selectionBackgroundPropertyChangedHandlerToken = EmptyDisposable.Default;
+    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? selectionBackgroundPropertyChangedHandlerToken;
     private int selectionEnd;
     private IBrush? selectionForeground;
-    private IDisposable selectionForegroundPropertyChangedHandlerToken = EmptyDisposable.Default;
+    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? selectionForegroundPropertyChangedHandlerToken;
     private readonly Dictionary<SyntaxHighlightingSpan, TextRunProperties> selectionRunPropertiesMap = new();
     private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> selectionRunPropertiesMapInSpan = new();
     private int selectionStart;
@@ -201,10 +194,10 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <inheritdoc/>
     public void Dispose()
     {
-        this.backgroundPropertyChangedHandlerToken.Dispose();
-        this.foregroundPropertyChangedHandlerToken.Dispose();
-        this.selectionBackgroundPropertyChangedHandlerToken.Dispose();
-        this.selectionForegroundPropertyChangedHandlerToken.Dispose();
+        this.backgroundPropertyChangedHandlerToken?.Dispose();
+        this.foregroundPropertyChangedHandlerToken?.Dispose();
+        this.selectionBackgroundPropertyChangedHandlerToken?.Dispose();
+        this.selectionForegroundPropertyChangedHandlerToken?.Dispose();
         this.syntaxErrorDecoration = null;
     }
 
@@ -219,10 +212,10 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             this.VerifyAccess();
             if (ReferenceEquals(this.background, value))
                 return;
-            this.backgroundPropertyChangedHandlerToken.Dispose();
-            if (value is AvaloniaObject aobj)
+            this.backgroundPropertyChangedHandlerToken?.Dispose();
+            if (value != null)
             {
-                aobj.AddWeakEventHandler<AvaloniaObject, AvaloniaPropertyChangedEventArgs>(nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
+                this.backgroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
             }
             this.SetAndRaise(BackgroundProperty, ref this.background, value);
             this.InvalidateTextProperties();
@@ -272,7 +265,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             }
             return result != 0 ? result : (rhs.GetHashCode() - lhs.GetHashCode());
         });
-        if (this.definitionSet is not null) 
+        if (this.definitionSet is not null)
         {
             foreach (var spanDefinition in this.definitionSet.SpanDefinitions)
             {
@@ -292,7 +285,8 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
                         endMatch.Index));
                 }
             }
-        };
+        }
+        ;
 
         // create text properties for each span
         var maxTokenCount = this.maxTokenCount;
@@ -1095,7 +1089,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         }
     }
 
-
     /// <summary>
     /// Get or set base font stretch.
     /// </summary>
@@ -1111,7 +1104,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             this.InvalidateTextLayout();
         }
     }
-
 
     /// <summary>
     /// Get or set base font style.
@@ -1158,11 +1150,10 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             this.VerifyAccess();
             if (ReferenceEquals(this.foreground, value))
                 return;
-            this.foregroundPropertyChangedHandlerToken.Dispose();
-
-            if (value is AvaloniaObject aobj)
+            this.foregroundPropertyChangedHandlerToken?.Dispose();
+            if (value != null)
             {
-                this.foregroundPropertyChangedHandlerToken = aobj.AddWeakEventHandler<AvaloniaObject, AvaloniaPropertyChangedEventArgs>(nameof(PropertyChanged), this.OnBrushPropertyChanged);
+                this.foregroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
             }
             this.SetAndRaise(ForegroundProperty, ref this.foreground, value);
             this.InvalidateTextProperties();
@@ -1364,10 +1355,10 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             this.VerifyAccess();
             if (ReferenceEquals(this.selectionBackground, value))
                 return;
-            this.selectionBackgroundPropertyChangedHandlerToken.Dispose();
-            if (value is AvaloniaObject aobj)
+            this.selectionBackgroundPropertyChangedHandlerToken?.Dispose();
+            if (value != null)
             {
-                this.selectionBackgroundPropertyChangedHandlerToken = aobj.AddWeakEventHandler<AvaloniaObject, AvaloniaPropertyChangedEventArgs>(nameof(PropertyChanged), this.OnBrushPropertyChanged);
+                this.selectionBackgroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
             }
             this.SetAndRaise(SelectionBackgroundProperty, ref this.selectionBackground, value);
             if (this.selectionStart != this.selectionEnd)
@@ -1405,17 +1396,16 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             this.VerifyAccess();
             if (ReferenceEquals(this.selectionForeground, value))
                 return;
-            this.selectionForegroundPropertyChangedHandlerToken.Dispose();
-            if (value is AvaloniaObject aobj)
+            this.selectionForegroundPropertyChangedHandlerToken?.Dispose();
+            if (value != null)
             {
-                this.selectionForegroundPropertyChangedHandlerToken = aobj.AddWeakEventHandler<AvaloniaObject, AvaloniaPropertyChangedEventArgs>(nameof(PropertyChanged), this.OnBrushPropertyChanged);
+                this.selectionForegroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
             }
             this.SetAndRaise(SelectionForegroundProperty, ref this.selectionForeground, value);
             if (this.selectionStart != this.selectionEnd)
                 this.InvalidateTextProperties();
         }
     }
-
 
     /// <summary>
     /// Get or set start (inclusive) index of selected text.

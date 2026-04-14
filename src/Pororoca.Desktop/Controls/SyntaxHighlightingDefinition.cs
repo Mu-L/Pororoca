@@ -7,17 +7,17 @@ namespace Pororoca.Desktop.Controls;
 /// <summary>
 /// Base class of definition of syntax highlighting.
 /// </summary>
-public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged
+public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisposable
 {
     // Fields.
     IBrush? background;
-    IDisposable backgroundPropertyChangedHandlerToken = EmptyDisposable.Default;
+    WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken;
     FontFamily? fontFamily;
     double fontSize = double.NaN;
     FontStyle? fontStyle;
     FontWeight? fontWeight;
     IBrush? foreground;
-    IDisposable foregroundPropertyChangedHandlerToken = EmptyDisposable.Default;
+    WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
     bool isValid;
     TextDecorationCollection? textDecorations;
 
@@ -33,10 +33,10 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged
 
 
     /// <inheritdoc/>
-    ~SyntaxHighlightingDefinition()
+    public void Dispose()
     {
-        this.backgroundPropertyChangedHandlerToken.Dispose();
-        this.foregroundPropertyChangedHandlerToken.Dispose();
+        this.backgroundPropertyChangedHandlerToken?.Dispose();
+        this.foregroundPropertyChangedHandlerToken?.Dispose();
     }
 
 
@@ -61,10 +61,10 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged
         {
             if (ReferenceEquals(this.background, value))
                 return;
-            this.backgroundPropertyChangedHandlerToken.Dispose();
-            if (value is AvaloniaObject aobj)
+            this.backgroundPropertyChangedHandlerToken?.Dispose();
+            if (value != null)
             {
-                this.backgroundPropertyChangedHandlerToken = aobj.AddWeakEventHandler<AvaloniaObject, AvaloniaPropertyChangedEventArgs>(nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
+                this.backgroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
             }
             this.background = value;
             this.Validate();
@@ -153,10 +153,10 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged
         {
             if (ReferenceEquals(this.foreground, value))
                 return;
-            this.foregroundPropertyChangedHandlerToken.Dispose();
-            if (value is AvaloniaObject aobj)
+            this.foregroundPropertyChangedHandlerToken?.Dispose();
+            if (value != null)
             {
-                this.foregroundPropertyChangedHandlerToken = aobj.AddWeakEventHandler<AvaloniaObject, AvaloniaPropertyChangedEventArgs>(nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
+                this.foregroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), this.OnBrushPropertyChanged);
             }
             this.foreground = value;
             this.Validate();
