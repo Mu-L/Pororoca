@@ -27,9 +27,8 @@ public class SyntaxHighlightingToken : SyntaxHighlightingDefinition
     /// Initialize new <see cref="SyntaxHighlightingToken"/> instance.
     /// </summary>
     /// <param name="name">Name.</param>
-    public SyntaxHighlightingToken(string name, Regex pattern) : base(name)
+    public SyntaxHighlightingToken(string name) : base(name)
     {
-        Pattern = pattern;
     }
 
     /// <inheritdoc/>

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Media;
+using Pororoca.Desktop.Others;
 
 namespace Pororoca.Desktop.Controls;
 
@@ -10,8 +11,8 @@ namespace Pororoca.Desktop.Controls;
 public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisposable
 {
     // Fields.
-    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken;
-    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
+    private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken;
+    private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
 
     /// <summary>
     /// Initialize new <see cref="SyntaxHighlightingDefinition"/> instance.
@@ -48,9 +49,9 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
             if (ReferenceEquals(field, value))
                 return;
             this.backgroundPropertyChangedHandlerToken?.Dispose();
-            if (value != null)
+            if (value is AvaloniaObject aobj)
             {
-                this.backgroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
+                this.backgroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
             field = value;
             Validate();
@@ -135,9 +136,9 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
             if (ReferenceEquals(field, value))
                 return;
             this.foregroundPropertyChangedHandlerToken?.Dispose();
-            if (value != null)
+            if (value is AvaloniaObject aobj)
             {
-                this.foregroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
+                this.foregroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
             field = value;
             Validate();

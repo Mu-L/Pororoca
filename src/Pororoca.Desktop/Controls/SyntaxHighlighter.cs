@@ -1,9 +1,9 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
+using Pororoca.Desktop.Others;
 using ReactiveUI;
 
 namespace Pororoca.Desktop.Controls;
@@ -122,26 +122,22 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, TextWrapping> TextWrappingProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, TextWrapping>(nameof(TextWrapping), sh => sh.TextWrapping, (sh, w) => sh.TextWrapping = w);
 
-
     // Span.
     private record struct Span(SyntaxHighlightingSpan Definition, int Start, int End, int InnerStart, int InnerEnd);
-
 
     // Token.
     private record struct Token(SyntaxHighlightingToken Definition, int Start, int End);
 
-
     // Static fields.
     private static readonly IList<SyntaxHighlightingToken> EmptyTokenDefinitions = Array.Empty<SyntaxHighlightingToken>();
 
-
     // Fields.
-    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken = null;
-    private SortedObservableList<Span>? candidateSpans;
-    private readonly Dictionary<SyntaxHighlightingSpan, SortedObservableList<Token>> candidateTokens = new();
-    private SortedObservableList<Token>? defaultCandidateTokens;
+    private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken = null;
+    private SortedList<Span>? candidateSpans;
+    private readonly Dictionary<SyntaxHighlightingSpan, SortedList<Token>> candidateTokens = new();
+    private SortedList<Token>? defaultCandidateTokens;
     private Comparison<Token>? defaultTokenComparison;
-    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
+    private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
     private readonly bool isDebugMode =
 #if DEBUG
         true;
@@ -151,8 +147,8 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     private bool isMaxTokenCountReached;
     private readonly Dictionary<SyntaxHighlightingSpan, TextRunProperties> runPropertiesMap = new();
     private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> runPropertiesMapInSpan = new();
-    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? selectionBackgroundPropertyChangedHandlerToken;
-    private WeakEventHandlerAdapter<IBrush, AvaloniaPropertyChangedEventArgs>? selectionForegroundPropertyChangedHandlerToken;
+    private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionBackgroundPropertyChangedHandlerToken;
+    private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionForegroundPropertyChangedHandlerToken;
     private readonly Dictionary<SyntaxHighlightingSpan, TextRunProperties> selectionRunPropertiesMap = new();
     private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> selectionRunPropertiesMapInSpan = new();
     private TextDecorationCollection? syntaxErrorDecorationCollection;
@@ -177,9 +173,9 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             if (ReferenceEquals(field, value))
                 return;
             this.backgroundPropertyChangedHandlerToken?.Dispose();
-            if (value != null)
+            if (value is AvaloniaObject aobj)
             {
-                this.backgroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
+                this.backgroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
             SetAndRaise(BackgroundProperty, ref field, value);
             InvalidateTextProperties();
@@ -319,9 +315,9 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             if (ReferenceEquals(field, value))
                 return;
             this.foregroundPropertyChangedHandlerToken?.Dispose();
-            if (value != null)
+            if (value is AvaloniaObject aobj)
             {
-                this.foregroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
+                this.foregroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
             SetAndRaise(ForegroundProperty, ref field, value);
             InvalidateTextProperties();
@@ -484,9 +480,9 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             if (ReferenceEquals(field, value))
                 return;
             this.selectionBackgroundPropertyChangedHandlerToken?.Dispose();
-            if (value != null)
+            if (value is AvaloniaObject aobj)
             {
-                this.selectionBackgroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
+                this.selectionBackgroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
             SetAndRaise(SelectionBackgroundProperty, ref field, value);
             if (SelectionStart != SelectionEnd)
@@ -523,9 +519,9 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             if (ReferenceEquals(field, value))
                 return;
             this.selectionForegroundPropertyChangedHandlerToken?.Dispose();
-            if (value != null)
+            if (value is AvaloniaObject aobj)
             {
-                this.selectionForegroundPropertyChangedHandlerToken = new(value, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
+                this.selectionForegroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
             SetAndRaise(SelectionForegroundProperty, ref field, value);
             if (SelectionStart != SelectionEnd)
@@ -726,7 +722,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         );
 
         // setup initial candidate spans
-        this.candidateSpans ??= new SortedObservableList<Span>((lhs, rhs) =>
+        this.candidateSpans ??= new SortedList<Span>((lhs, rhs) =>
         {
             int result = (rhs.Start - lhs.Start);
             if (result != 0)
@@ -777,7 +773,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         var defaultTokenDefinitions = DefinitionSet?.TokenDefinitions ?? Array.Empty<SyntaxHighlightingToken>();
         try
         {
-            while (this.candidateSpans.IsNotEmpty())
+            while (this.candidateSpans.Any())
             {
                 // get current span
                 var span = this.candidateSpans[^1];
@@ -816,7 +812,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
                     endMatch = removingSpan.Definition.EndPattern!.Match(text, startMatch.Index + startMatch.Length);
                     if (endMatch.Success)
                     {
-                        int j = this.candidateSpans.Add(new(
+                        int j = this.candidateSpans.AddReturningInsertionIndex(new(
                             removingSpan.Definition,
                             startMatch.Index,
                             endMatch.Index + endMatch.Length,
@@ -1042,7 +1038,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         var selectionRunPropertiesMap = this.selectionRunPropertiesMapInSpan;
         try
         {
-            while (candidateTokens.IsNotEmpty())
+            while (candidateTokens.Any())
             {
                 // get current token
                 var token = candidateTokens[^1];
@@ -1088,7 +1084,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
                         int endIndex = match.Index + match.Length;
                         if (endIndex <= end)
                         {
-                            int j = candidateTokens.Add(new(removingToken.Definition, match.Index, endIndex));
+                            int j = candidateTokens.AddReturningInsertionIndex(new(removingToken.Definition, match.Index, endIndex));
                             if (j < i)
                                 ++i;
                         }

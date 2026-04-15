@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Pororoca.Desktop.Controls;
+namespace Pororoca.Desktop.Others;
 
 /// <summary>
 /// Esta classe é necessária para fazer WeakReferences. NÃO REMOVER.
