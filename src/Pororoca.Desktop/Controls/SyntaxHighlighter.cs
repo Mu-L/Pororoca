@@ -1,10 +1,8 @@
-using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 using Pororoca.Desktop.Others;
-using ReactiveUI;
 
 namespace Pororoca.Desktop.Controls;
 
@@ -122,39 +120,22 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, TextWrapping> TextWrappingProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, TextWrapping>(nameof(TextWrapping), sh => sh.TextWrapping, (sh, w) => sh.TextWrapping = w);
 
-    // Span.
-    private record struct Span(SyntaxHighlightingSpan Definition, int Start, int End, int InnerStart, int InnerEnd);
-
     // Token.
     private record struct Token(SyntaxHighlightingToken Definition, int Start, int End);
 
-    // Static fields.
-    private static readonly IList<SyntaxHighlightingToken> EmptyTokenDefinitions = Array.Empty<SyntaxHighlightingToken>();
-
     // Fields.
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken = null;
-    private SortedList<Span>? candidateSpans;
-    private readonly Dictionary<SyntaxHighlightingSpan, SortedList<Token>> candidateTokens = new();
-    private SortedList<Token>? defaultCandidateTokens;
-    private Comparison<Token>? defaultTokenComparison;
+    private SortedList<Token>? candidateTokens;
+    private Comparison<Token>? tokenComparison;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
-    private readonly bool isDebugMode =
-#if DEBUG
-        true;
-#else
-        false;
-#endif
     private bool isMaxTokenCountReached;
-    private readonly Dictionary<SyntaxHighlightingSpan, TextRunProperties> runPropertiesMap = new();
     private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> runPropertiesMapInSpan = new();
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionBackgroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionForegroundPropertyChangedHandlerToken;
-    private readonly Dictionary<SyntaxHighlightingSpan, TextRunProperties> selectionRunPropertiesMap = new();
     private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> selectionRunPropertiesMapInSpan = new();
     private TextDecorationCollection? syntaxErrorDecorationCollection;
     private TextLayout? textLayout;
     private IReadOnlyList<ValueSpan<TextRunProperties>>? textProperties;
-    private readonly Dictionary<SyntaxHighlightingSpan, Comparison<Token>> tokenComparisons = new();
 
     /// <summary>
     /// Initialize new <see cref="SyntaxHighlighter"/> instance.
@@ -193,16 +174,10 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             VerifyAccess();
             if (field == value)
                 return;
-            if (field != null)
-                field.Changed -= OnDefinitionSetChanged;
-            if (value != null)
-                value.Changed += OnDefinitionSetChanged;
             SetAndRaise(DefinitionSetProperty, ref field, value);
-            this.candidateSpans = null;
-            this.candidateTokens.Clear();
-            this.defaultCandidateTokens = null;
-            this.defaultTokenComparison = null;
-            this.tokenComparisons.Clear();
+            this.candidateTokens?.Clear();
+            this.candidateTokens = null;
+            this.tokenComparison = null;
             InvalidateTextLayout();
         }
     }
@@ -347,7 +322,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         }
     }
 
-
     /// <summary>
     /// Get or set line height
     /// </summary>
@@ -357,11 +331,8 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         set
         {
             VerifyAccess();
-            if (double.IsNaN(value))
-            {
-                if (double.IsNaN(field))
-                    return;
-            }
+            if (double.IsNaN(value) && double.IsNaN(field))
+                return;
             else if (!double.IsFinite(value) || value <= 0)
                 throw new ArgumentOutOfRangeException(nameof(value));
             else if (double.IsFinite(field) && Math.Abs(field - value) <= 0.01)
@@ -700,450 +671,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         }
     } = TextWrapping.NoWrap;
 
-    private IReadOnlyList<ValueSpan<TextRunProperties>> CreateTextProperties(ref int tokenCount, TextRunProperties defaultRunProperties)
-    {
-        // check text
-        string? text = Text;
-        string? preeditText = PreeditText;
-        if (string.IsNullOrEmpty(text))
-        {
-            if (string.IsNullOrEmpty(preeditText))
-                return Array.Empty<ValueSpan<TextRunProperties>>();
-            text = "";
-        }
-
-        // setup default run properties for selected text
-        var defaultSelectionRunProperties = new GenericTextRunProperties(
-            defaultRunProperties.Typeface,
-            defaultRunProperties.FontRenderingEmSize,
-            defaultRunProperties.TextDecorations,
-            SelectionForeground ?? defaultRunProperties.ForegroundBrush,
-            SelectionBackground ?? defaultRunProperties.BackgroundBrush
-        );
-
-        // setup initial candidate spans
-        this.candidateSpans ??= new SortedList<Span>((lhs, rhs) =>
-        {
-            int result = (rhs.Start - lhs.Start);
-            if (result != 0)
-                return result;
-            result = (lhs.End - rhs.End);
-            if (result != 0)
-                return result;
-            if (DefinitionSet != null)
-            {
-                var sd = DefinitionSet.SpanDefinitions;
-                result = sd.IndexOf(rhs.Definition) - sd.IndexOf(lhs.Definition);
-            }
-            else
-            {
-                result = 0;
-            }
-            return result != 0 ? result : (rhs.GetHashCode() - lhs.GetHashCode());
-        });
-        if (DefinitionSet is not null)
-        {
-            foreach (var spanDefinition in DefinitionSet.SpanDefinitions)
-            {
-                if (!spanDefinition.IsValid)
-                    continue;
-                var startMatch = spanDefinition.StartPattern!.Match(text);
-                if (!startMatch.Success || startMatch.Length == 0)
-                    continue;
-                var endMatch = spanDefinition.EndPattern!.Match(text, startMatch.Index + startMatch.Length);
-                if (endMatch.Success && endMatch.Length > 0)
-                {
-                    this.candidateSpans.Add(new(
-                        spanDefinition,
-                        startMatch.Index,
-                        endMatch.Index + endMatch.Length,
-                        startMatch.Index + startMatch.Length,
-                        endMatch.Index));
-                }
-            }
-        }
-        ;
-
-        // create text properties for each span
-        int maxTokenCount = MaxTokenCount;
-        var textProperties = new List<ValueSpan<TextRunProperties>>();
-        int textStartIndex = 0;
-        var runPropertiesMap = this.runPropertiesMap;
-        var selectionRunPropertiesMap = this.selectionRunPropertiesMap;
-        var defaultTokenDefinitions = DefinitionSet?.TokenDefinitions ?? Array.Empty<SyntaxHighlightingToken>();
-        try
-        {
-            while (this.candidateSpans.Any())
-            {
-                // get current span
-                var span = this.candidateSpans[^1];
-                this.candidateSpans.RemoveAt(this.candidateSpans.Count - 1);
-
-                // find next span
-                var startMatch = span.Definition.StartPattern!.Match(text, span.End);
-                Match? endMatch;
-                if (startMatch.Success)
-                {
-                    endMatch = span.Definition.EndPattern!.Match(text, startMatch.Index + startMatch.Length);
-                    if (endMatch.Success)
-                    {
-                        this.candidateSpans.Add(new(
-                            span.Definition,
-                            startMatch.Index,
-                            endMatch.Index + endMatch.Length,
-                            startMatch.Index + startMatch.Length,
-                            endMatch.Index));
-                    }
-                }
-
-                // remove spans which overlaps with current span
-                for (int i = this.candidateSpans.Count - 1; i >= 0; --i)
-                {
-                    // check overlapping
-                    var removingSpan = this.candidateSpans[i];
-                    if (removingSpan.Start >= span.End)
-                        continue;
-                    this.candidateSpans.RemoveAt(i);
-
-                    // find next span
-                    startMatch = removingSpan.Definition.StartPattern!.Match(text, span.End);
-                    if (!startMatch.Success)
-                        continue;
-                    endMatch = removingSpan.Definition.EndPattern!.Match(text, startMatch.Index + startMatch.Length);
-                    if (endMatch.Success)
-                    {
-                        int j = this.candidateSpans.AddReturningInsertionIndex(new(
-                            removingSpan.Definition,
-                            startMatch.Index,
-                            endMatch.Index + endMatch.Length,
-                            startMatch.Index + startMatch.Length,
-                            endMatch.Index));
-                        if (j < i)
-                            ++i;
-                    }
-                }
-
-                // create text properties
-                if (!runPropertiesMap.TryGetValue(span.Definition, out var runProperties))
-                {
-                    var typeface = new Typeface(
-                        span.Definition.FontFamily ?? defaultRunProperties.Typeface.FontFamily,
-                        span.Definition.FontStyle ?? defaultRunProperties.Typeface.Style,
-                        span.Definition.FontWeight ?? defaultRunProperties.Typeface.Weight,
-                        FontStretch
-                    );
-                    runProperties = new GenericTextRunProperties(
-                        typeface,
-                        double.IsNaN(span.Definition.FontSize) ? defaultRunProperties.FontRenderingEmSize : span.Definition.FontSize,
-                        span.Definition.TextDecorations ?? defaultRunProperties.TextDecorations,
-                        span.Definition.Foreground ?? defaultRunProperties.ForegroundBrush,
-                        span.Definition.Background ?? defaultRunProperties.BackgroundBrush
-                    );
-                    runPropertiesMap[span.Definition] = runProperties;
-                }
-                if (!selectionRunPropertiesMap.TryGetValue(span.Definition, out var selectionRunProperties))
-                {
-                    selectionRunProperties = new GenericTextRunProperties(
-                        runProperties.Typeface,
-                        runProperties.FontRenderingEmSize,
-                        runProperties.TextDecorations,
-                        SelectionForeground ?? runProperties.ForegroundBrush,
-                        SelectionBackground ?? runProperties.BackgroundBrush
-                    );
-                    selectionRunPropertiesMap[span.Definition] = selectionRunProperties;
-                }
-                if (textStartIndex < span.Start)
-                    CreateTextPropertiesInSpan(text, textStartIndex, span.Start, ref tokenCount, null, defaultTokenDefinitions, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-                CreateTextPropertiesInSpan(text, span.Start, span.InnerStart, ref tokenCount, null, EmptyTokenDefinitions, runProperties, selectionRunProperties, textProperties);
-                CreateTextPropertiesInSpan(text, span.InnerStart, span.InnerEnd, ref tokenCount, span.Definition, span.Definition.TokenDefinitions, runProperties, selectionRunProperties, textProperties);
-                CreateTextPropertiesInSpan(text, span.InnerEnd, span.End, ref tokenCount, null, EmptyTokenDefinitions, runProperties, selectionRunProperties, textProperties);
-                textStartIndex = span.End;
-                if (maxTokenCount >= 0 && tokenCount >= maxTokenCount)
-                    break;
-            }
-            if (textStartIndex < text.Length)
-                CreateTextPropertiesInSpan(text, textStartIndex, text.Length, ref tokenCount, null, defaultTokenDefinitions, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-        }
-        finally
-        {
-            this.candidateSpans.Clear();
-            runPropertiesMap.Clear();
-            selectionRunPropertiesMap.Clear();
-        }
-
-        // insert text style for preedit text
-        if (!string.IsNullOrEmpty(preeditText))
-        {
-            int preeditTextLength = preeditText.Length;
-            int caretIndex = Math.Min(SelectionStart, SelectionEnd);
-            var runProperties = new GenericTextRunProperties(
-                defaultRunProperties.Typeface,
-                defaultRunProperties.FontRenderingEmSize,
-                Avalonia.Media.TextDecorations.Underline,
-                defaultRunProperties.ForegroundBrush
-            );
-            if (caretIndex <= 0)
-            {
-                textProperties.Add(new(0, preeditTextLength, runProperties));
-                for (int i = textProperties.Count - 1; i > 0; --i)
-                {
-                    var properties = textProperties[i];
-                    textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
-                }
-            }
-            else if (caretIndex >= text.Length)
-                textProperties.Add(new(text.Length, preeditTextLength, runProperties));
-            else
-            {
-                int indexOfTextPropertiesToInsert = textProperties.Count - 1;
-                var textPropertiesToInsert = textProperties[indexOfTextPropertiesToInsert];
-                if (textPropertiesToInsert.Start > caretIndex)
-                {
-                    for (int i = textProperties.Count - 2; i >= 0; --i)
-                    {
-                        var properties = textProperties[i];
-                        if (properties.Start <= caretIndex)
-                        {
-                            indexOfTextPropertiesToInsert = i;
-                            textPropertiesToInsert = properties;
-                            break;
-                        }
-                    }
-                }
-                if (textPropertiesToInsert.Start == caretIndex)
-                    textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex, preeditTextLength, runProperties));
-                else
-                {
-                    textProperties[indexOfTextPropertiesToInsert++] = new(textPropertiesToInsert.Start, caretIndex - textPropertiesToInsert.Start, textPropertiesToInsert.Value);
-                    textProperties.Insert(indexOfTextPropertiesToInsert++, new(caretIndex, preeditTextLength, runProperties));
-                    textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex + preeditTextLength, textPropertiesToInsert.Length - (caretIndex - textPropertiesToInsert.Start), textPropertiesToInsert.Value));
-                }
-                for (int i = textProperties.Count - 1; i > indexOfTextPropertiesToInsert; --i)
-                {
-                    var properties = textProperties[i];
-                    textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
-                }
-            }
-        }
-
-        // complete
-        return textProperties;
-    }
-
-    private void CreateTextProperties(int start, int end, TextRunProperties runProperties, TextRunProperties selectionRunProperties, IList<ValueSpan<TextRunProperties>> textProperties)
-    {
-        var syntaxErrorRange = SyntaxErrorRange;
-        if (end <= syntaxErrorRange.Start.Value || start >= syntaxErrorRange.End.Value)
-            textProperties.Add(new(start, end - start, runProperties));
-        else
-        {
-            int syntaxErrorStart = syntaxErrorRange.Start.Value;
-            int syntaxErrorEnd = syntaxErrorRange.End.Value;
-            var errorRunProperties = new GenericTextRunProperties(
-                typeface: runProperties.Typeface,
-                //fontFeatures: runProperties.FontFeatures,
-                fontRenderingEmSize: runProperties.FontRenderingEmSize,
-                textDecorations: runProperties.TextDecorations?.Any() == true
-                    ? [.. runProperties.TextDecorations, SyntaxErrorDecoration!]
-                    : (this.syntaxErrorDecorationCollection ??= [SyntaxErrorDecoration!]),
-                foregroundBrush: runProperties.ForegroundBrush,
-                backgroundBrush: runProperties.BackgroundBrush,
-                baselineAlignment: runProperties.BaselineAlignment,
-                cultureInfo: runProperties.CultureInfo
-            );
-            if (start <= syntaxErrorStart)
-            {
-                if (start < syntaxErrorStart)
-                    textProperties.Add(new(start, syntaxErrorStart - start, runProperties));
-                if (end <= syntaxErrorEnd)
-                    textProperties.Add(new(syntaxErrorStart, end - syntaxErrorStart, errorRunProperties));
-                else
-                {
-                    textProperties.Add(new(syntaxErrorStart, syntaxErrorEnd - syntaxErrorStart, errorRunProperties));
-                    textProperties.Add(new(syntaxErrorEnd, end - syntaxErrorEnd, runProperties));
-                }
-            }
-            else
-            {
-                if (end <= syntaxErrorEnd)
-                    textProperties.Add(new(start, end - start, errorRunProperties));
-                else
-                {
-                    textProperties.Add(new(start, syntaxErrorEnd - start, errorRunProperties));
-                    textProperties.Add(new(syntaxErrorEnd, end - syntaxErrorEnd, runProperties));
-                }
-            }
-        }
-    }
-
-    private void CreateTextPropertiesInSpan(string text, int start, int end, ref int tokenCount, SyntaxHighlightingSpan? spanDefinition, IList<SyntaxHighlightingToken> tokenDefinitions, TextRunProperties defaultRunProperties, TextRunProperties defaultSelectionRunProperties, IList<ValueSpan<TextRunProperties>> textProperties)
-    {
-        // check state
-        int maxTokenCount = MaxTokenCount;
-        if (maxTokenCount >= 0 && tokenCount >= maxTokenCount)
-        {
-            CreateTextProperties(start, end, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-            return;
-        }
-
-        // setup initial candidate tokens
-        var tokenComparison = spanDefinition is not null
-            ? this.tokenComparisons.GetValueOrDefault(spanDefinition)
-            : this.defaultTokenComparison;
-        if (tokenComparison is null)
-        {
-            tokenComparison = (lhs, rhs) =>
-            {
-                int result = (rhs.Start - lhs.Start);
-                if (result != 0)
-                    return result;
-                result = (lhs.End - rhs.End);
-                if (result != 0)
-                    return result;
-                result = tokenDefinitions.IndexOf(rhs.Definition) - tokenDefinitions.IndexOf(lhs.Definition);
-                return result != 0 ? result : (rhs.GetHashCode() - lhs.GetHashCode());
-            };
-            if (spanDefinition is not null)
-                this.tokenComparisons[spanDefinition] = tokenComparison;
-            else
-                this.defaultTokenComparison = tokenComparison;
-        }
-        var candidateTokens = spanDefinition is not null
-            ? this.candidateTokens.GetValueOrDefault(spanDefinition)
-            : this.defaultCandidateTokens;
-        if (candidateTokens is null)
-        {
-            candidateTokens = new(tokenComparison);
-            if (spanDefinition is not null)
-                this.candidateTokens[spanDefinition] = candidateTokens;
-            else
-                this.defaultCandidateTokens = candidateTokens;
-        }
-        foreach (var tokenDefinition in tokenDefinitions)
-        {
-            if (!tokenDefinition.IsValid)
-                continue;
-            var match = tokenDefinition.Pattern!.Match(text, start);
-            if (match.Success && match.Length > 0)
-            {
-                int endIndex = match.Index + match.Length;
-                if (endIndex <= end)
-                    candidateTokens.Add(new(tokenDefinition, match.Index, endIndex));
-            }
-        }
-
-        // create text runs
-        int textStartIndex = start;
-        var runPropertiesMap = this.runPropertiesMapInSpan;
-        var selectionRunPropertiesMap = this.selectionRunPropertiesMapInSpan;
-        try
-        {
-            while (candidateTokens.Any())
-            {
-                // get current token
-                var token = candidateTokens[^1];
-                candidateTokens.RemoveAt(candidateTokens.Count - 1);
-
-                // find and combine with next token if possible
-                while (true)
-                {
-                    var match = token.Definition.Pattern!.Match(text, token.End);
-                    if (!match.Success || match.Length <= 0)
-                        break;
-                    int endIndex = match.Index + match.Length;
-                    if (endIndex > end)
-                        break;
-                    var nextToken = new Token(token.Definition, match.Index, endIndex);
-                    if (match.Index == token.End && (maxTokenCount < 0 || tokenCount < maxTokenCount - 1)) // combine into single token
-                    {
-                        int nextTokenIndex = candidateTokens.BinarySearch(nextToken, tokenComparison);
-                        if (nextTokenIndex == ~candidateTokens.Count)
-                        {
-                            token = new(token.Definition, token.Start, nextToken.End);
-                            ++tokenCount;
-                            continue;
-                        }
-                    }
-                    candidateTokens.Add(nextToken);
-                    break;
-                }
-
-                // remove tokens which overlaps with current token
-                for (int i = candidateTokens.Count - 1; i >= 0; --i)
-                {
-                    // check overlapping
-                    var removingToken = candidateTokens[i];
-                    if (removingToken.Start >= token.End)
-                        continue;
-                    candidateTokens.RemoveAt(i);
-
-                    // find next token
-                    var match = removingToken.Definition.Pattern!.Match(text, token.End);
-                    if (match.Success && match.Length > 0)
-                    {
-                        int endIndex = match.Index + match.Length;
-                        if (endIndex <= end)
-                        {
-                            int j = candidateTokens.AddReturningInsertionIndex(new(removingToken.Definition, match.Index, endIndex));
-                            if (j < i)
-                                ++i;
-                        }
-                    }
-                }
-
-                // create text style
-                if (!runPropertiesMap.TryGetValue(token.Definition, out var runProperties))
-                {
-                    var typeface = new Typeface(
-                        token.Definition.FontFamily ?? defaultRunProperties.Typeface.FontFamily,
-                        token.Definition.FontStyle ?? defaultRunProperties.Typeface.Style,
-                        token.Definition.FontWeight ?? defaultRunProperties.Typeface.Weight,
-                        FontStretch
-                    );
-                    runProperties = new GenericTextRunProperties(
-                        typeface,
-                        double.IsNaN(token.Definition.FontSize) ? defaultRunProperties.FontRenderingEmSize : token.Definition.FontSize,
-                        token.Definition.TextDecorations ?? defaultRunProperties.TextDecorations,
-                        token.Definition.Foreground ?? defaultRunProperties.ForegroundBrush,
-                        token.Definition.Background ?? defaultRunProperties.BackgroundBrush
-                    );
-                    runPropertiesMap[token.Definition] = runProperties;
-                }
-                if (!selectionRunPropertiesMap.TryGetValue(token.Definition, out var selectionRunProperties))
-                {
-                    selectionRunProperties = new GenericTextRunProperties(
-                        runProperties.Typeface,
-                        runProperties.FontRenderingEmSize,
-                        runProperties.TextDecorations,
-                        SelectionForeground ?? defaultRunProperties.ForegroundBrush,
-                        SelectionBackground ?? defaultRunProperties.BackgroundBrush
-                    );
-                    selectionRunPropertiesMap[token.Definition] = selectionRunProperties;
-                }
-                if (textStartIndex < token.Start)
-                    CreateTextProperties(textStartIndex, token.Start, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-                if (maxTokenCount < 0 || tokenCount < maxTokenCount)
-                {
-                    CreateTextProperties(token.Start, token.End, runProperties, selectionRunProperties, textProperties);
-                    ++tokenCount;
-                    textStartIndex = token.End;
-                    if (maxTokenCount >= 0 && tokenCount >= maxTokenCount)
-                        break;
-                }
-                else
-                    break;
-            }
-            if (textStartIndex < end)
-                CreateTextProperties(textStartIndex, end, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-        }
-        finally
-        {
-            candidateTokens.Clear();
-            runPropertiesMap.Clear();
-            selectionRunPropertiesMap.Clear();
-        }
-    }
-
+    
     /// <summary>
     /// Create text layout.
     /// </summary>
@@ -1194,38 +722,313 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             lineHeight: LineHeight,
             letterSpacing: LetterSpacing
         );
-        if (this.isDebugMode)
+#if DEBUG
+        var textLines = this.textLayout.TextLines;
+        for (int lineIndex = textLines.Count - 1; lineIndex >= 0; --lineIndex)
         {
-            var textLines = this.textLayout.TextLines;
-            for (int lineIndex = textLines.Count - 1; lineIndex >= 0; --lineIndex)
+            var textRuns = textLines[lineIndex].TextRuns;
+            for (int runIndex = textRuns.Count - 1; runIndex >= 0; --runIndex)
             {
-                var textRuns = textLines[lineIndex].TextRuns;
-                for (int runIndex = textRuns.Count - 1; runIndex >= 0; --runIndex)
+                var textRun = textRuns[runIndex];
+                if (textRun is ShapedTextRun shapedTextRun && textRun.Length > 0 && shapedTextRun.ShapedBuffer.Length == 0)
+                    throw new InvalidOperationException($"Text run with empty shaped buffer created at line {lineIndex} run {runIndex}, text: '{new string(textRun.Text.ToArray())}'.");
+            }
+        }
+#endif
+        return this.textLayout;
+    }
+
+    private IReadOnlyList<ValueSpan<TextRunProperties>> CreateTextProperties(ref int tokenCount, TextRunProperties defaultRunProperties)
+    {
+        // check text
+        string? text = Text;
+        string? preeditText = PreeditText;
+        if (string.IsNullOrEmpty(text))
+        {
+            if (string.IsNullOrEmpty(preeditText))
+                return Array.Empty<ValueSpan<TextRunProperties>>();
+            text = "";
+        }
+
+        // setup default run properties for selected text
+        var defaultSelectionRunProperties = new GenericTextRunProperties(
+            defaultRunProperties.Typeface,
+            defaultRunProperties.FontRenderingEmSize,
+            defaultRunProperties.TextDecorations,
+            SelectionForeground ?? defaultRunProperties.ForegroundBrush,
+            SelectionBackground ?? defaultRunProperties.BackgroundBrush
+        );
+
+        // create text properties for each span
+        var textProperties = new List<ValueSpan<TextRunProperties>>();
+        var defaultTokenDefinitions = DefinitionSet?.TokenDefinitions ?? Array.Empty<SyntaxHighlightingToken>();
+        try
+        {
+            if (text.Length > 0)
+                CreateTextPropertiesInSpan(text, 0, text.Length, ref tokenCount, defaultTokenDefinitions, defaultRunProperties, defaultSelectionRunProperties, textProperties);
+        }
+        finally
+        {
+        }
+
+        // insert text style for preedit text
+        if (!string.IsNullOrEmpty(preeditText))
+        {
+            int preeditTextLength = preeditText.Length;
+            int caretIndex = Math.Min(SelectionStart, SelectionEnd);
+            var runProperties = new GenericTextRunProperties(
+                defaultRunProperties.Typeface,
+                defaultRunProperties.FontRenderingEmSize,
+                Avalonia.Media.TextDecorations.Underline,
+                defaultRunProperties.ForegroundBrush
+            );
+            if (caretIndex <= 0)
+            {
+                textProperties.Add(new(0, preeditTextLength, runProperties));
+                for (int i = textProperties.Count - 1; i > 0; --i)
                 {
-                    var textRun = textRuns[runIndex];
-                    if (textRun is ShapedTextRun shapedTextRun && textRun.Length > 0 && shapedTextRun.ShapedBuffer.Length == 0)
-                        throw new InvalidOperationException($"Text run with empty shaped buffer created at line {lineIndex} run {runIndex}, text: '{new string(textRun.Text.ToArray())}'.");
+                    var properties = textProperties[i];
+                    textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
+                }
+            }
+            else if (caretIndex >= text.Length)
+            {
+                textProperties.Add(new(text.Length, preeditTextLength, runProperties));
+            }
+            else
+            {
+                int indexOfTextPropertiesToInsert = textProperties.Count - 1;
+                var textPropertiesToInsert = textProperties[indexOfTextPropertiesToInsert];
+                if (textPropertiesToInsert.Start > caretIndex)
+                {
+                    for (int i = textProperties.Count - 2; i >= 0; --i)
+                    {
+                        var properties = textProperties[i];
+                        if (properties.Start <= caretIndex)
+                        {
+                            indexOfTextPropertiesToInsert = i;
+                            textPropertiesToInsert = properties;
+                            break;
+                        }
+                    }
+                }
+                if (textPropertiesToInsert.Start == caretIndex)
+                    textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex, preeditTextLength, runProperties));
+                else
+                {
+                    textProperties[indexOfTextPropertiesToInsert++] = new(textPropertiesToInsert.Start, caretIndex - textPropertiesToInsert.Start, textPropertiesToInsert.Value);
+                    textProperties.Insert(indexOfTextPropertiesToInsert++, new(caretIndex, preeditTextLength, runProperties));
+                    textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex + preeditTextLength, textPropertiesToInsert.Length - (caretIndex - textPropertiesToInsert.Start), textPropertiesToInsert.Value));
+                }
+                for (int i = textProperties.Count - 1; i > indexOfTextPropertiesToInsert; --i)
+                {
+                    var properties = textProperties[i];
+                    textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
                 }
             }
         }
-        return this.textLayout;
+
+        // complete
+        return textProperties;
+    }
+
+    private void CreateTextPropertiesInSpan(string text, int start, int end, ref int tokenCount, IList<SyntaxHighlightingToken> tokenDefinitions, TextRunProperties defaultRunProperties, TextRunProperties defaultSelectionRunProperties, IList<ValueSpan<TextRunProperties>> textProperties)
+    {
+        // check state
+        int maxTokenCount = MaxTokenCount;
+        if (maxTokenCount >= 0 && tokenCount >= maxTokenCount)
+        {
+            CreateTextProperties(start, end, defaultRunProperties, defaultSelectionRunProperties, textProperties);
+            return;
+        }
+
+        // setup initial candidate tokens
+        this.tokenComparison ??= (lhs, rhs) =>
+        {
+            int result = (rhs.Start - lhs.Start);
+            if (result != 0)
+                return result;
+            result = (lhs.End - rhs.End);
+            if (result != 0)
+                return result;
+            result = tokenDefinitions.IndexOf(rhs.Definition) - tokenDefinitions.IndexOf(lhs.Definition);
+            return result != 0 ? result : (rhs.GetHashCode() - lhs.GetHashCode());
+        };
+
+        this.candidateTokens ??= new(this.tokenComparison);
+        foreach (var tokenDefinition in tokenDefinitions)
+        {
+            if (!tokenDefinition.IsValid)
+                continue;
+            var match = tokenDefinition.Pattern!.Match(text, start);
+            if (match.Success && match.Length > 0)
+            {
+                int endIndex = match.Index + match.Length;
+                if (endIndex <= end)
+                    this.candidateTokens.Add(new(tokenDefinition, match.Index, endIndex));
+            }
+        }
+
+        // create text runs
+        int textStartIndex = start;
+        var selectionRunPropertiesMap = this.selectionRunPropertiesMapInSpan;
+        try
+        {
+            while (this.candidateTokens.Any())
+            {
+                // get current token
+                var token = this.candidateTokens[^1];
+                this.candidateTokens.RemoveAt(this.candidateTokens.Count - 1);
+
+                // find and combine with next token if possible
+                while (true)
+                {
+                    var match = token.Definition.Pattern!.Match(text, token.End);
+                    if (!match.Success || match.Length <= 0)
+                        break;
+                    int endIndex = match.Index + match.Length;
+                    if (endIndex > end)
+                        break;
+                    var nextToken = new Token(token.Definition, match.Index, endIndex);
+                    if (match.Index == token.End && (maxTokenCount < 0 || tokenCount < maxTokenCount - 1)) // combine into single token
+                    {
+                        int nextTokenIndex = this.candidateTokens.BinarySearch(nextToken, tokenComparison);
+                        if (nextTokenIndex == ~(this.candidateTokens.Count))
+                        {
+                            token = new(token.Definition, token.Start, nextToken.End);
+                            ++tokenCount;
+                            continue;
+                        }
+                    }
+                    this.candidateTokens.Add(nextToken);
+                    break;
+                }
+
+                // remove tokens which overlaps with current token
+                for (int i = this.candidateTokens.Count - 1; i >= 0; --i)
+                {
+                    // check overlapping
+                    var removingToken = this.candidateTokens[i];
+                    if (removingToken.Start >= token.End)
+                        continue;
+                    this.candidateTokens.RemoveAt(i);
+
+                    // find next token
+                    var match = removingToken.Definition.Pattern!.Match(text, token.End);
+                    if (match.Success && match.Length > 0)
+                    {
+                        int endIndex = match.Index + match.Length;
+                        if (endIndex <= end)
+                        {
+                            int j = this.candidateTokens.AddReturningInsertionIndex(new(removingToken.Definition, match.Index, endIndex));
+                            if (j < i)
+                                ++i;
+                        }
+                    }
+                }
+
+                // create text style
+                if (!this.runPropertiesMapInSpan.TryGetValue(token.Definition, out var runProperties))
+                {
+                    var typeface = new Typeface(
+                        token.Definition.FontFamily ?? defaultRunProperties.Typeface.FontFamily,
+                        token.Definition.FontStyle ?? defaultRunProperties.Typeface.Style,
+                        token.Definition.FontWeight ?? defaultRunProperties.Typeface.Weight,
+                        FontStretch
+                    );
+                    runProperties = new GenericTextRunProperties(
+                        typeface,
+                        double.IsNaN(token.Definition.FontSize) ? defaultRunProperties.FontRenderingEmSize : token.Definition.FontSize,
+                        token.Definition.TextDecorations ?? defaultRunProperties.TextDecorations,
+                        token.Definition.Foreground ?? defaultRunProperties.ForegroundBrush,
+                        token.Definition.Background ?? defaultRunProperties.BackgroundBrush
+                    );
+                    this.runPropertiesMapInSpan[token.Definition] = runProperties;
+                }
+                if (!selectionRunPropertiesMap.TryGetValue(token.Definition, out var selectionRunProperties))
+                {
+                    selectionRunProperties = new GenericTextRunProperties(
+                        runProperties.Typeface,
+                        runProperties.FontRenderingEmSize,
+                        runProperties.TextDecorations,
+                        SelectionForeground ?? defaultRunProperties.ForegroundBrush,
+                        SelectionBackground ?? defaultRunProperties.BackgroundBrush
+                    );
+                    selectionRunPropertiesMap[token.Definition] = selectionRunProperties;
+                }
+                if (textStartIndex < token.Start)
+                    CreateTextProperties(textStartIndex, token.Start, defaultRunProperties, defaultSelectionRunProperties, textProperties);
+                if (maxTokenCount < 0 || tokenCount < maxTokenCount)
+                {
+                    CreateTextProperties(token.Start, token.End, runProperties, selectionRunProperties, textProperties);
+                    ++tokenCount;
+                    textStartIndex = token.End;
+                    if (maxTokenCount >= 0 && tokenCount >= maxTokenCount)
+                        break;
+                }
+                else
+                    break;
+            }
+            if (textStartIndex < end)
+                CreateTextProperties(textStartIndex, end, defaultRunProperties, defaultSelectionRunProperties, textProperties);
+        }
+        finally
+        {
+            this.candidateTokens.Clear();
+            this.runPropertiesMapInSpan.Clear();
+            selectionRunPropertiesMap.Clear();
+        }
+    }
+
+    private void CreateTextProperties(int start, int end, TextRunProperties runProperties, TextRunProperties selectionRunProperties, IList<ValueSpan<TextRunProperties>> textProperties)
+    {
+        var syntaxErrorRange = SyntaxErrorRange;
+        if (end <= syntaxErrorRange.Start.Value || start >= syntaxErrorRange.End.Value)
+            textProperties.Add(new(start, end - start, runProperties));
+        else
+        {
+            int syntaxErrorStart = syntaxErrorRange.Start.Value;
+            int syntaxErrorEnd = syntaxErrorRange.End.Value;
+            var errorRunProperties = new GenericTextRunProperties(
+                typeface: runProperties.Typeface,
+                //fontFeatures: runProperties.FontFeatures,
+                fontRenderingEmSize: runProperties.FontRenderingEmSize,
+                textDecorations: runProperties.TextDecorations?.Any() == true
+                    ? [.. runProperties.TextDecorations, SyntaxErrorDecoration!]
+                    : (this.syntaxErrorDecorationCollection ??= [SyntaxErrorDecoration!]),
+                foregroundBrush: runProperties.ForegroundBrush,
+                backgroundBrush: runProperties.BackgroundBrush,
+                baselineAlignment: runProperties.BaselineAlignment,
+                cultureInfo: runProperties.CultureInfo
+            );
+            if (start <= syntaxErrorStart)
+            {
+                if (start < syntaxErrorStart)
+                    textProperties.Add(new(start, syntaxErrorStart - start, runProperties));
+                if (end <= syntaxErrorEnd)
+                    textProperties.Add(new(syntaxErrorStart, end - syntaxErrorStart, errorRunProperties));
+                else
+                {
+                    textProperties.Add(new(syntaxErrorStart, syntaxErrorEnd - syntaxErrorStart, errorRunProperties));
+                    textProperties.Add(new(syntaxErrorEnd, end - syntaxErrorEnd, runProperties));
+                }
+            }
+            else
+            {
+                if (end <= syntaxErrorEnd)
+                    textProperties.Add(new(start, end - start, errorRunProperties));
+                else
+                {
+                    textProperties.Add(new(start, syntaxErrorEnd - start, errorRunProperties));
+                    textProperties.Add(new(syntaxErrorEnd, end - syntaxErrorEnd, runProperties));
+                }
+            }
+        }
     }
 
     // Called when property of attached brush has been changed.
     private void OnBrushPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) =>
         InvalidateTextProperties();
-
-
-    // Called when definition set changed.
-    private void OnDefinitionSetChanged(object? sender, EventArgs e)
-    {
-        this.candidateSpans = null;
-        this.candidateTokens.Clear();
-        this.defaultCandidateTokens = null;
-        this.defaultTokenComparison = null;
-        this.tokenComparisons.Clear();
-        InvalidateTextProperties();
-    }
 
     // Invalidate text layout.
     private void InvalidateTextLayout()
