@@ -43,9 +43,9 @@
       <x:String x:Key="TextEditorTheme">Dark</x:String>
       <Color x:Key="TextEditorBackgroundColor">#1E1E1E</Color>
       <Color x:Key="TextEditorForegroundColor">#D4D4D4</Color>
-      <SolidColorBrush x:Key="TextEditorHyperlinkForegroundBrush" Color="LightBlue"/>
-      <SolidColorBrush x:Key="TextEditorRegularVariableForegroundBrush" Color="DarkGoldenrod"/>
-      <SolidColorBrush x:Key="TextEditorPredefinedVariableForegroundBrush" Color="Goldenrod"/>
+      <Color x:Key="TextEditorHyperlinkForegroundColor">LightBlue</Color>
+      <Color x:Key="TextEditorRegularVariableForegroundColor">DarkGoldenrod</Color>
+      <Color x:Key="TextEditorPredefinedVariableForegroundColor">Goldenrod</Color>
       <!-- don't rename key below -->
       <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#814718"/>
       <!-- value below sets hover variable popup max width -->

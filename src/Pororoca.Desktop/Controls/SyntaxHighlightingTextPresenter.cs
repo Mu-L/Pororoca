@@ -13,66 +13,30 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
     /// <summary>
     /// Property of <see cref="DefinitionSet"/>.
     /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextPresenter, SyntaxHighlightingDefinitionSet?> DefinitionSetProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextPresenter, SyntaxHighlightingDefinitionSet?>(nameof(DefinitionSet), t => t.syntaxHighlighter.DefinitionSet, (t, ds) => t.syntaxHighlighter.DefinitionSet = ds);
-    /// <summary>
-    /// Property of <see cref="IsMaxTokenCountReached"/>.
-    /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextPresenter, bool> IsMaxTokenCountReachedProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextPresenter, bool>(nameof(IsMaxTokenCountReached), t => t.syntaxHighlighter.IsMaxTokenCountReached);
-    /// <summary>
-    /// Property of <see cref="MaxTokenCount"/>.
-    /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextPresenter, int> MaxTokenCountProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextPresenter, int>(nameof(MaxTokenCount), t => t.syntaxHighlighter.MaxTokenCount, (t, count) => t.syntaxHighlighter.MaxTokenCount = count);
-    /// <summary>
-    /// Property of <see cref="SyntaxErrorRange"/>.
-    /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextPresenter, Range> SyntaxErrorRangeProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextPresenter, Range>(nameof(SyntaxErrorRange), t => t.syntaxHighlighter.SyntaxErrorRange, (t, r) => t.syntaxHighlighter.SyntaxErrorRange = r);
+    public static readonly DirectProperty<SyntaxHighlightingTextPresenter, SyntaxHighlightingDefinitionSet?> DefinitionSetProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextPresenter, SyntaxHighlightingDefinitionSet?>(nameof(DefinitionSet), t => t.SyntaxHighlighter.DefinitionSet, (t, ds) => t.SyntaxHighlighter.DefinitionSet = ds);
 
     /// <summary>
     /// Get or set syntax highlighting definition set.
     /// </summary>
     public SyntaxHighlightingDefinitionSet? DefinitionSet
     {
-        get => this.syntaxHighlighter.DefinitionSet;
-        set => this.syntaxHighlighter.DefinitionSet = value;
-    }
-
-    /**
-     * Check whether maximum number of token to be highlighted reached or not.
-     */
-    public bool IsMaxTokenCountReached => this.syntaxHighlighter.IsMaxTokenCountReached;
-
-    /// <summary>
-    /// Get or set maximum number of token should be highlighted. Negative value if there is no limitation.
-    /// </summary>
-    public int MaxTokenCount
-    {
-        get => this.syntaxHighlighter.MaxTokenCount;
-        set => this.syntaxHighlighter.MaxTokenCount = value;
-    }
-
-    /// <summary>
-    /// Get or set character range of syntax error.
-    /// </summary>
-    public Range SyntaxErrorRange
-    {
-        get => this.syntaxHighlighter.SyntaxErrorRange;
-        set => this.syntaxHighlighter.SyntaxErrorRange = value;
+        get => SyntaxHighlighter.DefinitionSet;
+        set => SyntaxHighlighter.DefinitionSet = value;
     }
 
     /// <summary>
     /// Get <see cref="SyntaxHighlighter"/> used by the control.
     /// </summary>
-    protected SyntaxHighlighter SyntaxHighlighter => this.syntaxHighlighter;
+    protected SyntaxHighlighter SyntaxHighlighter { get; } = new()
+    {
+        TextTrimming = TextTrimming.None,
+    };
 
     // Fields.
     private readonly Action correctCaretIndexAction;
     private bool isArranging;
     private bool isCreatingTextLayout;
     private bool isMeasuring;
-    private readonly SyntaxHighlighter syntaxHighlighter = new()
-    {
-        TextTrimming = TextTrimming.None,
-    };
 
     /// <summary>
     /// Initialize new <see cref="SyntaxHighlightingTextPresenter"/> instance.
@@ -89,19 +53,13 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
         });
 
         // attach to syntax highlighter
-        this.syntaxHighlighter.PropertyChanged += (_, e) =>
+        SyntaxHighlighter.PropertyChanged += (_, e) =>
         {
             var property = e.Property;
             if (property == SyntaxHighlighter.DefinitionSetProperty)
                 RaisePropertyChanged(DefinitionSetProperty, (SyntaxHighlightingDefinitionSet?)e.OldValue, (SyntaxHighlightingDefinitionSet?)e.NewValue);
-            else if (property == SyntaxHighlighter.IsMaxTokenCountReachedProperty)
-                RaisePropertyChanged(IsMaxTokenCountReachedProperty, (bool)e.OldValue!, (bool)e.NewValue!);
-            else if (property == SyntaxHighlighter.MaxTokenCountProperty)
-                RaisePropertyChanged(MaxTokenCountProperty, (int)e.OldValue!, (int)e.NewValue!);
-            else if (property == SyntaxHighlighter.SyntaxErrorRangeProperty)
-                RaisePropertyChanged(SyntaxErrorRangeProperty, (Range)e.OldValue!, (Range)e.NewValue!);
         };
-        this.syntaxHighlighter.TextLayoutInvalidated += (_, _) =>
+        SyntaxHighlighter.TextLayoutInvalidated += (_, _) =>
         {
             if (!this.isArranging && !this.isCreatingTextLayout && !this.isMeasuring)
             {
@@ -117,8 +75,8 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
         this.isArranging = true;
         try
         {
-            this.syntaxHighlighter.MaxWidth = availableSize.Width;
-            this.syntaxHighlighter.MaxHeight = availableSize.Height;
+            SyntaxHighlighter.MaxWidth = availableSize.Width;
+            SyntaxHighlighter.MaxHeight = availableSize.Height;
             return base.ArrangeOverride(availableSize);
         }
         finally
@@ -130,8 +88,8 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
     /// <inheritdoc/>
     protected override TextLayout CreateTextLayout()
     {
-        var syntaxHighlighter = this.syntaxHighlighter;
-        var definitionSet = this.syntaxHighlighter.DefinitionSet;
+        var syntaxHighlighter = SyntaxHighlighter;
+        var definitionSet = SyntaxHighlighter.DefinitionSet;
         if (definitionSet is null || !definitionSet.HasValidDefinitions)
             return base.CreateTextLayout();
         this.isCreatingTextLayout = true;
@@ -162,8 +120,8 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
         this.isMeasuring = true;
         try
         {
-            this.syntaxHighlighter.MaxWidth = availableSize.Width;
-            this.syntaxHighlighter.MaxHeight = availableSize.Height;
+            SyntaxHighlighter.MaxWidth = availableSize.Width;
+            SyntaxHighlighter.MaxHeight = availableSize.Height;
             return base.MeasureOverride(availableSize);
         }
         finally
@@ -175,23 +133,30 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
     /// <inheritdoc/>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
+        // TODO: Handle IndexOutOfRangeException
         base.OnPropertyChanged(change);
         var property = change.Property;
         if (property == PreeditTextProperty)
-            this.syntaxHighlighter.PreeditText = change.NewValue as string;
-        else if (property == SelectionEndProperty)
         {
-            this.syntaxHighlighter.SelectionEnd = (int)change.NewValue!;
-            Dispatcher.UIThread.Post(this.correctCaretIndexAction);
-        }
-        else if (property == SelectionForegroundBrushProperty)
-            this.syntaxHighlighter.SelectionForeground = change.NewValue as IBrush;
-        else if (property == SelectionStartProperty)
-        {
-            this.syntaxHighlighter.SelectionStart = (int)change.NewValue!;
-            Dispatcher.UIThread.Post(this.correctCaretIndexAction);
+            SyntaxHighlighter.PreeditText = change.NewValue as string;
         }
         else if (property == TextProperty)
-            this.syntaxHighlighter.Text = change.NewValue as string;
+        {
+            SyntaxHighlighter.Text = change.NewValue as string;
+        }
+        else if (property == SelectionForegroundBrushProperty)
+        {
+            SyntaxHighlighter.SelectionForeground = change.NewValue as IBrush;
+        }
+        else if (property == SelectionStartProperty)
+        {
+            SyntaxHighlighter.SelectionStart = (int)change.NewValue!;
+            Dispatcher.UIThread.Post(this.correctCaretIndexAction);
+        }
+        else if (property == SelectionEndProperty)
+        {
+            SyntaxHighlighter.SelectionEnd = (int)change.NewValue!;
+            Dispatcher.UIThread.Post(this.correctCaretIndexAction);
+        }
     }
 }

@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Utilities;
 using Pororoca.Desktop.Others;
+using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Controls;
 
@@ -48,10 +49,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, SyntaxHighlightingDefinitionSet?> DefinitionSetProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, SyntaxHighlightingDefinitionSet?>(nameof(DefinitionSet), sh => sh.DefinitionSet, (sh, ds) => sh.DefinitionSet = ds);
     /// <summary>
-    /// Property of <see cref="IsMaxTokenCountReached"/>.
-    /// </summary>
-    public static readonly DirectProperty<SyntaxHighlighter, bool> IsMaxTokenCountReachedProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, bool>(nameof(IsMaxTokenCountReached), sh => sh.isMaxTokenCountReached);
-    /// <summary>
     /// Property of <see cref="LetterSpacing"/>.
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, double> LetterSpacingProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, double>(nameof(LetterSpacing), sh => sh.LetterSpacing, (sh, s) => sh.LetterSpacing = s);
@@ -96,10 +93,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, int> SelectionStartProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, int>(nameof(SelectionStart), sh => sh.SelectionStart, (sh, i) => sh.SelectionStart = i);
     /// <summary>
-    /// Property of <see cref="SyntaxErrorRange"/>.
-    /// </summary>
-    public static readonly DirectProperty<SyntaxHighlighter, Range> SyntaxErrorRangeProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, Range>(nameof(SyntaxErrorRange), sh => sh.SyntaxErrorRange, (sh, r) => sh.SyntaxErrorRange = r);
-    /// <summary>
     /// Property of <see cref="Text"/>.
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, string?> TextProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, string?>(nameof(Text), sh => sh.Text, (sh, t) => sh.Text = t);
@@ -120,22 +113,14 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, TextWrapping> TextWrappingProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, TextWrapping>(nameof(TextWrapping), sh => sh.TextWrapping, (sh, w) => sh.TextWrapping = w);
 
-    // Token.
-    private record struct Token(SyntaxHighlightingToken Definition, int Start, int End);
-
     // Fields.
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken = null;
-    private SortedList<Token>? candidateTokens;
-    private Comparison<Token>? tokenComparison;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
-    private bool isMaxTokenCountReached;
-    private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> runPropertiesMapInSpan = new();
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionBackgroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionForegroundPropertyChangedHandlerToken;
-    private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> selectionRunPropertiesMapInSpan = new();
-    private TextDecorationCollection? syntaxErrorDecorationCollection;
+    private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> cachedTextRunPropsForRegularText = new();
+    private readonly List<ValueSpan<TextRunProperties>> textProperties = new();
     private TextLayout? textLayout;
-    private IReadOnlyList<ValueSpan<TextRunProperties>>? textProperties;
 
     /// <summary>
     /// Initialize new <see cref="SyntaxHighlighter"/> instance.
@@ -175,9 +160,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             if (field == value)
                 return;
             SetAndRaise(DefinitionSetProperty, ref field, value);
-            this.candidateTokens?.Clear();
-            this.candidateTokens = null;
-            this.tokenComparison = null;
             InvalidateTextLayout();
         }
     }
@@ -298,11 +280,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             InvalidateTextProperties();
         }
     }
-
-    /**
-     * Check whether maximum number of token to be highlighted reached or not.
-     */
-    public bool IsMaxTokenCountReached => this.isMaxTokenCountReached;
 
     /// <summary>
     /// Get or set letter spacing.
@@ -462,23 +439,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     }
 
     /// <summary>
-    /// Get or set end (exclusive) index of selected text.
-    /// </summary>
-    public int SelectionEnd
-    {
-        get;
-        set
-        {
-            VerifyAccess();
-            if (field == value)
-                return;
-            SetAndRaise(SelectionEndProperty, ref field, value);
-            if (SelectionForeground != null)
-                InvalidateTextProperties();
-        }
-    }
-
-    /// <summary>
     /// Get or set foreground brush for selected text.
     /// </summary>
     public IBrush? SelectionForeground
@@ -517,45 +477,22 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         }
     }
 
-    // Get text decoration for syntax error.
-    TextDecoration? SyntaxErrorDecoration
-    {
-        get
-        {
-            field ??= new TextDecoration()
-            {
-                Stroke = new SolidColorBrush()
-                {
-                    Color = Colors.Red
-                    //if (Application.Current is Avalonia.Application app)
-                    //    brush.Bind(SolidColorBrush.ColorProperty, app, "Color/SyntaxHighlighter.SyntaxError.Underline");
-                    //else
-                },
-                StrokeDashArray = [1, 1],
-                StrokeOffset = 3,
-                StrokeOffsetUnit = TextDecorationUnit.Pixel,
-                StrokeThickness = 2,
-                StrokeThicknessUnit = TextDecorationUnit.Pixel
-            };
-            return field;
-        }
-
-        set;
-    }
-
     /// <summary>
-    /// Get or set character range of syntax error.
+    /// Get or set end (exclusive) index of selected text.
     /// </summary>
-    public Range SyntaxErrorRange
+    public int SelectionEnd
     {
         get;
         set
         {
             VerifyAccess();
-            SetAndRaise(SyntaxErrorRangeProperty, ref field, value);
-            InvalidateTextProperties();
+            if (field == value)
+                return;
+            SetAndRaise(SelectionEndProperty, ref field, value);
+            if (SelectionForeground != null)
+                InvalidateTextProperties();
         }
-    } = default;
+    }
 
     /// <summary>
     /// Get or set text.
@@ -671,7 +608,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         }
     } = TextWrapping.NoWrap;
 
-    
     /// <summary>
     /// Create text layout.
     /// </summary>
@@ -698,12 +634,21 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         );
 
         // create text runs and source
-        if (this.textProperties is null)
+        if (this.textProperties.Count == 0)
         {
-            int tokenCount = 0;
-            this.textProperties = CreateTextProperties(ref tokenCount, defaultRunProperties);
-            SetAndRaise(IsMaxTokenCountReachedProperty, ref this.isMaxTokenCountReached, MaxTokenCount >= 0 && tokenCount >= MaxTokenCount);
+            CreateTextProperties(defaultRunProperties);
         }
+
+/*#if DEBUG
+        StringBuilder sb = new("## TEXT PROPERTIES ##\r\n");
+        sb.AppendLine($"## SELECTION: {SelectionStart}-{SelectionEnd}");
+        foreach (var tp in this.textProperties)
+        {
+            sb.AppendLine($"“{text[tp.Start..(tp.Start + tp.Length)]}” ({tp.Start}-{tp.Start + tp.Length}): background {tp.Value.BackgroundBrush}, foreground {tp.Value.ForegroundBrush}");
+        }
+        sb.AppendLine("## TEXT PROPERTIES ##");
+        Debug.WriteLine(sb.ToString());
+#endif*/
 
         // create text layout
         this.textLayout = new TextLayout(
@@ -738,293 +683,107 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         return this.textLayout;
     }
 
-    private IReadOnlyList<ValueSpan<TextRunProperties>> CreateTextProperties(ref int tokenCount, TextRunProperties defaultRunProperties)
+    private void CreateTextProperties(TextRunProperties defaultRunProperties)
     {
         // check text
-        string? text = Text;
-        string? preeditText = PreeditText;
-        if (string.IsNullOrEmpty(text))
-        {
-            if (string.IsNullOrEmpty(preeditText))
-                return Array.Empty<ValueSpan<TextRunProperties>>();
-            text = "";
-        }
+        string text = Text ?? string.Empty;
+        string preeditText = PreeditText ?? string.Empty;
 
-        // setup default run properties for selected text
-        var defaultSelectionRunProperties = new GenericTextRunProperties(
-            defaultRunProperties.Typeface,
-            defaultRunProperties.FontRenderingEmSize,
-            defaultRunProperties.TextDecorations,
-            SelectionForeground ?? defaultRunProperties.ForegroundBrush,
-            SelectionBackground ?? defaultRunProperties.BackgroundBrush
-        );
-
-        // create text properties for each span
-        var textProperties = new List<ValueSpan<TextRunProperties>>();
-        var defaultTokenDefinitions = DefinitionSet?.TokenDefinitions ?? Array.Empty<SyntaxHighlightingToken>();
-        try
+        // insert text style for text
+        if (!string.IsNullOrEmpty(text))
         {
-            if (text.Length > 0)
-                CreateTextPropertiesInSpan(text, 0, text.Length, ref tokenCount, defaultTokenDefinitions, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-        }
-        finally
-        {
+            CreateTextPropertiesForText(defaultRunProperties, text);
         }
 
         // insert text style for preedit text
         if (!string.IsNullOrEmpty(preeditText))
         {
-            int preeditTextLength = preeditText.Length;
-            int caretIndex = Math.Min(SelectionStart, SelectionEnd);
-            var runProperties = new GenericTextRunProperties(
-                defaultRunProperties.Typeface,
-                defaultRunProperties.FontRenderingEmSize,
-                Avalonia.Media.TextDecorations.Underline,
-                defaultRunProperties.ForegroundBrush
-            );
-            if (caretIndex <= 0)
-            {
-                textProperties.Add(new(0, preeditTextLength, runProperties));
-                for (int i = textProperties.Count - 1; i > 0; --i)
-                {
-                    var properties = textProperties[i];
-                    textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
-                }
-            }
-            else if (caretIndex >= text.Length)
-            {
-                textProperties.Add(new(text.Length, preeditTextLength, runProperties));
-            }
-            else
-            {
-                int indexOfTextPropertiesToInsert = textProperties.Count - 1;
-                var textPropertiesToInsert = textProperties[indexOfTextPropertiesToInsert];
-                if (textPropertiesToInsert.Start > caretIndex)
-                {
-                    for (int i = textProperties.Count - 2; i >= 0; --i)
-                    {
-                        var properties = textProperties[i];
-                        if (properties.Start <= caretIndex)
-                        {
-                            indexOfTextPropertiesToInsert = i;
-                            textPropertiesToInsert = properties;
-                            break;
-                        }
-                    }
-                }
-                if (textPropertiesToInsert.Start == caretIndex)
-                    textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex, preeditTextLength, runProperties));
-                else
-                {
-                    textProperties[indexOfTextPropertiesToInsert++] = new(textPropertiesToInsert.Start, caretIndex - textPropertiesToInsert.Start, textPropertiesToInsert.Value);
-                    textProperties.Insert(indexOfTextPropertiesToInsert++, new(caretIndex, preeditTextLength, runProperties));
-                    textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex + preeditTextLength, textPropertiesToInsert.Length - (caretIndex - textPropertiesToInsert.Start), textPropertiesToInsert.Value));
-                }
-                for (int i = textProperties.Count - 1; i > indexOfTextPropertiesToInsert; --i)
-                {
-                    var properties = textProperties[i];
-                    textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
-                }
-            }
-        }
-
-        // complete
-        return textProperties;
-    }
-
-    private void CreateTextPropertiesInSpan(string text, int start, int end, ref int tokenCount, IList<SyntaxHighlightingToken> tokenDefinitions, TextRunProperties defaultRunProperties, TextRunProperties defaultSelectionRunProperties, IList<ValueSpan<TextRunProperties>> textProperties)
-    {
-        // check state
-        int maxTokenCount = MaxTokenCount;
-        if (maxTokenCount >= 0 && tokenCount >= maxTokenCount)
-        {
-            CreateTextProperties(start, end, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-            return;
-        }
-
-        // setup initial candidate tokens
-        this.tokenComparison ??= (lhs, rhs) =>
-        {
-            int result = (rhs.Start - lhs.Start);
-            if (result != 0)
-                return result;
-            result = (lhs.End - rhs.End);
-            if (result != 0)
-                return result;
-            result = tokenDefinitions.IndexOf(rhs.Definition) - tokenDefinitions.IndexOf(lhs.Definition);
-            return result != 0 ? result : (rhs.GetHashCode() - lhs.GetHashCode());
-        };
-
-        this.candidateTokens ??= new(this.tokenComparison);
-        foreach (var tokenDefinition in tokenDefinitions)
-        {
-            if (!tokenDefinition.IsValid)
-                continue;
-            var match = tokenDefinition.Pattern!.Match(text, start);
-            if (match.Success && match.Length > 0)
-            {
-                int endIndex = match.Index + match.Length;
-                if (endIndex <= end)
-                    this.candidateTokens.Add(new(tokenDefinition, match.Index, endIndex));
-            }
-        }
-
-        // create text runs
-        int textStartIndex = start;
-        var selectionRunPropertiesMap = this.selectionRunPropertiesMapInSpan;
-        try
-        {
-            while (this.candidateTokens.Any())
-            {
-                // get current token
-                var token = this.candidateTokens[^1];
-                this.candidateTokens.RemoveAt(this.candidateTokens.Count - 1);
-
-                // find and combine with next token if possible
-                while (true)
-                {
-                    var match = token.Definition.Pattern!.Match(text, token.End);
-                    if (!match.Success || match.Length <= 0)
-                        break;
-                    int endIndex = match.Index + match.Length;
-                    if (endIndex > end)
-                        break;
-                    var nextToken = new Token(token.Definition, match.Index, endIndex);
-                    if (match.Index == token.End && (maxTokenCount < 0 || tokenCount < maxTokenCount - 1)) // combine into single token
-                    {
-                        int nextTokenIndex = this.candidateTokens.BinarySearch(nextToken, tokenComparison);
-                        if (nextTokenIndex == ~(this.candidateTokens.Count))
-                        {
-                            token = new(token.Definition, token.Start, nextToken.End);
-                            ++tokenCount;
-                            continue;
-                        }
-                    }
-                    this.candidateTokens.Add(nextToken);
-                    break;
-                }
-
-                // remove tokens which overlaps with current token
-                for (int i = this.candidateTokens.Count - 1; i >= 0; --i)
-                {
-                    // check overlapping
-                    var removingToken = this.candidateTokens[i];
-                    if (removingToken.Start >= token.End)
-                        continue;
-                    this.candidateTokens.RemoveAt(i);
-
-                    // find next token
-                    var match = removingToken.Definition.Pattern!.Match(text, token.End);
-                    if (match.Success && match.Length > 0)
-                    {
-                        int endIndex = match.Index + match.Length;
-                        if (endIndex <= end)
-                        {
-                            int j = this.candidateTokens.AddReturningInsertionIndex(new(removingToken.Definition, match.Index, endIndex));
-                            if (j < i)
-                                ++i;
-                        }
-                    }
-                }
-
-                // create text style
-                if (!this.runPropertiesMapInSpan.TryGetValue(token.Definition, out var runProperties))
-                {
-                    var typeface = new Typeface(
-                        token.Definition.FontFamily ?? defaultRunProperties.Typeface.FontFamily,
-                        token.Definition.FontStyle ?? defaultRunProperties.Typeface.Style,
-                        token.Definition.FontWeight ?? defaultRunProperties.Typeface.Weight,
-                        FontStretch
-                    );
-                    runProperties = new GenericTextRunProperties(
-                        typeface,
-                        double.IsNaN(token.Definition.FontSize) ? defaultRunProperties.FontRenderingEmSize : token.Definition.FontSize,
-                        token.Definition.TextDecorations ?? defaultRunProperties.TextDecorations,
-                        token.Definition.Foreground ?? defaultRunProperties.ForegroundBrush,
-                        token.Definition.Background ?? defaultRunProperties.BackgroundBrush
-                    );
-                    this.runPropertiesMapInSpan[token.Definition] = runProperties;
-                }
-                if (!selectionRunPropertiesMap.TryGetValue(token.Definition, out var selectionRunProperties))
-                {
-                    selectionRunProperties = new GenericTextRunProperties(
-                        runProperties.Typeface,
-                        runProperties.FontRenderingEmSize,
-                        runProperties.TextDecorations,
-                        SelectionForeground ?? defaultRunProperties.ForegroundBrush,
-                        SelectionBackground ?? defaultRunProperties.BackgroundBrush
-                    );
-                    selectionRunPropertiesMap[token.Definition] = selectionRunProperties;
-                }
-                if (textStartIndex < token.Start)
-                    CreateTextProperties(textStartIndex, token.Start, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-                if (maxTokenCount < 0 || tokenCount < maxTokenCount)
-                {
-                    CreateTextProperties(token.Start, token.End, runProperties, selectionRunProperties, textProperties);
-                    ++tokenCount;
-                    textStartIndex = token.End;
-                    if (maxTokenCount >= 0 && tokenCount >= maxTokenCount)
-                        break;
-                }
-                else
-                    break;
-            }
-            if (textStartIndex < end)
-                CreateTextProperties(textStartIndex, end, defaultRunProperties, defaultSelectionRunProperties, textProperties);
-        }
-        finally
-        {
-            this.candidateTokens.Clear();
-            this.runPropertiesMapInSpan.Clear();
-            selectionRunPropertiesMap.Clear();
+            CreateTextPropertiesForPreeditText(defaultRunProperties, text, preeditText);
         }
     }
 
-    private void CreateTextProperties(int start, int end, TextRunProperties runProperties, TextRunProperties selectionRunProperties, IList<ValueSpan<TextRunProperties>> textProperties)
+    private void CreateTextPropertiesForText(TextRunProperties defaultRunProperties, string text)
     {
-        var syntaxErrorRange = SyntaxErrorRange;
-        if (end <= syntaxErrorRange.Start.Value || start >= syntaxErrorRange.End.Value)
-            textProperties.Add(new(start, end - start, runProperties));
+        var defs = DefinitionSet?.TokenDefinitions ?? [];
+        var parts = IPororocaVariableResolver.DelimitTextPartsOverRegexes(defs, text);
+        foreach (var (pattern, start, length) in parts)
+        {
+            if (pattern == null) // normal text
+            {
+                AddTextProperties(start, length, defaultRunProperties);
+            }
+            else // token to be highlighted
+            {
+                if (!this.cachedTextRunPropsForRegularText.TryGetValue(pattern, out var tokenRunProperties))
+                {
+                    tokenRunProperties =
+                        this.cachedTextRunPropsForRegularText[pattern] =
+                        pattern.MakeTextProperties(defaultRunProperties, FontStretch);
+                }
+
+                AddTextProperties(start, length, tokenRunProperties);
+            }
+        }
+    }
+
+    private void CreateTextPropertiesForPreeditText(TextRunProperties defaultRunProperties, string text, string preeditText)
+    {
+        int preeditTextLength = preeditText.Length;
+        int caretIndex = Math.Min(SelectionStart, SelectionEnd);
+        var runProperties = new GenericTextRunProperties(
+            defaultRunProperties.Typeface,
+            defaultRunProperties.FontRenderingEmSize,
+            Avalonia.Media.TextDecorations.Underline,
+            defaultRunProperties.ForegroundBrush
+        );
+        if (caretIndex <= 0)
+        {
+            this.textProperties.Add(new(0, preeditTextLength, runProperties));
+            for (int i = this.textProperties.Count - 1; i > 0; --i)
+            {
+                var properties = this.textProperties[i];
+                this.textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
+            }
+        }
+        else if (caretIndex >= text.Length)
+        {
+            this.textProperties.Add(new(text.Length, preeditTextLength, runProperties));
+        }
         else
         {
-            int syntaxErrorStart = syntaxErrorRange.Start.Value;
-            int syntaxErrorEnd = syntaxErrorRange.End.Value;
-            var errorRunProperties = new GenericTextRunProperties(
-                typeface: runProperties.Typeface,
-                //fontFeatures: runProperties.FontFeatures,
-                fontRenderingEmSize: runProperties.FontRenderingEmSize,
-                textDecorations: runProperties.TextDecorations?.Any() == true
-                    ? [.. runProperties.TextDecorations, SyntaxErrorDecoration!]
-                    : (this.syntaxErrorDecorationCollection ??= [SyntaxErrorDecoration!]),
-                foregroundBrush: runProperties.ForegroundBrush,
-                backgroundBrush: runProperties.BackgroundBrush,
-                baselineAlignment: runProperties.BaselineAlignment,
-                cultureInfo: runProperties.CultureInfo
-            );
-            if (start <= syntaxErrorStart)
+            int indexOfTextPropertiesToInsert = this.textProperties.Count - 1;
+            var textPropertiesToInsert = this.textProperties[indexOfTextPropertiesToInsert];
+            if (textPropertiesToInsert.Start > caretIndex)
             {
-                if (start < syntaxErrorStart)
-                    textProperties.Add(new(start, syntaxErrorStart - start, runProperties));
-                if (end <= syntaxErrorEnd)
-                    textProperties.Add(new(syntaxErrorStart, end - syntaxErrorStart, errorRunProperties));
-                else
+                for (int i = this.textProperties.Count - 2; i >= 0; --i)
                 {
-                    textProperties.Add(new(syntaxErrorStart, syntaxErrorEnd - syntaxErrorStart, errorRunProperties));
-                    textProperties.Add(new(syntaxErrorEnd, end - syntaxErrorEnd, runProperties));
+                    var properties = this.textProperties[i];
+                    if (properties.Start <= caretIndex)
+                    {
+                        indexOfTextPropertiesToInsert = i;
+                        textPropertiesToInsert = properties;
+                        break;
+                    }
                 }
             }
+            if (textPropertiesToInsert.Start == caretIndex)
+                this.textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex, preeditTextLength, runProperties));
             else
             {
-                if (end <= syntaxErrorEnd)
-                    textProperties.Add(new(start, end - start, errorRunProperties));
-                else
-                {
-                    textProperties.Add(new(start, syntaxErrorEnd - start, errorRunProperties));
-                    textProperties.Add(new(syntaxErrorEnd, end - syntaxErrorEnd, runProperties));
-                }
+                this.textProperties[indexOfTextPropertiesToInsert++] = new(textPropertiesToInsert.Start, caretIndex - textPropertiesToInsert.Start, textPropertiesToInsert.Value);
+                this.textProperties.Insert(indexOfTextPropertiesToInsert++, new(caretIndex, preeditTextLength, runProperties));
+                this.textProperties.Insert(indexOfTextPropertiesToInsert, new(caretIndex + preeditTextLength, textPropertiesToInsert.Length - (caretIndex - textPropertiesToInsert.Start), textPropertiesToInsert.Value));
+            }
+            for (int i = this.textProperties.Count - 1; i > indexOfTextPropertiesToInsert; --i)
+            {
+                var properties = this.textProperties[i];
+                this.textProperties[i] = new(properties.Start + preeditTextLength, properties.Length, properties.Value);
             }
         }
     }
+
+    private void AddTextProperties(int start, int length, TextRunProperties runProperties) =>
+        this.textProperties.Add(new(start, length, runProperties));
 
     // Called when property of attached brush has been changed.
     private void OnBrushPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e) =>
@@ -1040,7 +799,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     // Invalidate text properties.
     private void InvalidateTextProperties()
     {
-        this.textProperties = null;
+        this.textProperties.Clear();
         InvalidateTextLayout();
     }
 
@@ -1051,6 +810,5 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         this.foregroundPropertyChangedHandlerToken?.Dispose();
         this.selectionBackgroundPropertyChangedHandlerToken?.Dispose();
         this.selectionForegroundPropertyChangedHandlerToken?.Dispose();
-        SyntaxErrorDecoration = null;
     }
 }

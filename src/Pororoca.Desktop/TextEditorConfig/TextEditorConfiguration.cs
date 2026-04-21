@@ -16,7 +16,6 @@ internal static class TextEditorConfiguration
 {
     public static readonly Lazy<CustomTextMateRegistryOptions> DefaultRegistryOptions = new(LoadDefaultRegistryOptions);
     public static readonly List<(TextEditor, TextMate.Installation)> TextMateInstallations = new();
-    public static readonly List<PororocaVariableColorizingTransformer> PororocaVariableHighlightingTransformers = new();
 
     private static CustomTextMateRegistryOptions LoadDefaultRegistryOptions() =>
         new(PororocaThemeManager.TextEditorThemeName);
@@ -48,9 +47,7 @@ internal static class TextEditorConfiguration
         // otherwise, the pororoca variable highlighting may be bugged
         if (applyPororocaVariableHighlighting)
         {
-            PororocaVariableColorizingTransformer transformer = new(PororocaThemeManager.RegularVariableForegroundBrush, PororocaThemeManager.PredefinedVariableForegroundBrush);
-            PororocaVariableHighlightingTransformers.Add(transformer);
-            editor.TextArea.TextView.LineTransformers.Add(transformer);
+            editor.TextArea.TextView.LineTransformers.Add(PororocaVariableColorizingTransformer.Singleton);
             editor.TextArea.SelectionBrush = PororocaThemeManager.TextEditorSelectionHighlightBrush;
             editor.PointerHover += (sender, e) => OnTextEditorPointerHover(sender, e, varResolverObtainer!);
             editor.PointerHoverStopped += OnTextEditorPointerHoverStopped;

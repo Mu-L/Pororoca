@@ -96,6 +96,9 @@
     <SolidColorBrush x:Key="PredefinedVariablePopupForegroundBrush" Color="{DynamicResource TextEditorPredefinedVariablePopupForegroundColor}"/>
     <SolidColorBrush x:Key="InputBackgroundValidationProblemBrush" Color="{DynamicResource InputBackgroundValidationProblemColor}"/>
     <SolidColorBrush x:Key="ResponseCapturedValueTextBrush" Color="{DynamicResource ResponseCapturedValueTextColor}"/>
+    <SolidColorBrush x:Key="TextEditorHyperlinkForegroundBrush" Color="{DynamicResource TextEditorHyperlinkForegroundColor}"/>
+    <SolidColorBrush x:Key="TextEditorRegularVariableForegroundBrush" Color="{DynamicResource TextEditorRegularVariableForegroundColor}"/>
+    <SolidColorBrush x:Key="TextEditorPredefinedVariableForegroundBrush" Color="{DynamicResource TextEditorPredefinedVariableForegroundColor}"/>
     <!-- TODO: Configurar tema do editor de texto e cor de variável Pororoca através de styles -->
     <!--Color x:Key="TextEditorPororocaVariableHighlightForeground">Gold</Color-->
     <!--clr:String x:Key="TextEditorTheme">DarkPlus</clr:String-->

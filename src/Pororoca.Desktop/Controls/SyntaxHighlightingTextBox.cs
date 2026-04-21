@@ -18,14 +18,6 @@ public class SyntaxHighlightingTextBox : TextBox
     /// Property of <see cref="DefinitionSet"/>.
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlightingTextBox, SyntaxHighlightingDefinitionSet?> DefinitionSetProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextBox, SyntaxHighlightingDefinitionSet?>(nameof(DefinitionSet), t => t.DefinitionSet, (t, ds) => t.DefinitionSet = ds);
-    /// <summary>
-    /// Property of <see cref="IsMaxTokenCountReached"/>.
-    /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextBox, bool> IsMaxTokenCountReachedProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextBox, bool>(nameof(IsMaxTokenCountReached), t => t.IsMaxTokenCountReached);
-    /// <summary>
-    /// Property of <see cref="MaxTokenCount"/>.
-    /// </summary>
-    public static readonly DirectProperty<SyntaxHighlightingTextBox, int> MaxTokenCountProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlightingTextBox, int>(nameof(MaxTokenCount), t => t.MaxTokenCount, (t, count) => t.MaxTokenCount = count);
 
     /// <summary>
     /// Get or set syntax highlighting definition set.
@@ -39,32 +31,9 @@ public class SyntaxHighlightingTextBox : TextBox
             if (field == value)
                 return;
             SetAndRaise(DefinitionSetProperty, ref field, value);
-            if (this.textPresenter is not null)
-                this.textPresenter.DefinitionSet = field;
+            this.textPresenter?.DefinitionSet = field;
         }
     }
-
-    /**
-     * Check whether maximum number of token to be highlighted reached or not.
-     */
-    public bool IsMaxTokenCountReached => this.textPresenter?.IsMaxTokenCountReached ?? false;
-
-    /// <summary>
-    /// Get or set maximum number of token should be highlighted. Negative value if there is no limitation.
-    /// </summary>
-    public int MaxTokenCount
-    {
-        get;
-        set
-        {
-            VerifyAccess();
-            if (field == value)
-                return;
-            SetAndRaise(MaxTokenCountProperty, ref field, value);
-            if (this.textPresenter is not null)
-                this.textPresenter.MaxTokenCount = field;
-        }
-    } = -1;
 
     // Fields.
     private SyntaxHighlightingTextPresenter? textPresenter;
@@ -89,28 +58,9 @@ public class SyntaxHighlightingTextBox : TextBox
     /// <inheritdoc/>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        if (this.textPresenter is not null && this.textPresenter.IsMaxTokenCountReached)
-        {
-            RaisePropertyChanged(IsMaxTokenCountReachedProperty, true, false);
-        }
         base.OnApplyTemplate(e);
         this.textPresenter = e.NameScope.Find<SyntaxHighlightingTextPresenter>("PART_TextPresenter");
-        if (this.textPresenter is not null)
-        {
-            this.textPresenter.DefinitionSet = DefinitionSet;
-            this.textPresenter.MaxTokenCount = MaxTokenCount;
-            this.textPresenter.PropertyChanged += (_, e) =>
-            {
-                if (e.Property == SyntaxHighlightingTextPresenter.IsMaxTokenCountReachedProperty)
-                {
-                    RaisePropertyChanged(IsMaxTokenCountReachedProperty, (bool)e.OldValue!, (bool)e.NewValue!);
-                }
-            };
-            if (this.textPresenter.IsMaxTokenCountReached)
-            {
-                RaisePropertyChanged(IsMaxTokenCountReachedProperty, false, true);
-            }
-        }
+        this.textPresenter?.DefinitionSet = DefinitionSet;
     }
 
     /// <summary>

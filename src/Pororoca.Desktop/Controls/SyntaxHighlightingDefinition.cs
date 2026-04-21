@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Avalonia;
 using Avalonia.Media;
+using Avalonia.Media.TextFormatting;
 using Pororoca.Desktop.Others;
 
 namespace Pororoca.Desktop.Controls;
@@ -210,6 +211,23 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
             IsValid = !IsValid;
             OnPropertyChanged(nameof(IsValid));
         }
+    }
+
+    internal GenericTextRunProperties MakeTextProperties(TextRunProperties defaultRunProperties, FontStretch fontStretch)
+    {
+        var typeface = new Typeface(
+            FontFamily ?? defaultRunProperties.Typeface.FontFamily,
+            FontStyle ?? defaultRunProperties.Typeface.Style,
+            FontWeight ?? defaultRunProperties.Typeface.Weight,
+            fontStretch
+        );
+        return new GenericTextRunProperties(
+            typeface,
+            double.IsNaN(FontSize) ? defaultRunProperties.FontRenderingEmSize : FontSize,
+            TextDecorations ?? defaultRunProperties.TextDecorations,
+            Foreground ?? defaultRunProperties.ForegroundBrush,
+            Background ?? defaultRunProperties.BackgroundBrush
+        );
     }
 
     /// <inheritdoc/>

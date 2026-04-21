@@ -24,7 +24,7 @@ internal class WeakEventHandlerAdapter<[DynamicallyAccessedMembers(DynamicallyAc
     {
         this.eventInfo = typeof(TObject).GetEvent(eventName) ?? throw new ArgumentException($"Cannot find event '{eventName}' in {typeof(TObject).Name}.");
         // ReSharper disable VirtualMemberCallInConstructor
-        this.handlerStub = this.CreateEventHandlerStub();
+        this.handlerStub = CreateEventHandlerStub();
         // ReSharper restore VirtualMemberCallInConstructor
         this.handlerRef = new(handler);
         this.syncContext = SynchronizationContext.Current;
@@ -34,10 +34,10 @@ internal class WeakEventHandlerAdapter<[DynamicallyAccessedMembers(DynamicallyAc
 
     // Called to create stub of event handler.
     protected EventHandler<TArgs> CreateEventHandlerStub() =>
-        this.OnEventReceived;
+        OnEventReceived;
 
     private void OnEventReceived(object? sender, TArgs e) =>
-        this.InvokeEventHandler(sender, e);
+        InvokeEventHandler(sender, e);
 
     // Dispose.
     public void Dispose()
@@ -48,7 +48,7 @@ internal class WeakEventHandlerAdapter<[DynamicallyAccessedMembers(DynamicallyAc
         {
             try
             {
-                this.syncContext.Post(_ => this.eventInfo.RemoveEventHandler(target, this.handlerStub), null);
+                this.syncContext.Post(_ => this.eventInfo.RemoveEventHandler(this.target, this.handlerStub), null);
                 return;
             }
             // ReSharper disable EmptyGeneralCatchClause
@@ -56,7 +56,7 @@ internal class WeakEventHandlerAdapter<[DynamicallyAccessedMembers(DynamicallyAc
             { }
             // ReSharper restore EmptyGeneralCatchClause
         }
-        this.eventInfo.RemoveEventHandler(target, this.handlerStub);
+        this.eventInfo.RemoveEventHandler(this.target, this.handlerStub);
     }
 
     // Invoke event handler.
@@ -65,6 +65,6 @@ internal class WeakEventHandlerAdapter<[DynamicallyAccessedMembers(DynamicallyAc
         if (this.handlerRef.TryGetTarget(out var handler))
             handler.DynamicInvoke(args);
         else
-            this.Dispose();
+            Dispose();
     }
 }

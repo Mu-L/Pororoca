@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using Avalonia.Media;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using Pororoca.Domain.Features.VariableResolution;
@@ -8,13 +7,10 @@ namespace Pororoca.Desktop.TextEditorConfig;
 
 internal partial class PororocaVariableColorizingTransformer : DocumentColorizingTransformer
 {
-    public SolidColorBrush RegularVariableForegroundBrush { get; set; }
-    public SolidColorBrush PredefinedVariableForegroundBrush { get; set; }
+    public static readonly PororocaVariableColorizingTransformer Singleton = new();
 
-    public PororocaVariableColorizingTransformer(SolidColorBrush initialRegularVarForegroundBrush, SolidColorBrush initialPredefVarForegroundBrush)
+    private PororocaVariableColorizingTransformer()
     {
-        RegularVariableForegroundBrush = initialRegularVarForegroundBrush;
-        PredefinedVariableForegroundBrush = initialPredefVarForegroundBrush;
     }
 
     protected override void ColorizeLine(DocumentLine line)
@@ -36,8 +32,8 @@ internal partial class PororocaVariableColorizingTransformer : DocumentColorizin
                         // TODO: Get variable highlight color from Styles.xaml
                         visualLine.TextRunProperties.SetForegroundBrush(
                             isPredefVar ?
-                            PredefinedVariableForegroundBrush :
-                            RegularVariableForegroundBrush);
+                            PororocaThemeManager.PredefinedVariableForegroundBrush :
+                            PororocaThemeManager.RegularVariableForegroundBrush);
                     }
                 );
             }

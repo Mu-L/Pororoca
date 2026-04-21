@@ -1,5 +1,7 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Pororoca.Domain.Features.Entities.Pororoca;
+using Pororoca.Domain.Features.Entities.Pororoca.Repetition;
 using static Pororoca.Domain.Features.VariableResolution.PororocaPredefinedVariableEvaluator;
 
 namespace Pororoca.Domain.Features.VariableResolution;
@@ -7,6 +9,14 @@ namespace Pororoca.Domain.Features.VariableResolution;
 public partial interface IPororocaVariableResolver
 {
     public static readonly Regex PororocaVariableRegex = GeneratePororocaVariableRegex();
+    public static readonly Regex PororocaPredefinedVariableRegex = GeneratePororocaPredefinedVariableRegex();
+    public static readonly Regex PororocaUserVariableRegex = GeneratePororocaUserVariableRegex();
+
+    [GeneratedRegex("\\{\\{\\s*(?<k>\\$[\\w\\d_\\-\\.]+)\\s*\\}\\}")]
+    private static partial Regex GeneratePororocaPredefinedVariableRegex();
+
+    [GeneratedRegex("\\{\\{\\s*(?<k>[\\w\\d_\\-\\.]+)\\s*\\}\\}")]
+    private static partial Regex GeneratePororocaUserVariableRegex();
 
     [GeneratedRegex("\\{\\{\\s*(?<k>\\$?[\\w\\d_\\-\\.]+)\\s*\\}\\}")]
     private static partial Regex GeneratePororocaVariableRegex();
@@ -159,5 +169,64 @@ public partial interface IPororocaVariableResolver
 
         var regexMatch = PororocaVariableRegex.Match(hoveringVar);
         return regexMatch.Success ? hoveringVar : null;
+    }
+
+    // Este método só é usado no Pororoca.Desktop,
+    // porém está na camada de Domain porque é lógica pesada
+    // e queremos testes unitários nele.
+    public static List<(T? Pattern, int Start, int Length)> DelimitTextPartsOverRegexes<T>(IEnumerable<T> patternDefinitions, string? input)
+        where T : class, IRegexDefiner
+    {
+        if (String.IsNullOrEmpty(input))
+        {
+            return [];
+        }
+
+        var list = patternDefinitions.SelectMany(d =>
+        {
+            var matches = d.Pattern.Matches(input);
+            return matches.Select(m => ((T?)d, m.Index, m.Length));
+        }).OrderBy(x => x.Index).ToList();
+
+
+        if (list.Count == 0)
+        {
+            return [(null!, 0, input.Length)];
+        }
+        else
+        {
+            // First match begins after the start of the string.
+            // Let's mark this part with null.
+            if (list[0].Index > 0)
+            {
+                list.Insert(0, (null, 0, list[0].Index));
+            }
+
+            for (int i = 0; i < list.Count - 1; i++)
+            {
+                var (_, currentStart, currentLength) = list[i];
+                var (_, nextStart, nextLength) = list[i + 1];
+
+                // This means that there is some space between 
+                // the current match and the next match.
+                // Let's mark this part with null.
+                int currentToNextLength = nextStart - (currentStart + currentLength);
+                if (currentToNextLength > 0)
+                {
+                    list.Insert(i+1, (null, currentStart + currentLength, currentToNextLength));
+                    i++; // no need to check the newly created part again
+                }
+            }
+
+            // Last match ends before the end of the string.
+            // Let's mark this part with null.
+            int endOfLastMatch = list[^1].Index + list[^1].Length;
+            if (endOfLastMatch < input.Length)
+            {
+                list.Add((null, endOfLastMatch, input.Length - endOfLastMatch));
+            }
+
+            return list;
+        }
     }
 }

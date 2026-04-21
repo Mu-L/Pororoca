@@ -1,16 +1,17 @@
 using System.Text.RegularExpressions;
+using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Controls;
 
 /// <summary>
 /// Token of syntax highlighting.
 /// </summary>
-public class SyntaxHighlightingToken : SyntaxHighlightingDefinition
+public class SyntaxHighlightingToken : SyntaxHighlightingDefinition, IRegexDefiner
 {
     /// <summary>
     /// Get or set pattern of the token.
     /// </summary>
-    public Regex? Pattern
+    public Regex Pattern
     {
         get;
         set
@@ -27,8 +28,9 @@ public class SyntaxHighlightingToken : SyntaxHighlightingDefinition
     /// Initialize new <see cref="SyntaxHighlightingToken"/> instance.
     /// </summary>
     /// <param name="name">Name.</param>
-    public SyntaxHighlightingToken(string name) : base(name)
+    public SyntaxHighlightingToken(string name, Regex pattern) : base(name)
     {
+        Pattern = pattern;
     }
 
     /// <inheritdoc/>

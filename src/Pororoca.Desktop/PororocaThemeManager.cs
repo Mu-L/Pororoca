@@ -1,6 +1,8 @@
 using Avalonia;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
 using Avalonia.Styling;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.TextEditorConfig;
 using TextMateSharp.Grammars;
 
@@ -50,7 +52,7 @@ public static class PororocaThemeManager
 
 
     private static void ApplyTheme(PororocaTheme theme)
-    {       
+    {
         Application.Current!.RequestedThemeVariant = theme switch
         {
             PororocaTheme.Light => Light,
@@ -61,12 +63,25 @@ public static class PororocaThemeManager
             _ => AmazonianNight
         };
 
+        // TODO: Update variable highlight colours using binding
+        // or DynamicResourceExtension
+        // var x = new DynamicResourceExtension("MyResource");
 
-        TextEditorConfiguration.PororocaVariableHighlightingTransformers.ForEach(t =>
-        {
-            t.RegularVariableForegroundBrush = RegularVariableForegroundBrush;
-            t.PredefinedVariableForegroundBrush = PredefinedVariableForegroundBrush;
-        });
+        //PororocaVariableSyntaxHighlightingDefinitionSet.Singleton.TokenDefinitions.ForEach(def =>
+        //{
+        //    def.Foreground = def.Name switch
+        //    {
+        //        "Pororoca User Variable" => RegularVariableForegroundBrush,
+        //        "Pororoca Predefined Variable" => PredefinedVariableForegroundBrush,
+        //        _ => null
+        //    };
+        //});
+        //
+        //TextEditorConfiguration.PororocaVariableHighlightingTransformers.ForEach(t =>
+        //{
+        //    t.RegularVariableForegroundBrush = RegularVariableForegroundBrush;
+        //    t.PredefinedVariableForegroundBrush = PredefinedVariableForegroundBrush;
+        //});
 
         // Only setting text editors' theme if the TextEditors were already setup,
         // otherwise, a wrong text editor theme will be loaded before the corresponding user saved theme
