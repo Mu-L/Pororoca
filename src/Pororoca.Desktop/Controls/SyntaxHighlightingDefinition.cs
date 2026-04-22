@@ -1,15 +1,17 @@
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Pororoca.Desktop.Others;
+using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Controls;
 
 /// <summary>
 /// Base class of definition of syntax highlighting.
 /// </summary>
-public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisposable
+public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisposable, IRegexDefiner
 {
     // Fields.
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken;
@@ -19,9 +21,10 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
     /// Initialize new <see cref="SyntaxHighlightingDefinition"/> instance.
     /// </summary>
     /// <param name="name">Name.</param>
-    protected SyntaxHighlightingDefinition(string? name = null)
+    public SyntaxHighlightingDefinition(string name, Regex pattern)
     {
         Name = name;
+        Pattern = pattern;
     }
 
     /// <summary>
@@ -33,6 +36,22 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
     /// Get name of definition.
     /// </summary>
     public string? Name { get; }
+
+    /// <summary>
+    /// Get or set pattern of the token.
+    /// </summary>
+    public Regex Pattern
+    {
+        get;
+        set
+        {
+            if (ArePatternsEqual(field, value))
+                return;
+            field = value;
+            Validate();
+            OnPropertyChanged(nameof(Pattern));
+        }
+    }
 
     /// <summary>
     /// Check whether the definition is valid or not.
@@ -172,6 +191,16 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
         return Math.Abs(x - y) <= 0.01;
     }
 
+    // Check equality of two patterns.
+    private static bool ArePatternsEqual(Regex? x, Regex? y)
+    {
+        if (x is null)
+            return y is null;
+        if (y is null)
+            return false;
+        return x.ToString() == y.ToString() && x.Options == y.Options;
+    }
+
     // Called when property of attached brush has been changed.
     private void OnBrushPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
@@ -185,26 +214,27 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
     /// Raise <see cref="PropertyChanged"/> event.
     /// </summary>
     /// <param name="propertyName">Name of changed property.</param>
-    protected virtual void OnPropertyChanged(string propertyName) =>
+    public void OnPropertyChanged(string propertyName) =>
         PropertyChanged?.Invoke(this, new(propertyName));
 
     /// <summary>
     /// Called to validate whether the definition is valid or not.
     /// </summary>
     /// <returns>True if the definition is valid.</returns>
-    protected virtual bool OnValidate() =>
-        Background is not null
+    public bool OnValidate() =>
+        (Background is not null
         || FontFamily is not null
         || double.IsFinite(FontSize)
         || FontStyle.HasValue
         || FontWeight.HasValue
         || Foreground is not null
-        || TextDecorations is not null;
+        || TextDecorations is not null)
+        && Pattern is not null;
 
     /// <summary>
     /// Validate whether the definition is valid or not.
     /// </summary>
-    protected void Validate()
+    public void Validate()
     {
         if (IsValid != OnValidate())
         {
@@ -229,6 +259,12 @@ public abstract class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDi
             Background ?? defaultRunProperties.BackgroundBrush
         );
     }
+
+    /// <inheritdoc/>
+    public override string ToString() =>
+        string.IsNullOrEmpty(Name) ?
+            $"{{{Pattern}}}" :
+            $"[{Name}]{{{Pattern}}}";
 
     /// <inheritdoc/>
     public void Dispose()

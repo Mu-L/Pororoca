@@ -118,7 +118,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionBackgroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionForegroundPropertyChangedHandlerToken;
-    private readonly Dictionary<SyntaxHighlightingToken, TextRunProperties> cachedTextRunPropsForRegularText = new();
+    private readonly Dictionary<SyntaxHighlightingDefinition, TextRunProperties> cachedTextRunPropsForRegularText = new();
     private readonly List<ValueSpan<TextRunProperties>> textProperties = new();
     private TextLayout? textLayout;
 

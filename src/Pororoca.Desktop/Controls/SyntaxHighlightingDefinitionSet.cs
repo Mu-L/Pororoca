@@ -13,7 +13,7 @@ public class SyntaxHighlightingDefinitionSet
     /// <summary>
     /// Get list of token definitions.
     /// </summary>
-    public List<SyntaxHighlightingToken> TokenDefinitions { get; set; } = new();
+    public List<SyntaxHighlightingDefinition> TokenDefinitions { get; set; } = new();
 
     /// <summary>
     /// Check whether at least one token or span definition has been added to the set or not.
