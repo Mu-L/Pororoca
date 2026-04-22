@@ -3,8 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
+using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
 using AvaloniaEdit.TextMate;
 using Pororoca.Desktop.Localization;
 using Pororoca.Domain.Features.Common;
@@ -16,6 +19,7 @@ internal static class TextEditorConfiguration
 {
     public static readonly Lazy<CustomTextMateRegistryOptions> DefaultRegistryOptions = new(LoadDefaultRegistryOptions);
     public static readonly List<(TextEditor, TextMate.Installation)> TextMateInstallations = new();
+    private static readonly List<Action> InvalidateTextEditorsAreasCallbacks = new();
 
     private static CustomTextMateRegistryOptions LoadDefaultRegistryOptions() =>
         new(PororocaThemeManager.TextEditorThemeName);
@@ -47,7 +51,10 @@ internal static class TextEditorConfiguration
         // otherwise, the pororoca variable highlighting may be bugged
         if (applyPororocaVariableHighlighting)
         {
-            editor.TextArea.TextView.LineTransformers.Add(PororocaVariableColorizingTransformer.Singleton);
+            ArgumentNullException.ThrowIfNull(varResolverObtainer, nameof(varResolverObtainer));
+            PororocaVariableColorizingTransformer pororocaVarLineTransformer = new(varResolverObtainer);
+            InvalidateTextEditorsAreasCallbacks.Add(editor.TextArea.TextView.Redraw);
+            editor.TextArea.TextView.LineTransformers.Add(pororocaVarLineTransformer);
             editor.TextArea.SelectionBrush = PororocaThemeManager.TextEditorSelectionHighlightBrush;
             editor.PointerHover += (sender, e) => OnTextEditorPointerHover(sender, e, varResolverObtainer!);
             editor.PointerHoverStopped += OnTextEditorPointerHoverStopped;
@@ -68,6 +75,9 @@ internal static class TextEditorConfiguration
         TextMateInstallations.Add((editor, textMateInstallation));
         return textMateInstallation;
     }
+
+    internal static void InvalidateTextEditorsAreas() =>
+        Dispatcher.UIThread.Post(() => InvalidateTextEditorsAreasCallbacks.ForEach(c => c()));
 
     #region HOVER VARIABLE POPUP
 

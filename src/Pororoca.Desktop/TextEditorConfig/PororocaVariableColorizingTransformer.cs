@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Text.RegularExpressions;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
@@ -7,36 +8,39 @@ namespace Pororoca.Desktop.TextEditorConfig;
 
 internal partial class PororocaVariableColorizingTransformer : DocumentColorizingTransformer
 {
-    public static readonly PororocaVariableColorizingTransformer Singleton = new();
+    private readonly Func<IPororocaVariableResolver> varResolverObtainer;
 
-    private PororocaVariableColorizingTransformer()
+    internal PororocaVariableColorizingTransformer(Func<IPororocaVariableResolver> varResolverObtainer)
     {
+        this.varResolverObtainer = varResolverObtainer;
     }
 
     protected override void ColorizeLine(DocumentLine line)
     {
         string lineText = CurrentContext.Document.GetText(line);
         var matches = IPororocaVariableResolver.PororocaVariableRegex.Matches(lineText);
+        var varResolver = this.varResolverObtainer();
         foreach (object objM in matches)
         {
             var match = (Match)objM;
-            foreach (object objC in match.Captures)
-            {
-                var capture = (Capture)objC;
-                ChangeLinePart(
-                    line.Offset + capture.Index,
-                    line.Offset + capture.Index + capture.Length,
-                    visualLine =>
-                    {
-                        bool isPredefVar = capture.ValueSpan.Contains('$');
-                        // TODO: Get variable highlight color from Styles.xaml
-                        visualLine.TextRunProperties.SetForegroundBrush(
-                            isPredefVar ?
-                            PororocaThemeManager.PredefinedVariableForegroundBrush :
-                            PororocaThemeManager.RegularVariableForegroundBrush);
-                    }
-                );
-            }
+            string keyName = match.Groups["k"].Value;            
+
+            ChangeLinePart(
+                line.Offset + match.Index,
+                line.Offset + match.Index + match.Length,
+                visualLine =>
+                {
+                    bool noMatchingVar = !varResolver.IsPredefinedOrEffectiveVariable(keyName);
+                    bool isPredefVar = match.ValueSpan.Contains('$');
+                    // TODO: Get variable highlight color from Styles.xaml
+                    visualLine.TextRunProperties.SetForegroundBrush(
+                        noMatchingVar ?
+                        PororocaThemeManager.NoMatchingVariableForegroundBrush :
+                        isPredefVar ?
+                        PororocaThemeManager.PredefinedVariableForegroundBrush :
+                        PororocaThemeManager.RegularVariableForegroundBrush);
+                }
+            );
         }
     }
 }

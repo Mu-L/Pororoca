@@ -44,6 +44,9 @@ public static class PororocaThemeManager
     public static SolidColorBrush PredefinedVariableForegroundBrush =>
         GetResource<SolidColorBrush>("TextEditorPredefinedVariableForegroundBrush");
 
+    public static SolidColorBrush NoMatchingVariableForegroundBrush =>
+        GetResource<SolidColorBrush>("TextEditorNoMatchingVariableForegroundBrush");
+
     public static SolidColorBrush HyperlinkForegroundBrush =>
         GetResource<SolidColorBrush>("TextEditorHyperlinkForegroundBrush");    
 

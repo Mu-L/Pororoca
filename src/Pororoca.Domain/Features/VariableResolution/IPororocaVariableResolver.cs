@@ -37,6 +37,10 @@ public partial interface IPororocaVariableResolver
         return effectiveEnvVars.Concat(effectiveColVarsNotInEnv);
     }
 
+    public bool IsPredefinedOrEffectiveVariable(string keyName) =>
+        IsPredefinedVariable(keyName, resolveValue: false, out _)
+        || GetEffectiveVariables().Any(v => v.Key == keyName);
+
     public static Dictionary<string, string> ResolveKeyValueParams(IEnumerable<PororocaKeyValueParam>? kvParams, IEnumerable<PororocaVariable> effectiveVars) =>
         kvParams == null ?
         new() :
@@ -73,7 +77,7 @@ public partial interface IPororocaVariableResolver
             return PororocaVariableRegex.Replace(strToReplaceTemplatedVariables, match =>
             {
                 string keyName = match.Groups["k"].Value;
-                if (IsPredefinedVariable(keyName, out string? predefinedVarValue))
+                if (IsPredefinedVariable(keyName, resolveValue: true, out string? predefinedVarValue))
                 {
                     return predefinedVarValue!;
                 }

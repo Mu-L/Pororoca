@@ -45,6 +45,7 @@
       <Color x:Key="TextEditorHyperlinkForegroundColor">LightBlue</Color>
       <Color x:Key="TextEditorRegularVariableForegroundColor">SandyBrown</Color>
       <Color x:Key="TextEditorPredefinedVariableForegroundColor">PeachPuff</Color>
+      <Color x:Key="TextEditorNoMatchingVariableForegroundColor">LightSalmon</Color>
       <!-- don't rename key below -->
       <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#814718"/>
       <!-- value below sets hover variable popup max width -->

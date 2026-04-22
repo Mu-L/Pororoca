@@ -6,6 +6,7 @@ using MsBox.Avalonia.Enums;
 using Pororoca.Desktop.ExportImport;
 using Pororoca.Desktop.HotKeys;
 using Pororoca.Desktop.Localization;
+using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.UserData;
 using Pororoca.Domain.Features.Entities.GitHub;
 using Pororoca.Domain.Features.Entities.Pororoca;
@@ -300,6 +301,17 @@ public sealed class MainWindowViewModel : ViewModelBase, ICollectionOrganization
             if (currentPage is not null)
             {
                 currentPage.Visible = false;
+
+                // GAMBIARRA HORROROSA
+                // Se o usuário estiver saindo da tela de variáveis de coleção ou de ambiente, 
+                // significa que talvez uma variável tenha mudado,
+                // de modo que ela deva ficar colorida ou descolorida nos TextEditors, por exemplo,
+                // no corpo de requisição HTTP, mensagem de cliente WebSocket ou dados de entrada de repetidora.
+                if (currentPage.PageType == typeof(CollectionVariablesViewModel)
+                 || currentPage.PageType == typeof(EnvironmentViewModel))
+                {
+                    TextEditorConfiguration.InvalidateTextEditorsAreas();
+                }
             }
             nextPage.Visible = true;
         }
