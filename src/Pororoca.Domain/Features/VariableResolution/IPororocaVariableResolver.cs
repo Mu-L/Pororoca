@@ -37,6 +37,7 @@ public partial interface IPororocaVariableResolver
         return effectiveEnvVars.Concat(effectiveColVarsNotInEnv);
     }
 
+    [ExcludeFromCodeCoverage(Justification = "Method is too simple.")]
     public bool IsPredefinedOrEffectiveVariable(string keyName) =>
         IsPredefinedVariable(keyName, resolveValue: false, out _)
         || GetEffectiveVariables().Any(v => v.Key == keyName);
