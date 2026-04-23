@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.ExportImport;
 using Pororoca.Desktop.HotKeys;
 using Pororoca.Desktop.Localization;
@@ -130,12 +131,14 @@ public sealed class EnvironmentsGroupViewModel : CollectionOrganizationItemParen
         else
         {
             ToggleEnabledEnvironment(nextEnv);
-            // GAMBIARRA HORROROSA
+            // GAMBIARRA!!!
             // Se o usuário estiver rotacionando o ambiente ativo,
             // significa que talvez uma variável que não é efetiva em um ambiente seja efetiva em outro,
-            // de modo que ela deva ficar colorida ou descolorida nos TextEditors, por exemplo,
-            // no corpo de requisição HTTP, mensagem de cliente WebSocket ou dados de entrada de repetidora.
+            // de modo que ela deva ficar colorida ou descolorida nos TextEditors e SyntaxHighlighterTextBoxes,
+            // por exemplo, na URL, no corpo de requisição HTTP, mensagem de cliente WebSocket
+            // ou dados de entrada de repetidora.
             TextEditorConfiguration.InvalidateTextEditorsAreas();
+            SyntaxHighlighter.InvalidateSyntaxHighlighterTextBoxesTexts();
         }
     }
 

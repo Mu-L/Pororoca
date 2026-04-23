@@ -1,24 +1,48 @@
+using System.Text.RegularExpressions;
+using Avalonia.Media;
 using Pororoca.Domain.Features.VariableResolution;
+using static Pororoca.Domain.Features.VariableResolution.PororocaPredefinedVariableEvaluator;
 
 namespace Pororoca.Desktop.Controls;
 
 internal sealed class PororocaVariableSyntaxHighlightingDefinitionSet : SyntaxHighlightingDefinitionSet
 {
-    internal static readonly PororocaVariableSyntaxHighlightingDefinitionSet Singleton = new();
+    private readonly Func<IPororocaVariableResolver> varResolverObtainer;
 
-    private PororocaVariableSyntaxHighlightingDefinitionSet() : base(string.Empty) =>
+    internal PororocaVariableSyntaxHighlightingDefinitionSet(Func<IPororocaVariableResolver> varResolverObtainer) : base(string.Empty)
+    {
+        this.varResolverObtainer = varResolverObtainer;
         TokenDefinitions =
         [
-            //if (Application.Current is Avalonia.Application app)
-            //    brush.Bind(SolidColorBrush.ColorProperty, app, "Color/SyntaxHighlighter.SyntaxError.Underline");
-            //else
-            new(name: "Pororoca User Variable", IPororocaVariableResolver.PororocaUserVariableRegex)
+            new(id: 1, name: "Pororoca Variable", IPororocaVariableResolver.PororocaVariableRegex)
             {
-                Foreground = PororocaThemeManager.RegularVariableForegroundBrush,
-            },
-            new(name: "Pororoca Predefined Variable", IPororocaVariableResolver.PororocaPredefinedVariableRegex)
-            {
-                Foreground = PororocaThemeManager.PredefinedVariableForegroundBrush,
+                Foreground = Brushes.Red,
+                RegexMatchIdMapper = MapPororocaVariableRegexMatchToId,
+                RegexMatchIdForegroundMapper = MapPororocaVariableRegexMatchIdToForeground
             }
         ];
+    }
+
+    private IBrush MapPororocaVariableRegexMatchIdToForeground(int regexMatchId) => regexMatchId switch
+    {
+        0 => PororocaThemeManager.NoMatchingVariableForegroundBrush,
+        1 => PororocaThemeManager.RegularVariableForegroundBrush,
+        2 => PororocaThemeManager.PredefinedVariableForegroundBrush,
+        _ => Brushes.Red
+    };
+
+    private int MapPororocaVariableRegexMatchToId(Match match)
+    {
+        string keyName = match.Groups["k"].Value;
+
+        if (IsPredefinedVariable(keyName))
+        {
+            return 2;
+        }
+        else
+        {
+            var varResolver = this.varResolverObtainer();
+            return varResolver.IsEffectiveVariable(keyName) ? 1 : 0;
+        }
+    }
 }

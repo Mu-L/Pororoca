@@ -19,7 +19,7 @@ internal static class TextEditorConfiguration
 {
     public static readonly Lazy<CustomTextMateRegistryOptions> DefaultRegistryOptions = new(LoadDefaultRegistryOptions);
     public static readonly List<(TextEditor, TextMate.Installation)> TextMateInstallations = new();
-    private static readonly List<Action> InvalidateTextEditorsAreasCallbacks = new();
+    private static readonly List<Action> invalidateTextEditorsAreasCallbacks = new();
 
     private static CustomTextMateRegistryOptions LoadDefaultRegistryOptions() =>
         new(PororocaThemeManager.TextEditorThemeName);
@@ -53,7 +53,7 @@ internal static class TextEditorConfiguration
         {
             ArgumentNullException.ThrowIfNull(varResolverObtainer, nameof(varResolverObtainer));
             PororocaVariableColorizingTransformer pororocaVarLineTransformer = new(varResolverObtainer);
-            InvalidateTextEditorsAreasCallbacks.Add(editor.TextArea.TextView.Redraw);
+            invalidateTextEditorsAreasCallbacks.Add(editor.TextArea.TextView.Redraw);
             editor.TextArea.TextView.LineTransformers.Add(pororocaVarLineTransformer);
             editor.TextArea.SelectionBrush = PororocaThemeManager.TextEditorSelectionHighlightBrush;
             editor.PointerHover += (sender, e) => OnTextEditorPointerHover(sender, e, varResolverObtainer!);
@@ -77,7 +77,7 @@ internal static class TextEditorConfiguration
     }
 
     internal static void InvalidateTextEditorsAreas() =>
-        Dispatcher.UIThread.Post(() => InvalidateTextEditorsAreasCallbacks.ForEach(c => c()));
+        Dispatcher.UIThread.Post(() => invalidateTextEditorsAreasCallbacks.ForEach(c => c()));
 
     #region HOVER VARIABLE POPUP
 

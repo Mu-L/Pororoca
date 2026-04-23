@@ -498,7 +498,9 @@ public static class IPororocaVariableResolverTests
     public static void Should_delimit_text_parts_with_regexes_correctly(string input, TestRegexDefiner[] regexesDefs, (TestRegexDefiner? RegexDefinition, int Start, int Length)[] expectedParts)
     {
         // GIVEN, WHEN
-        var parts = IPororocaVariableResolver.DelimitTextPartsOverRegexes(regexesDefs, input).ToArray();
+        var parts = IPororocaVariableResolver.DelimitTextPartsOverRegexes(regexesDefs, input)
+                                             .Select(x => (x.Pattern, x.Start, x.Length))
+                                             .ToArray();
 
         // THEN
         Assert.NotNull(parts);

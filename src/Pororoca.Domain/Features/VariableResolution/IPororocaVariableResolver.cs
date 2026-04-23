@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Pororoca.Domain.Features.Entities.Pororoca;
-using Pororoca.Domain.Features.Entities.Pororoca.Repetition;
 using static Pororoca.Domain.Features.VariableResolution.PororocaPredefinedVariableEvaluator;
 
 namespace Pororoca.Domain.Features.VariableResolution;
@@ -9,14 +8,6 @@ namespace Pororoca.Domain.Features.VariableResolution;
 public partial interface IPororocaVariableResolver
 {
     public static readonly Regex PororocaVariableRegex = GeneratePororocaVariableRegex();
-    public static readonly Regex PororocaPredefinedVariableRegex = GeneratePororocaPredefinedVariableRegex();
-    public static readonly Regex PororocaUserVariableRegex = GeneratePororocaUserVariableRegex();
-
-    [GeneratedRegex("\\{\\{\\s*(?<k>\\$[\\w\\d_\\-\\.]+)\\s*\\}\\}")]
-    private static partial Regex GeneratePororocaPredefinedVariableRegex();
-
-    [GeneratedRegex("\\{\\{\\s*(?<k>[\\w\\d_\\-\\.]+)\\s*\\}\\}")]
-    private static partial Regex GeneratePororocaUserVariableRegex();
 
     [GeneratedRegex("\\{\\{\\s*(?<k>\\$?[\\w\\d_\\-\\.]+)\\s*\\}\\}")]
     private static partial Regex GeneratePororocaVariableRegex();
@@ -38,9 +29,8 @@ public partial interface IPororocaVariableResolver
     }
 
     [ExcludeFromCodeCoverage(Justification = "Method is too simple.")]
-    public bool IsPredefinedOrEffectiveVariable(string keyName) =>
-        IsPredefinedVariable(keyName, resolveValue: false, out _)
-        || GetEffectiveVariables().Any(v => v.Key == keyName);
+    public bool IsEffectiveVariable(string keyName) =>
+        GetEffectiveVariables().Any(v => v.Key == keyName);
 
     public static Dictionary<string, string> ResolveKeyValueParams(IEnumerable<PororocaKeyValueParam>? kvParams, IEnumerable<PororocaVariable> effectiveVars) =>
         kvParams == null ?
@@ -110,7 +100,7 @@ public partial interface IPororocaVariableResolver
         if (pointerIndex == lineText.Length)
         {
             return null; // ponteiro sobre o final da linha ('\n')
-        }     
+        }
 
         if (pointerIndex <= (lineText.Length - 2) && lineText[pointerIndex] == '{' && lineText[pointerIndex + 1] == '{')
         {
@@ -179,7 +169,7 @@ public partial interface IPororocaVariableResolver
     // Este método só é usado no Pororoca.Desktop,
     // porém está na camada de Domain porque é lógica pesada
     // e queremos testes unitários nele.
-    public static List<(T? Pattern, int Start, int Length)> DelimitTextPartsOverRegexes<T>(IEnumerable<T> patternDefinitions, string? input)
+    public static List<(T? Pattern, int Start, int Length, Match? Match)> DelimitTextPartsOverRegexes<T>(IEnumerable<T> patternDefinitions, string? input)
         where T : class, IRegexDefiner
     {
         if (String.IsNullOrEmpty(input))
@@ -190,13 +180,13 @@ public partial interface IPororocaVariableResolver
         var list = patternDefinitions.SelectMany(d =>
         {
             var matches = d.Pattern.Matches(input);
-            return matches.Select(m => ((T?)d, m.Index, m.Length));
+            return matches.Select(m => ((T?)d, m.Index, m.Length, (Match?)m));
         }).OrderBy(x => x.Index).ToList();
 
 
         if (list.Count == 0)
         {
-            return [(null!, 0, input.Length)];
+            return [(null!, 0, input.Length, null)];
         }
         else
         {
@@ -204,13 +194,13 @@ public partial interface IPororocaVariableResolver
             // Let's mark this part with null.
             if (list[0].Index > 0)
             {
-                list.Insert(0, (null, 0, list[0].Index));
+                list.Insert(0, (null, 0, list[0].Index, null));
             }
 
             for (int i = 0; i < list.Count - 1; i++)
             {
-                var (_, currentStart, currentLength) = list[i];
-                var (_, nextStart, nextLength) = list[i + 1];
+                var (_, currentStart, currentLength, currentMatch) = list[i];
+                var (_, nextStart, nextLength, nextMatch) = list[i + 1];
 
                 // This means that there is some space between 
                 // the current match and the next match.
@@ -218,7 +208,7 @@ public partial interface IPororocaVariableResolver
                 int currentToNextLength = nextStart - (currentStart + currentLength);
                 if (currentToNextLength > 0)
                 {
-                    list.Insert(i+1, (null, currentStart + currentLength, currentToNextLength));
+                    list.Insert(i + 1, (null, currentStart + currentLength, currentToNextLength, null));
                     i++; // no need to check the newly created part again
                 }
             }
@@ -228,7 +218,7 @@ public partial interface IPororocaVariableResolver
             int endOfLastMatch = list[^1].Index + list[^1].Length;
             if (endOfLastMatch < input.Length)
             {
-                list.Add((null, endOfLastMatch, input.Length - endOfLastMatch));
+                list.Add((null, endOfLastMatch, input.Length - endOfLastMatch, null));
             }
 
             return list;

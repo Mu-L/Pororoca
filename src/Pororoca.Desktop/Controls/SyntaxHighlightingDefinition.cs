@@ -16,13 +16,15 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     // Fields.
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
+    private readonly Dictionary<SyntaxHighlightingDefinition, TextRunProperties> cachedTextRunProps = new();
 
     /// <summary>
     /// Initialize new <see cref="SyntaxHighlightingDefinition"/> instance.
     /// </summary>
     /// <param name="name">Name.</param>
-    public SyntaxHighlightingDefinition(string name, Regex pattern)
+    public SyntaxHighlightingDefinition(int id, string name, Regex pattern)
     {
+        Id = id;
         Name = name;
         Pattern = pattern;
     }
@@ -31,6 +33,11 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// Raised when property of rule has been changed.
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    /// <summary>
+    /// Get Id of definition.
+    /// </summary>
+    public int Id { get; }
 
     /// <summary>
     /// Get name of definition.
@@ -166,6 +173,10 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
         }
     }
 
+    public Func<Match, int>? RegexMatchIdMapper { get; set; }
+
+    public Func<int, IBrush>? RegexMatchIdForegroundMapper { get; set; }
+
     /// <summary>
     /// Get or set text decorations of the definition.
     /// </summary>
@@ -228,6 +239,7 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
         || FontStyle.HasValue
         || FontWeight.HasValue
         || Foreground is not null
+        || (RegexMatchIdMapper is not null && RegexMatchIdForegroundMapper is not null)
         || TextDecorations is not null)
         && Pattern is not null;
 
@@ -243,7 +255,7 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
         }
     }
 
-    internal GenericTextRunProperties MakeTextProperties(TextRunProperties defaultRunProperties, FontStretch fontStretch)
+    internal GenericTextRunProperties MakeTextProperties(TextRunProperties defaultRunProperties, FontStretch fontStretch, int regexMatchId)
     {
         var typeface = new Typeface(
             FontFamily ?? defaultRunProperties.Typeface.FontFamily,
@@ -251,11 +263,16 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
             FontWeight ?? defaultRunProperties.Typeface.Weight,
             fontStretch
         );
+
+        var foreground = regexMatchId != -1 && RegexMatchIdForegroundMapper != null ?
+                         RegexMatchIdForegroundMapper(regexMatchId) :
+                         Foreground ?? defaultRunProperties.ForegroundBrush;
+
         return new GenericTextRunProperties(
             typeface,
             double.IsNaN(FontSize) ? defaultRunProperties.FontRenderingEmSize : FontSize,
             TextDecorations ?? defaultRunProperties.TextDecorations,
-            Foreground ?? defaultRunProperties.ForegroundBrush,
+            foreground,
             Background ?? defaultRunProperties.BackgroundBrush
         );
     }

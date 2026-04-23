@@ -29,7 +29,7 @@ public sealed class HttpRequestView : UserControl
         var varResolverObtainer = () => ((HttpRequestViewModel)DataContext!).col;
 
         var urlInput = this.FindControl<SyntaxHighlightingTextBox>("tbUrl")!;
-        urlInput.DefinitionSet = PororocaVariableSyntaxHighlightingDefinitionSet.Singleton;
+        urlInput.DefinitionSet = new PororocaVariableSyntaxHighlightingDefinitionSet(varResolverObtainer);
 
         var httpReqRawBodyEditor = this.FindControl<TextEditor>("teReqBodyRawContent")!;
         this.httpReqRawBodyEditorTextMateInstallation = TextEditorConfiguration.Setup(httpReqRawBodyEditor, true, varResolverObtainer);

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
+using Avalonia.Threading;
 using Avalonia.Utilities;
 using Pororoca.Desktop.Others;
 using Pororoca.Domain.Features.VariableResolution;
@@ -113,19 +114,24 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// </summary>
     public static readonly DirectProperty<SyntaxHighlighter, TextWrapping> TextWrappingProperty = AvaloniaProperty.RegisterDirect<SyntaxHighlighter, TextWrapping>(nameof(TextWrapping), sh => sh.TextWrapping, (sh, w) => sh.TextWrapping = w);
 
+    private static readonly List<Action> invalidateSyntaxHighlightersTextBoxesTextsCallbacks = new();
+
     // Fields.
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken = null;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionBackgroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? selectionForegroundPropertyChangedHandlerToken;
-    private readonly Dictionary<SyntaxHighlightingDefinition, TextRunProperties> cachedTextRunPropsForRegularText = new();
+    private readonly Dictionary<int, TextRunProperties> cachedTextRunProps = new();
     private readonly List<ValueSpan<TextRunProperties>> textProperties = new();
     private TextLayout? textLayout;
 
     /// <summary>
     /// Initialize new <see cref="SyntaxHighlighter"/> instance.
     /// </summary>
-    public SyntaxHighlighter() { }
+    public SyntaxHighlighter()
+    {
+        invalidateSyntaxHighlightersTextBoxesTextsCallbacks.Add(this.InvalidateTextProperties);
+    }
 
     /// <summary>
     /// Get or set base background brush.
@@ -706,21 +712,34 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     {
         var defs = DefinitionSet?.TokenDefinitions ?? [];
         var parts = IPororocaVariableResolver.DelimitTextPartsOverRegexes(defs, text);
-        foreach (var (pattern, start, length) in parts)
+        foreach (var (definition, start, length, match) in parts)
         {
-            if (pattern == null) // normal text
+            if (definition == null) // normal text
             {
                 AddTextProperties(start, length, defaultRunProperties);
             }
             else // token to be highlighted
             {
-                if (!this.cachedTextRunPropsForRegularText.TryGetValue(pattern, out var tokenRunProperties))
+                int cacheId, regexMatchId;
+                if (definition.RegexMatchIdMapper != null)
                 {
-                    tokenRunProperties =
-                        this.cachedTextRunPropsForRegularText[pattern] =
-                        pattern.MakeTextProperties(defaultRunProperties, FontStretch);
+                    // style varies according to regex match.
+                    regexMatchId = definition.RegexMatchIdMapper(match!);
+                    cacheId = definition.Id * 16 + regexMatchId;
+                }
+                else
+                {
+                    // fixed style for token. 
+                    regexMatchId = -1;
+                    cacheId = definition.Id;
                 }
 
+                if (!this.cachedTextRunProps.TryGetValue(cacheId, out var tokenRunProperties))
+                {
+                    tokenRunProperties =
+                        this.cachedTextRunProps[cacheId] =
+                        definition.MakeTextProperties(defaultRunProperties, FontStretch, regexMatchId);
+                }
                 AddTextProperties(start, length, tokenRunProperties);
             }
         }
@@ -802,6 +821,9 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
         this.textProperties.Clear();
         InvalidateTextLayout();
     }
+
+    internal static void InvalidateSyntaxHighlighterTextBoxesTexts() =>
+        Dispatcher.UIThread.Post(() => invalidateSyntaxHighlightersTextBoxesTextsCallbacks.ForEach(c => c()));
 
     /// <inheritdoc/>
     public void Dispose()

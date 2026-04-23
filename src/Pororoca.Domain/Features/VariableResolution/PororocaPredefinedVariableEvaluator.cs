@@ -6,6 +6,9 @@ namespace Pororoca.Domain.Features.VariableResolution;
 [ExcludeFromCodeCoverage(Justification = "Most methods return random values. Cannot be tested.")]
 public static partial class PororocaPredefinedVariableEvaluator
 {
+    public static bool IsPredefinedVariable(string variableKey) =>
+        IsPredefinedVariable(variableKey, resolveValue: false, out _);
+
     public static bool IsPredefinedVariable(string variableKey, bool resolveValue, out string? resolvedValue)
     {
         if (!variableKey.StartsWith('$'))
