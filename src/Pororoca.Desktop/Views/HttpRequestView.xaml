@@ -301,7 +301,7 @@
                     ItemsSource="{Binding AllMimeTypes}"
                     FilterMode="Contains"
                     Classes.HasValidationProblem="{Binding HasRequestFileContentTypeValidationProblem, Mode=OneWay}"/>
-                <TextBox
+                <controls:SyntaxHighlightingTextBox
                     Name="tbReqBodyFileSrcPath"
                     Watermark="{Binding i18n.HttpRequest.BodyFileSrcPathWatermark, Mode=OneWay}"
                     HorizontalAlignment="Stretch"
@@ -594,7 +594,7 @@
                     Width="2"
                     VerticalAlignment="Stretch"
                     Classes="Separator"/>
-                <TextBox
+                <controls:SyntaxHighlightingTextBox
                     Name="tbReqBodyGraphQlVariables"
                     Grid.Column="2"
                     Grid.Row="0"

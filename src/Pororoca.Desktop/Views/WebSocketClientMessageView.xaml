@@ -154,7 +154,7 @@
                       Converter={StaticResource contentModeMatch},
                       ConverterParameter=File}">
 
-        <TextBox
+        <controls:SyntaxHighlightingTextBox
             Name="tbContentFileSrcPath"
             HorizontalContentAlignment="Left"
             VerticalContentAlignment="Center"

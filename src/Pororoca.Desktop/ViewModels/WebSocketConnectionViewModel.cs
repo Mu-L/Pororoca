@@ -393,7 +393,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
         #endregion
 
         #region CONNECTION REQUEST AUTH
-        RequestAuthDataCtx = new(ws.CustomAuth, true, ClearInvalidConnectionWarnings);
+        RequestAuthDataCtx = new(col, ws.CustomAuth, true, ClearInvalidConnectionWarnings);
         #endregion
 
         #region CONNECTION OPTIONS
