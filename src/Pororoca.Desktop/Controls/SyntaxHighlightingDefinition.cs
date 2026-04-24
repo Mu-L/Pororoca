@@ -16,7 +16,6 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     // Fields.
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? backgroundPropertyChangedHandlerToken;
     private WeakEventHandlerAdapter<AvaloniaObject, AvaloniaPropertyChangedEventArgs>? foregroundPropertyChangedHandlerToken;
-    private readonly Dictionary<SyntaxHighlightingDefinition, TextRunProperties> cachedTextRunProps = new();
 
     /// <summary>
     /// Initialize new <see cref="SyntaxHighlightingDefinition"/> instance.
