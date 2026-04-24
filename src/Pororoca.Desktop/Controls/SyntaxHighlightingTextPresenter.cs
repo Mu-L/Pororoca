@@ -1,7 +1,9 @@
+using System.Text;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
+using Pororoca.Domain.Features.Common;
 
 namespace Pororoca.Desktop.Controls;
 
@@ -46,10 +48,30 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
         // setup actions
         this.correctCaretIndexAction =  new(() =>
         {
-            if (SelectionStart != SelectionEnd)
-                return;
-            if (CaretIndex != SelectionStart)
-                CaretIndex = SelectionStart;
+            int currentCaretIndex = CaretIndex, currentSelectionStart = SelectionStart,
+                textLength = Text?.Length ?? -1, preeditTextLength = PreeditText?.Length ?? -1;
+            try
+            {
+                if (SelectionStart != SelectionEnd)
+                    return;
+
+                if (CaretIndex != SelectionStart)
+                    CaretIndex = SelectionStart;
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                StringBuilder sb = new();
+                sb.AppendLine("Error whilst trying to correct caret index in SyntaxHighlightingTextPresenter.");
+                sb.AppendLine($"CaretIndex: {currentCaretIndex}");
+                sb.AppendLine($"SelectionStart: {currentSelectionStart}");
+                sb.AppendLine($"Text.Length: {textLength}");
+                sb.AppendLine($"PreeditText.Length: {preeditTextLength}");
+
+                PororocaLogger.Instance?.Log(PororocaLogLevel.Error, sb.ToString(), ex);
+#if DEBUG
+                throw;
+#endif
+            }
         });
 
         // attach to syntax highlighter
