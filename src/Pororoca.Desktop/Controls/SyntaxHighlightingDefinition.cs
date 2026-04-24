@@ -4,7 +4,7 @@ using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Pororoca.Desktop.Others;
-using Pororoca.Domain.Features.VariableResolution;
+using Pororoca.Domain.Features.Common;
 
 namespace Pororoca.Desktop.Controls;
 

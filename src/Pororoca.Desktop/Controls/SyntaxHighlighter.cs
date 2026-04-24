@@ -4,7 +4,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Threading;
 using Avalonia.Utilities;
 using Pororoca.Desktop.Others;
-using Pororoca.Domain.Features.VariableResolution;
+using Pororoca.Domain.Features.Common;
 
 namespace Pororoca.Desktop.Controls;
 
@@ -711,7 +711,7 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     private void CreateTextPropertiesForText(TextRunProperties defaultRunProperties, string text)
     {
         var defs = DefinitionSet?.TokenDefinitions ?? [];
-        var parts = IPororocaVariableResolver.DelimitTextPartsOverRegexes(defs, text);
+        var parts = RegexUtils.DelimitTextPartsOverRegexes(defs, text);
         foreach (var (definition, start, length, match) in parts)
         {
             if (definition == null) // normal text
