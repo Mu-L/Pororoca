@@ -51,7 +51,7 @@
       <Color x:Key="NoMatchingVariableForegroundColor">Red</Color>
       <Color x:Key="NoMatchingVariablePopupForegroundColor">#cc0000</Color>
       <!-- don't rename key below -->
-      <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#b6ccfc"/>
+      <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#ceddfd"/>
       <!-- value below sets hover variable popup max width -->
       <x:Double x:Key="FlyoutThemeMaxWidth">720</x:Double>
       <Color x:Key="ResponseCapturedValueTextColor">#0743C5</Color>
