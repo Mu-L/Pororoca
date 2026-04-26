@@ -6,12 +6,11 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
-using AvaloniaEdit.Editing;
-using AvaloniaEdit.Rendering;
 using AvaloniaEdit.TextMate;
 using Pororoca.Desktop.Localization;
 using Pororoca.Domain.Features.Common;
 using Pororoca.Domain.Features.VariableResolution;
+using static Pororoca.Domain.Features.VariableResolution.PororocaPredefinedVariableEvaluator;
 
 namespace Pororoca.Desktop.TextEditorConfig;
 
@@ -44,7 +43,7 @@ internal static class TextEditorConfiguration
         editor.TextArea.IndentationStrategy = new AvaloniaEdit.Indentation.DefaultIndentationStrategy();
         editor.GetObservable(Visual.BoundsProperty).Subscribe(bounds => editor.TextArea.Width = bounds.Width);
         editor.TextArea.RightClickMovesCaret = true;
-        editor.TextArea.TextView.LinkTextForegroundBrush = PororocaThemeManager.HyperlinkForegroundBrush;
+        editor.TextArea.TextView.LinkTextForegroundBrush = PororocaThemeManager.TextEditorHyperlinkForegroundBrush;
 
         var textMateInstallation = editor.InstallTextMate(DefaultRegistryOptions.Value!, false);
         // the line below must be added only after the TextMate installation above

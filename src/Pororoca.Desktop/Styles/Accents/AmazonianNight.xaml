@@ -14,7 +14,7 @@
       <Color x:Key="SystemAccentColorLight3">#D77728</Color>
       <Color x:Key="SystemErrorTextColor">#FF4D4D</Color>
       <!-- Custom colours below -->
-      <Color x:Key="InputBackgroundValidationProblemColor">#66FECADA</Color>
+      <Color x:Key="InputBackgroundValidationProblemColor">#22FECADA</Color>
       <Color x:Key="SystemInvertedAccentColor">#38C7AD</Color>
       <Color x:Key="SystemInvertedAccentColorLight1">#88DDCE</Color>
       <Color x:Key="SystemInvertedAccentColorLight2">#98E2D4</Color>
@@ -36,24 +36,24 @@
       <Color x:Key="ButtonSecondaryHighlightBackgroundColor">#292929</Color>
 
       <Color x:Key="WebSocketConnectedColor">#99E3D5</Color>
-      <Color x:Key="WebSocketMessageFromClientPrimaryColor">#FF83D8</Color>
-      <Color x:Key="WebSocketMessageFromServerPrimaryColor">Lime</Color>
+      <Color x:Key="WebSocketMessageFromClientPrimaryColor">DarkGoldenrod</Color>
+      <Color x:Key="WebSocketMessageFromServerPrimaryColor">#99E3D5</Color>
       <Color x:Key="DefaultIconsColor">#F2F2F2</Color>
       <Color x:Key="DefaultTextForegroundColor">#F2F2F2</Color>
       <x:String x:Key="TextEditorTheme">Dark</x:String>
       <Color x:Key="TextEditorBackgroundColor">#1E1E1E</Color>
       <Color x:Key="TextEditorForegroundColor">#D4D4D4</Color>
       <Color x:Key="TextEditorHyperlinkForegroundColor">LightBlue</Color>
-      <Color x:Key="TextEditorRegularVariableForegroundColor">DarkGoldenrod</Color>
-      <Color x:Key="TextEditorPredefinedVariableForegroundColor">Goldenrod</Color>
-      <Color x:Key="TextEditorNoMatchingVariableForegroundColor">LightSalmon</Color>
+      <Color x:Key="RegularVariableForegroundColor">DarkGoldenrod</Color>
+      <Color x:Key="RegularVariablePopupForegroundColor">DarkGoldenrod</Color>
+      <Color x:Key="PredefinedVariableForegroundColor">Goldenrod</Color>
+      <Color x:Key="PredefinedVariablePopupForegroundColor">Goldenrod</Color>
+      <Color x:Key="NoMatchingVariableForegroundColor">Crimson</Color>
+      <Color x:Key="NoMatchingVariablePopupForegroundColor">Crimson</Color>
       <!-- don't rename key below -->
-      <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#814718"/>
+      <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#562f10"/>
       <!-- value below sets hover variable popup max width -->
       <x:Double x:Key="FlyoutThemeMaxWidth">720</x:Double>
-      <Color x:Key="TextEditorRegularVariablePopupForegroundColor">Goldenrod</Color>
-      <Color x:Key="TextEditorPredefinedVariablePopupForegroundColor">Goldenrod</Color>
-      <Color x:Key="TextEditorNoMatchingVariablePopupForegroundColor">LightSalmon</Color>
       <Color x:Key="ResponseCapturedValueTextColor">#99E3D5</Color>
       <!--Color x:Key="TreeViewItemTargetMovementHighlightColor">LawnGreen</Color-->
     </ResourceDictionary>

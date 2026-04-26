@@ -182,7 +182,6 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
     /// <inheritdoc/>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        // TODO: Handle IndexOutOfRangeException
         base.OnPropertyChanged(change);
         var property = change.Property;
         if (property == PreeditTextProperty)
