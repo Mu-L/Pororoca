@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:conv="clr-namespace:Pororoca.Desktop.Converters;assembly=Pororoca.Desktop"
+    xmlns:controls="clr-namespace:Pororoca.Desktop.Controls;assembly=Pororoca.Desktop"
     mc:Ignorable="d"
     d:DesignWidth="1350"
     d:DesignHeight="700"
@@ -94,7 +95,7 @@
                     Mode=OneWay,
                     Converter={StaticResource authModeMatch}, 
                     ConverterParameter=Basic}">
-      <TextBox
+      <controls:SyntaxHighlightingTextBox
           Name="tbBasicAuthLogin"
           Width="200"
           HorizontalAlignment="Left"
@@ -102,7 +103,7 @@
           Watermark="{Binding i18n.RequestAuth.AuthModeBasicLoginWatermark, Mode=OneWay}"
           Classes="SingleLine"
           Text="{Binding BasicAuthLogin}"/>
-      <TextBox
+      <controls:SyntaxHighlightingTextBox
           Name="tbBasicAuthPassword"
           Width="200"
           Margin="0,12,0,0"
@@ -122,7 +123,7 @@
                     Mode=OneWay,
                     Converter={StaticResource authModeMatch}, 
                     ConverterParameter=Bearer}">
-      <TextBox
+      <controls:SyntaxHighlightingTextBox
           Name="tbBearerAuthToken"
           Width="200"
           HorizontalAlignment="Left"
@@ -145,7 +146,7 @@
           Name="chkbWindowsAuthUseCurrentUser"
           Content="{Binding i18n.RequestAuth.AuthModeWindowsUseCurrentUser, Mode=OneWay}"
           IsChecked="{Binding WindowsAuthUseCurrentUser}"/>
-      <TextBox
+      <controls:SyntaxHighlightingTextBox
           Name="tbWindowsAuthLogin"
           Width="200"
           Margin="0,12,0,0"
@@ -156,7 +157,7 @@
           Classes.HasValidationProblem="{Binding HasWindowsAuthLoginProblem, Mode=OneWay}"
           IsVisible="{Binding !WindowsAuthUseCurrentUser, Mode=OneWay}"
           Text="{Binding WindowsAuthLogin}"/>
-      <TextBox
+      <controls:SyntaxHighlightingTextBox
           Name="tbWindowsAuthPassword"
           Width="200"
           Margin="0,12,0,0"
@@ -167,7 +168,7 @@
           Classes.HasValidationProblem="{Binding HasWindowsAuthPasswordProblem, Mode=OneWay}"
           IsVisible="{Binding !WindowsAuthUseCurrentUser, Mode=OneWay}"
           Text="{Binding WindowsAuthPassword}"/>
-      <TextBox
+      <controls:SyntaxHighlightingTextBox
           Name="tbWindowsAuthDomain"
           Width="200"
           Margin="0,12,0,0"
@@ -205,7 +206,7 @@
                       Mode=OneWay,
                       Converter={StaticResource clientCertificateTypeMatch}, 
                       ConverterParameter=Pkcs12}">
-        <TextBox
+        <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePkcs12FilePath"
             Width="240"
             Watermark="{Binding i18n.RequestAuth.CertificateFilePathWatermark, Mode=OneWay}"
@@ -214,7 +215,7 @@
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPkcs12CertificateFilePathProblem, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPkcs12CertificateFilePath}"/>
-        <TextBox
+        <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePkcs12FilePassword"
             Width="240"
             Margin="0,12,0,0"
@@ -239,7 +240,7 @@
                       Mode=OneWay,
                       Converter={StaticResource clientCertificateTypeMatch}, 
                       ConverterParameter=Pem}">
-        <TextBox
+        <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePemCertificateFilePath"
             Width="240"
             Watermark="{Binding i18n.RequestAuth.CertificateFilePathWatermark, Mode=OneWay}"
@@ -248,7 +249,7 @@
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPemCertificateFilePathProblem, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPemCertificateFilePath}"/>
-        <TextBox
+        <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePemPrivateKeyFilePath"
             Width="240"
             Margin="0,12,0,0"
@@ -258,7 +259,7 @@
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPemPrivateKeyFilePathProblem, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPemPrivateKeyFilePath}"/>
-        <TextBox
+        <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePemPrivateKeyPassword"
             Width="240"
             Margin="0,12,0,0"

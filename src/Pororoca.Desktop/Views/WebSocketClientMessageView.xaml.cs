@@ -2,7 +2,9 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Converters;
+using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Common;
@@ -10,23 +12,28 @@ using Pororoca.Domain.Features.Entities.Pororoca.WebSockets;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class WebSocketClientMessageView : UserControl
+public sealed class WebSocketClientMessageView : UserControl, ICollectionViewModelProvider
 {
     private readonly AvaloniaEdit.TextMate.TextMate.Installation rawContentEditorTextMateInstallation;
     private string? currentRawContentSyntaxLangId;
     //private readonly ComboBox syntaxThemeCombo;
     private CompletionWindow? rawContentCompletionWindow;
 
+    private readonly PororocaVariableSyntaxHighlightingDefinitionSet syntaxHighlightingDefinitionSet;
+
     public WebSocketClientMessageView()
     {
         InitializeComponent();
 
-        var varResolverObtainer = () => ((WebSocketConnectionViewModel) (((WebSocketClientMessageViewModel)DataContext!).Parent)).col;
+        this.syntaxHighlightingDefinitionSet = new(ProvideVariableResolver);
+
+        var tbContentFileSrcPath = this.FindControl<SyntaxHighlightingTextBox>("tbContentFileSrcPath")!;
+        tbContentFileSrcPath.DefinitionSet = this.syntaxHighlightingDefinitionSet;
 
         var rawContentTextEditor = this.FindControl<TextEditor>("teContentRaw")!;
-        this.rawContentEditorTextMateInstallation = TextEditorConfiguration.Setup(rawContentTextEditor, true, varResolverObtainer);
+        this.rawContentEditorTextMateInstallation = TextEditorConfiguration.Setup(rawContentTextEditor, true, ProvideVariableResolver);
         rawContentTextEditor.TextArea.TextEntering += (sender, e) => TextEditorConfiguration.OnTextEnteringInEditorWithVariables(rawContentTextEditor, e, ref this.rawContentCompletionWindow);
-        rawContentTextEditor.TextArea.TextEntered += (sender, e) => TextEditorConfiguration.OnTextEnteredInEditorWithVariables(rawContentTextEditor, e, varResolverObtainer, ref this.rawContentCompletionWindow, (sender, e) => this.rawContentCompletionWindow = null);
+        rawContentTextEditor.TextArea.TextEntered += (sender, e) => TextEditorConfiguration.OnTextEnteredInEditorWithVariables(rawContentTextEditor, e, ProvideVariableResolver, ref this.rawContentCompletionWindow, (sender, e) => this.rawContentCompletionWindow = null);
 
         var rawContentSyntaxSelector = this.FindControl<ComboBox>("cbContentRawSyntax")!;
         rawContentSyntaxSelector.SelectionChanged += OnRawContentSyntaxChanged;
@@ -74,6 +81,12 @@ public sealed class WebSocketClientMessageView : UserControl
         };
         this.rawContentEditorTextMateInstallation.SetEditorSyntax(ref this.currentRawContentSyntaxLangId, contentType);
     }
+
+    // IMPORTANTE: este método deve retornar um CollectionViewModel,
+    // e não simplesmente uma coleção, pois senão não vai atualizar
+    // as variáveis de coleção e de ambiente.
+    public CollectionViewModel ProvideVariableResolver() =>
+        ((WebSocketConnectionViewModel)((WebSocketClientMessageViewModel)DataContext!).Parent).col;
 
     #endregion
 }
