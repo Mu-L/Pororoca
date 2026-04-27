@@ -3,11 +3,10 @@ using Avalonia.Markup.Xaml;
 using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Others;
 using Pororoca.Desktop.ViewModels;
-using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class RequestAuthView : UserControl, IPororocaVariableResolverProvider
+public sealed class RequestAuthView : UserControl, ICollectionViewModelProvider
 {
     private readonly PororocaVariableSyntaxHighlightingDefinitionSet syntaxHighlightingDefinitionSet;
 
@@ -47,6 +46,6 @@ public sealed class RequestAuthView : UserControl, IPororocaVariableResolverProv
     // IMPORTANTE: este método deve retornar um CollectionViewModel,
     // e não simplesmente uma coleção, pois senão não vai atualizar
     // as variáveis de coleção e de ambiente.
-    public IPororocaVariableResolver ProvideVariableResolver() =>
+    public CollectionViewModel ProvideVariableResolver() =>
         ((RequestAuthViewModel)DataContext!).col;
 }

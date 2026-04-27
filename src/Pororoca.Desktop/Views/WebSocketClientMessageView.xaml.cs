@@ -9,11 +9,10 @@ using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Common;
 using Pororoca.Domain.Features.Entities.Pororoca.WebSockets;
-using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class WebSocketClientMessageView : UserControl, IPororocaVariableResolverProvider
+public sealed class WebSocketClientMessageView : UserControl, ICollectionViewModelProvider
 {
     private readonly AvaloniaEdit.TextMate.TextMate.Installation rawContentEditorTextMateInstallation;
     private string? currentRawContentSyntaxLangId;
@@ -86,7 +85,7 @@ public sealed class WebSocketClientMessageView : UserControl, IPororocaVariableR
     // IMPORTANTE: este método deve retornar um CollectionViewModel,
     // e não simplesmente uma coleção, pois senão não vai atualizar
     // as variáveis de coleção e de ambiente.
-    public IPororocaVariableResolver ProvideVariableResolver() =>
+    public CollectionViewModel ProvideVariableResolver() =>
         ((WebSocketConnectionViewModel)((WebSocketClientMessageViewModel)DataContext!).Parent).col;
 
     #endregion

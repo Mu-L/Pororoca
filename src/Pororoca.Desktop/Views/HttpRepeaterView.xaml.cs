@@ -9,11 +9,10 @@ using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Common;
-using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class HttpRepeaterView : UserControl, IPororocaVariableResolverProvider
+public sealed class HttpRepeaterView : UserControl, ICollectionViewModelProvider
 {
     private readonly AvaloniaEdit.TextMate.TextMate.Installation rawInputDataEditorTextMateInstallation;
     private string? currentRawInputDataSyntaxLangId;
@@ -63,6 +62,6 @@ public sealed class HttpRepeaterView : UserControl, IPororocaVariableResolverPro
     // IMPORTANTE: este método deve retornar um CollectionViewModel,
     // e não simplesmente uma coleção, pois senão não vai atualizar
     // as variáveis de coleção e de ambiente.
-    public IPororocaVariableResolver ProvideVariableResolver() =>
+    public CollectionViewModel ProvideVariableResolver() =>
         ((HttpRepeaterViewModel)DataContext!).Collection;
 }

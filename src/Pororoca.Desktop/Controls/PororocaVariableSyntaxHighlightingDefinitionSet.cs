@@ -16,7 +16,6 @@ internal sealed class PororocaVariableSyntaxHighlightingDefinitionSet : SyntaxHi
         [
             new(id: 1, name: "Pororoca Variable", IPororocaVariableResolver.PororocaVariableRegex)
             {
-                Foreground = Brushes.Red,
                 RegexMatchIdMapper = MapPororocaVariableRegexMatchToId,
                 RegexMatchIdForegroundMapper = MapPororocaVariableRegexMatchIdToForeground
             }

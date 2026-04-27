@@ -199,9 +199,31 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
         }
     }
 
-    public Func<Match, int>? RegexMatchIdMapper { get; set; }
+    public Func<Match, int>? RegexMatchIdMapper
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            Validate();
+            OnPropertyChanged(nameof(RegexMatchIdMapper));
+        }
+    }
 
-    public Func<int, IBrush>? RegexMatchIdForegroundMapper { get; set; }
+    public Func<int, IBrush>? RegexMatchIdForegroundMapper
+    {
+        get;
+        set
+        {
+            if (field == value)
+                return;
+            field = value;
+            Validate();
+            OnPropertyChanged(nameof(RegexMatchIdForegroundMapper));
+        }
+    }
 
     /// <summary>
     /// Get or set text decorations of the definition.

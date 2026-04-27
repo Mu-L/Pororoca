@@ -672,17 +672,6 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
             CreateTextProperties(defaultRunProperties);
         }
 
-/*#if DEBUG
-        StringBuilder sb = new("## TEXT PROPERTIES ##\r\n");
-        sb.AppendLine($"## SELECTION: {SelectionStart}-{SelectionEnd}");
-        foreach (var tp in this.textProperties)
-        {
-            sb.AppendLine($"“{text[tp.Start..(tp.Start + tp.Length)]}” ({tp.Start}-{tp.Start + tp.Length}): background {tp.Value.BackgroundBrush}, foreground {tp.Value.ForegroundBrush}");
-        }
-        sb.AppendLine("## TEXT PROPERTIES ##");
-        Debug.WriteLine(sb.ToString());
-#endif*/
-
         // create text layout
         this.textLayout = new TextLayout(
             text,

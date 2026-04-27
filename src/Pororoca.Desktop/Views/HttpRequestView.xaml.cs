@@ -10,11 +10,10 @@ using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Entities.Pororoca.Http;
-using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class HttpRequestView : UserControl, IPororocaVariableResolverProvider
+public sealed class HttpRequestView : UserControl, ICollectionViewModelProvider
 {
     private readonly AvaloniaEdit.TextMate.TextMate.Installation httpReqRawBodyEditorTextMateInstallation;
     private string? currentHttpReqRawBodySyntaxLangId;
@@ -124,7 +123,7 @@ public sealed class HttpRequestView : UserControl, IPororocaVariableResolverProv
     // IMPORTANTE: este método deve retornar um CollectionViewModel,
     // e não simplesmente uma coleção, pois senão não vai atualizar
     // as variáveis de coleção e de ambiente.
-    public IPororocaVariableResolver ProvideVariableResolver() =>
+    public CollectionViewModel ProvideVariableResolver() =>
         ((HttpRequestViewModel)DataContext!).col;
 
     #endregion

@@ -75,8 +75,6 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
         // setup actions
         this.correctCaretIndexAction =  new(() =>
         {
-            int currentCaretIndex = CaretIndex, currentSelectionStart = SelectionStart,
-                textLength = Text?.Length ?? -1, preeditTextLength = PreeditText?.Length ?? -1;
             try
             {
                 if (SelectionStart != SelectionEnd)
@@ -85,19 +83,8 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
                 if (CaretIndex != SelectionStart)
                     CaretIndex = SelectionStart;
             }
-            catch (IndexOutOfRangeException ex)
+            catch
             {
-                StringBuilder sb = new();
-                sb.AppendLine("Error whilst trying to correct caret index in SyntaxHighlightingTextPresenter.");
-                sb.AppendLine($"CaretIndex: {currentCaretIndex}");
-                sb.AppendLine($"SelectionStart: {currentSelectionStart}");
-                sb.AppendLine($"Text.Length: {textLength}");
-                sb.AppendLine($"PreeditText.Length: {preeditTextLength}");
-
-                PororocaLogger.Instance?.Log(PororocaLogLevel.Error, sb.ToString(), ex);
-#if DEBUG
-                throw;
-#endif
             }
         });
 
@@ -182,29 +169,12 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
     /// <inheritdoc/>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        //int currentCaretIndex = CaretIndex, currentSelectionStart = SelectionStart, currentSelectionEnd = SelectionEnd,
-        //        textLength = Text?.Length ?? -1, preeditTextLength = PreeditText?.Length ?? -1;
         try
         {
             base.OnPropertyChanged(change);
         }
-        catch// (IndexOutOfRangeException)
+        catch
         {
-            /*StringBuilder sb = new();
-            sb.AppendLine("Error OnPropertyChanged in SyntaxHighlightingTextPresenter.");
-            sb.AppendLine($"PropertyName: {change.Property.Name}");
-            sb.AppendLine($"OldValue: {change.OldValue}");
-            sb.AppendLine($"NewValue: {change.NewValue}");
-            sb.AppendLine($"CaretIndex: {currentCaretIndex}");
-            sb.AppendLine($"SelectionStart: {currentSelectionStart}");
-            sb.AppendLine($"SelectionEnd: {currentSelectionEnd}");
-            sb.AppendLine($"Text.Length: {textLength}");
-            sb.AppendLine($"PreeditText.Length: {preeditTextLength}");
-
-            PororocaLogger.Instance?.Log(PororocaLogLevel.Error, sb.ToString(), ex);
-#if DEBUG
-            throw;
-#endif*/
         }
         
         var property = change.Property;
