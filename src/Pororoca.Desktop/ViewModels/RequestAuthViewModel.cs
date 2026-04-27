@@ -10,6 +10,8 @@ namespace Pororoca.Desktop.ViewModels;
 
 public sealed class RequestAuthViewModel : ViewModelBase
 {
+    internal readonly CollectionViewModel col;
+
     #region REQUEST AUTH
 
     private readonly Action clearInvalidWarningsCallback;
@@ -216,8 +218,9 @@ public sealed class RequestAuthViewModel : ViewModelBase
 
     #endregion
 
-    public RequestAuthViewModel(PororocaRequestAuth? customAuth, bool isInheritFromCollectionOptionEnabled, Action clearInvalidWarningsCallback)
+    public RequestAuthViewModel(CollectionViewModel col, PororocaRequestAuth? customAuth, bool isInheritFromCollectionOptionEnabled, Action clearInvalidWarningsCallback)
     {
+        this.col = col;
         this.clearInvalidWarningsCallback = clearInvalidWarningsCallback;
         AuthModeSelectedIndex = AuthModeMapping.MapEnumToIndex(customAuth?.Mode);
         IsInheritFromCollectionOptionEnabled = isInheritFromCollectionOptionEnabled;

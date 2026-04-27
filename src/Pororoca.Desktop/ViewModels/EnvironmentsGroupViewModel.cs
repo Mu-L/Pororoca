@@ -1,8 +1,10 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.ExportImport;
 using Pororoca.Desktop.HotKeys;
 using Pororoca.Desktop.Localization;
+using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Domain.Features.Entities.Pororoca;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -100,15 +102,15 @@ public sealed class EnvironmentsGroupViewModel : CollectionOrganizationItemParen
             return; // if there are no environments
         }
 
-        var selectedEnv = Items.FirstOrDefault(i => i.IsCurrentEnvironment);
+        var currentEnv = Items.FirstOrDefault(i => i.IsCurrentEnvironment);
         int nextIndex;
-        if (selectedEnv == null)
+        if (currentEnv == null)
         {
             nextIndex = 0; // if no active environments, the first one will be activated
         }
         else
         {
-            int currentIndex = Items.IndexOf(selectedEnv);
+            int currentIndex = Items.IndexOf(currentEnv);
             if (trueIfNextFalseIfPrevious)
             {
                 // cycling forward
@@ -121,7 +123,23 @@ public sealed class EnvironmentsGroupViewModel : CollectionOrganizationItemParen
             }
         }
         var nextEnv = Items[nextIndex];
-        ToggleEnabledEnvironment(nextEnv);
+
+        if (nextEnv == currentEnv)
+        {
+            return;
+        }
+        else
+        {
+            ToggleEnabledEnvironment(nextEnv);
+            // GAMBIARRA!!!
+            // Se o usuário estiver rotacionando o ambiente ativo,
+            // significa que talvez uma variável que não é efetiva em um ambiente seja efetiva em outro,
+            // de modo que ela deva ficar colorida ou descolorida nos TextEditors e SyntaxHighlighterTextBoxes,
+            // por exemplo, na URL, no corpo de requisição HTTP, mensagem de cliente WebSocket
+            // ou dados de entrada de repetidora.
+            TextEditorConfiguration.InvalidateTextEditorsAreas();
+            SyntaxHighlighter.InvalidateSyntaxHighlighterTextBoxesTexts();
+        }
     }
 
     public void UpdateSelectedEnvironmentName()

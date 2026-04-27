@@ -59,7 +59,7 @@ public static class IPororocaVariableResolverTests
         // THEN
         Assert.Equal($"Today is {todayStr}", resolvedString);
     }
-    
+
     [Fact]
     public static void Should_replace_recursive_variables_correctly()
     {

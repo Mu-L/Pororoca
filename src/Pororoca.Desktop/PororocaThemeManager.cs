@@ -33,24 +33,26 @@ public static class PororocaThemeManager
 
     public static PororocaTheme DefaultTheme => PororocaTheme.Dark;
 
+    public static SolidColorBrush RegularVariableForegroundBrush =>
+        GetResource<SolidColorBrush>("RegularVariableForegroundBrush");
+
+    public static SolidColorBrush PredefinedVariableForegroundBrush =>
+        GetResource<SolidColorBrush>("PredefinedVariableForegroundBrush");
+
+    public static SolidColorBrush NoMatchingVariableForegroundBrush =>
+        GetResource<SolidColorBrush>("NoMatchingVariableForegroundBrush");
+
     public static ThemeName TextEditorThemeName =>
         Enum.Parse<ThemeName>(GetResource<string>("TextEditorTheme"));
 
-    public static SolidColorBrush RegularVariableForegroundBrush =>
-        GetResource<SolidColorBrush>("TextEditorRegularVariableForegroundBrush");
-
-    public static SolidColorBrush PredefinedVariableForegroundBrush =>
-        GetResource<SolidColorBrush>("TextEditorPredefinedVariableForegroundBrush");
-
-    public static SolidColorBrush HyperlinkForegroundBrush =>
-        GetResource<SolidColorBrush>("TextEditorHyperlinkForegroundBrush");    
+    public static SolidColorBrush TextEditorHyperlinkForegroundBrush =>
+        GetResource<SolidColorBrush>("TextEditorHyperlinkForegroundBrush");
 
     public static SolidColorBrush TextEditorSelectionHighlightBrush =>
         GetResource<SolidColorBrush>("TextControlSelectionHighlightColor");
 
-
     private static void ApplyTheme(PororocaTheme theme)
-    {       
+    {
         Application.Current!.RequestedThemeVariant = theme switch
         {
             PororocaTheme.Light => Light,
@@ -61,13 +63,6 @@ public static class PororocaThemeManager
             _ => AmazonianNight
         };
 
-
-        TextEditorConfiguration.PororocaVariableHighlightingTransformers.ForEach(t =>
-        {
-            t.RegularVariableForegroundBrush = RegularVariableForegroundBrush;
-            t.PredefinedVariableForegroundBrush = PredefinedVariableForegroundBrush;
-        });
-
         // Only setting text editors' theme if the TextEditors were already setup,
         // otherwise, a wrong text editor theme will be loaded before the corresponding user saved theme
         if (TextEditorConfiguration.TextMateInstallations.Count > 0)
@@ -76,7 +71,7 @@ public static class PororocaThemeManager
             TextEditorConfiguration.TextMateInstallations.ForEach(tmi =>
             {
                 tmi.Item1.TextArea.SelectionBrush = TextEditorSelectionHighlightBrush;
-                tmi.Item1.TextArea.TextView.LinkTextForegroundBrush = HyperlinkForegroundBrush;
+                tmi.Item1.TextArea.TextView.LinkTextForegroundBrush = TextEditorHyperlinkForegroundBrush;
                 tmi.Item2.SetTheme(textEditorTheme);
             });
         }

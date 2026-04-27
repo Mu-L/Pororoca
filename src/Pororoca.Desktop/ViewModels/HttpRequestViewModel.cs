@@ -262,7 +262,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
     #endregion
 
     public HttpRequestViewModel(ICollectionOrganizationItemParentViewModel parentVm,
-                                CollectionViewModel variableResolver,
+                                CollectionViewModel col,
                                 PororocaHttpRequest req) : base(parentVm, req.Name)
     {
         #region COLLECTION ORGANIZATION
@@ -272,7 +272,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
 
         #region REQUEST
 
-        this.col = variableResolver;
+        this.col = col;
 
         #endregion
 
@@ -310,7 +310,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         #endregion
 
         #region REQUEST AUTH
-        RequestAuthDataCtx = new(req.CustomAuth, true, ClearInvalidRequestWarnings);
+        RequestAuthDataCtx = new(col, req.CustomAuth, true, ClearInvalidRequestWarnings);
         #endregion
 
         #region SEND OR CANCEL REQUEST
