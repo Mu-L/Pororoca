@@ -49,16 +49,20 @@ public class SyntaxHighlightingTextBox : TextBox
     /// <summary>
     /// Get or set syntax highlighting definition set.
     /// </summary>
+    private SyntaxHighlightingDefinitionSet? definitionSetField;
     public SyntaxHighlightingDefinitionSet? DefinitionSet
     {
-        get;
+        get => this.definitionSetField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.definitionSetField == value)
                 return;
-            SetAndRaise(DefinitionSetProperty, ref field, value);
-            this.textPresenter?.DefinitionSet = field;
+            SetAndRaise(DefinitionSetProperty, ref this.definitionSetField, value);
+            if (this.textPresenter != null)
+            {
+                this.textPresenter.DefinitionSet = this.definitionSetField;
+            }
         }
     }
 
@@ -87,7 +91,10 @@ public class SyntaxHighlightingTextBox : TextBox
     {
         base.OnApplyTemplate(e);
         this.textPresenter = e.NameScope.Find<SyntaxHighlightingTextPresenter>("PART_TextPresenter");
-        this.textPresenter?.DefinitionSet = DefinitionSet;
+        if (this.textPresenter != null)
+        {
+            this.textPresenter.DefinitionSet = DefinitionSet;
+        }
     }
 
     /// <summary>

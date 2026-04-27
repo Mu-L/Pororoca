@@ -157,26 +157,27 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// </summary>
     public SyntaxHighlighter()
     {
-        invalidateSyntaxHighlightersTextBoxesTextsCallbacks.Add(this.InvalidateTextProperties);
+        invalidateSyntaxHighlightersTextBoxesTextsCallbacks.Add(InvalidateTextProperties);
     }
 
     /// <summary>
     /// Get or set base background brush.
     /// </summary>
+    private IBrush? backgroundField;
     public IBrush? Background
     {
-        get;
+        get => this.backgroundField;
         set
         {
             VerifyAccess();
-            if (ReferenceEquals(field, value))
+            if (ReferenceEquals(this.backgroundField, value))
                 return;
             this.backgroundPropertyChangedHandlerToken?.Dispose();
             if (value is AvaloniaObject aobj)
             {
                 this.backgroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
-            SetAndRaise(BackgroundProperty, ref field, value);
+            SetAndRaise(BackgroundProperty, ref this.backgroundField, value);
             InvalidateTextProperties();
         }
     }
@@ -184,15 +185,16 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set syntax highlighting definition set.
     /// </summary>
+    private SyntaxHighlightingDefinitionSet? definitionSetField;
     public SyntaxHighlightingDefinitionSet? DefinitionSet
     {
-        get;
+        get => this.definitionSetField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.definitionSetField == value)
                 return;
-            SetAndRaise(DefinitionSetProperty, ref field, value);
+            SetAndRaise(DefinitionSetProperty, ref this.definitionSetField, value);
             InvalidateTextLayout();
         }
     }
@@ -200,116 +202,123 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set flow direction.
     /// </summary>
+    private FlowDirection flowDirectionField = FlowDirection.LeftToRight;
     public FlowDirection FlowDirection
     {
-        get;
+        get => this.flowDirectionField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.flowDirectionField == value)
                 return;
-            SetAndRaise(FlowDirectionProperty, ref field, value);
+            SetAndRaise(FlowDirectionProperty, ref this.flowDirectionField, value);
             InvalidateTextProperties();
         }
-    } = FlowDirection.LeftToRight;
+    }
 
     /// <summary>
     /// Get or set base font family.
     /// </summary>
+    private FontFamily fontFamilyField = FontManager.Current.DefaultFontFamily;
     public FontFamily FontFamily
     {
-        get;
+        get => this.fontFamilyField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.fontFamilyField == value)
                 return;
-            SetAndRaise(FontFamilyProperty, ref field, value);
+            SetAndRaise(FontFamilyProperty, ref this.fontFamilyField, value);
             InvalidateTextProperties();
         }
-    } = FontManager.Current.DefaultFontFamily;
+    }
 
     /// <summary>
     /// Get or set base font size.
     /// </summary>
+    private double fontSizeField = 12;
     public double FontSize
     {
-        get;
+        get => this.fontSizeField;
         set
         {
             VerifyAccess();
-            if (Math.Abs(field - value) <= 0.01)
+            if (Math.Abs(this.fontSizeField - value) <= 0.01)
                 return;
-            SetAndRaise(FontSizeProperty, ref field, value);
+            SetAndRaise(FontSizeProperty, ref this.fontSizeField, value);
             InvalidateTextProperties();
         }
-    } = 12;
+    }
 
     /// <summary>
     /// Get or set base font stretch.
     /// </summary>
+    private FontStretch fontStretchField = FontStretch.Normal;
     public FontStretch FontStretch
     {
-        get;
+        get => this.fontStretchField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.fontStretchField == value)
                 return;
-            SetAndRaise(FontStretchProperty, ref field, value);
+            SetAndRaise(FontStretchProperty, ref this.fontStretchField, value);
             InvalidateTextLayout();
         }
-    } = FontStretch.Normal;
+    }
 
     /// <summary>
     /// Get or set base font style.
     /// </summary>
+    private FontStyle fontStyleField = FontStyle.Normal;
     public FontStyle FontStyle
     {
-        get;
+        get => this.fontStyleField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.fontStyleField == value)
                 return;
-            SetAndRaise(FontStyleProperty, ref field, value);
+            SetAndRaise(FontStyleProperty, ref this.fontStyleField, value);
             InvalidateTextProperties();
         }
-    } = FontStyle.Normal;
+    }
 
     /// <summary>
     /// Get or set base font weight.
     /// </summary>
+    private FontWeight fontWeightField = FontWeight.Normal;
     public FontWeight FontWeight
     {
-        get;
+        get => this.fontWeightField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.fontWeightField == value)
                 return;
-            SetAndRaise(FontWeightProperty, ref field, value);
+            SetAndRaise(FontWeightProperty, ref this.fontWeightField, value);
             InvalidateTextLayout();
         }
-    } = FontWeight.Normal;
+    }
 
     /// <summary>
     /// Get or set base foreground brush.
     /// </summary>
+    private IBrush? foregroundField;
     public IBrush? Foreground
     {
-        get;
+        get => this.foregroundField;
         set
         {
             VerifyAccess();
-            if (ReferenceEquals(field, value))
+            if (ReferenceEquals(this.foregroundField, value))
                 return;
             this.foregroundPropertyChangedHandlerToken?.Dispose();
             if (value is AvaloniaObject aobj)
             {
                 this.foregroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
-            SetAndRaise(ForegroundProperty, ref field, value);
+            SetAndRaise(ForegroundProperty, ref this.foregroundField, value);
             InvalidateTextProperties();
         }
     }
@@ -317,17 +326,18 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set letter spacing.
     /// </summary>
+    private double letterSpacingField;
     public double LetterSpacing
     {
-        get;
+        get => this.letterSpacingField;
         set
         {
             VerifyAccess();
             if (!double.IsFinite(value))
                 throw new ArgumentOutOfRangeException(nameof(value));
-            if (Math.Abs(field - value) <= 0.01)
+            if (Math.Abs(this.letterSpacingField - value) <= 0.01)
                 return;
-            SetAndRaise(LetterSpacingProperty, ref field, value);
+            SetAndRaise(LetterSpacingProperty, ref this.letterSpacingField, value);
             InvalidateTextLayout();
         }
     }
@@ -335,61 +345,64 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set line height
     /// </summary>
+    private double lineHeightField = double.NaN;
     public double LineHeight
     {
-        get;
+        get => this.lineHeightField;
         set
         {
             VerifyAccess();
-            if (double.IsNaN(value) && double.IsNaN(field))
+            if (double.IsNaN(value) && double.IsNaN(this.lineHeightField))
                 return;
             else if (!double.IsFinite(value) || value <= 0)
                 throw new ArgumentOutOfRangeException(nameof(value));
-            else if (double.IsFinite(field) && Math.Abs(field - value) <= 0.01)
+            else if (double.IsFinite(this.lineHeightField) && Math.Abs(this.lineHeightField - value) <= 0.01)
                 return;
-            SetAndRaise(LineHeightProperty, ref field, value);
+            SetAndRaise(LineHeightProperty, ref this.lineHeightField, value);
             InvalidateTextLayout();
         }
-    } = double.NaN;
+    }
 
 
     /// <summary>
     /// Get or set maximum height of text layout.
     /// </summary>
+    private double maxHeightField = double.PositiveInfinity;
     public double MaxHeight
     {
-        get;
+        get => this.maxHeightField;
         set
         {
             VerifyAccess();
             if (double.IsInfinity(value))
             {
-                if (value.Equals(field))
+                if (value.Equals(this.maxHeightField))
                     return;
             }
             else if (double.IsNaN(value))
                 throw new ArgumentOutOfRangeException(nameof(value));
-            else if (double.IsFinite(field) && Math.Abs(field - value) <= 0.01)
+            else if (double.IsFinite(this.maxHeightField) && Math.Abs(this.maxHeightField - value) <= 0.01)
                 return;
-            SetAndRaise(MaxHeightProperty, ref field, value);
+            SetAndRaise(MaxHeightProperty, ref this.maxHeightField, value);
             InvalidateTextLayout();
         }
-    } = double.PositiveInfinity;
+    }
 
     /// <summary>
     /// Get or set maximum number of lines.
     /// </summary>
+    private int maxLinesField;
     public int MaxLines
     {
-        get;
+        get => this.maxLinesField;
         set
         {
             VerifyAccess();
             if (value < 0)
                 throw new ArgumentOutOfRangeException(nameof(value));
-            else if (field == value)
+            else if (this.maxLinesField == value)
                 return;
-            SetAndRaise(MaxLinesProperty, ref field, value);
+            SetAndRaise(MaxLinesProperty, ref this.maxLinesField, value);
             InvalidateTextLayout();
         }
     }
@@ -397,54 +410,57 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set maximum number of token should be highlighted. Negative value if there is no limitation.
     /// </summary>
+    private int maxTokenCountField = -1;
     public int MaxTokenCount
     {
-        get;
+        get => this.maxTokenCountField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.maxTokenCountField == value)
                 return;
-            SetAndRaise(MaxTokenCountProperty, ref field, value);
+            SetAndRaise(MaxTokenCountProperty, ref this.maxTokenCountField, value);
             InvalidateTextLayout();
         }
-    } = -1;
+    }
 
     /// <summary>
     /// Get or set maximum width of text layout.
     /// </summary>
+    private double maxWidthField = double.PositiveInfinity;
     public double MaxWidth
     {
-        get;
+        get => this.maxWidthField;
         set
         {
             VerifyAccess();
             if (double.IsInfinity(value))
             {
-                if (value.Equals(field))
+                if (value.Equals(this.maxWidthField))
                     return;
             }
             else if (double.IsNaN(value))
                 throw new ArgumentOutOfRangeException(nameof(value));
-            else if (double.IsFinite(field) && Math.Abs(field - value) <= 0.01)
+            else if (double.IsFinite(this.maxWidthField) && Math.Abs(this.maxWidthField - value) <= 0.01)
                 return;
-            SetAndRaise(MaxWidthProperty, ref field, value);
+            SetAndRaise(MaxWidthProperty, ref this.maxWidthField, value);
             InvalidateTextLayout();
         }
-    } = double.PositiveInfinity;
+    }
 
     /// <summary>
     /// Get or set preedit text.
     /// </summary>
+    private string? preeditTextField;
     public string? PreeditText
     {
-        get;
+        get => this.preeditTextField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.preeditTextField == value)
                 return;
-            SetAndRaise(PreeditTextProperty, ref field, value);
+            SetAndRaise(PreeditTextProperty, ref this.preeditTextField, value);
             InvalidateTextProperties();
         }
     }
@@ -452,20 +468,21 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set background brush for selected text.
     /// </summary>
+    private IBrush? selectionBackgroundField;
     public IBrush? SelectionBackground
     {
-        get;
+        get => this.selectionBackgroundField;
         set
         {
             VerifyAccess();
-            if (ReferenceEquals(field, value))
+            if (ReferenceEquals(this.selectionBackgroundField, value))
                 return;
             this.selectionBackgroundPropertyChangedHandlerToken?.Dispose();
             if (value is AvaloniaObject aobj)
             {
                 this.selectionBackgroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
-            SetAndRaise(SelectionBackgroundProperty, ref field, value);
+            SetAndRaise(SelectionBackgroundProperty, ref this.selectionBackgroundField, value);
             if (SelectionStart != SelectionEnd)
                 InvalidateTextProperties();
         }
@@ -474,20 +491,21 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set foreground brush for selected text.
     /// </summary>
+    private IBrush? selectionForegroundField;
     public IBrush? SelectionForeground
     {
-        get;
+        get => this.selectionForegroundField;
         set
         {
             VerifyAccess();
-            if (ReferenceEquals(field, value))
+            if (ReferenceEquals(this.selectionForegroundField, value))
                 return;
             this.selectionForegroundPropertyChangedHandlerToken?.Dispose();
             if (value is AvaloniaObject aobj)
             {
                 this.selectionForegroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
-            SetAndRaise(SelectionForegroundProperty, ref field, value);
+            SetAndRaise(SelectionForegroundProperty, ref this.selectionForegroundField, value);
             if (SelectionStart != SelectionEnd)
                 InvalidateTextProperties();
         }
@@ -496,15 +514,16 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set start (inclusive) index of selected text.
     /// </summary>
+    private int selectionStartField;
     public int SelectionStart
     {
-        get;
+        get => this.selectionStartField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.selectionStartField == value)
                 return;
-            SetAndRaise(SelectionStartProperty, ref field, value);
+            SetAndRaise(SelectionStartProperty, ref this.selectionStartField, value);
             if (SelectionForeground != null)
                 InvalidateTextProperties();
         }
@@ -513,15 +532,16 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set end (exclusive) index of selected text.
     /// </summary>
+    private int selectionEndField;
     public int SelectionEnd
     {
-        get;
+        get => this.selectionEndField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.selectionEndField == value)
                 return;
-            SetAndRaise(SelectionEndProperty, ref field, value);
+            SetAndRaise(SelectionEndProperty, ref this.selectionEndField, value);
             if (SelectionForeground != null)
                 InvalidateTextProperties();
         }
@@ -530,19 +550,20 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set text.
     /// </summary>
+    private string? textField;
     public string? Text
     {
-        get;
+        get => this.textField;
         set
         {
             VerifyAccess();
-            if ((field?.Length ?? 0) < 1024
+            if ((this.textField?.Length ?? 0) < 1024
                 && (value?.Length ?? 0) < 1024
-                && field == value)
+                && this.textField == value)
             {
                 return;
             }
-            SetAndRaise(TextProperty, ref field, value);
+            SetAndRaise(TextProperty, ref this.textField, value);
             InvalidateTextProperties();
         }
     }
@@ -550,31 +571,33 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set text alignment.
     /// </summary>
+    private TextAlignment textAlignmentField = TextAlignment.Left;
     public TextAlignment TextAlignment
     {
-        get;
+        get => this.textAlignmentField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.textAlignmentField == value)
                 return;
-            SetAndRaise(TextAlignmentProperty, ref field, value);
+            SetAndRaise(TextAlignmentProperty, ref this.textAlignmentField, value);
             InvalidateTextLayout();
         }
-    } = TextAlignment.Left;
+    }
 
     /// <summary>
     /// Get or set base text decorations.
     /// </summary>
+    private TextDecorationCollection? textDecorationsField;
     public TextDecorationCollection? TextDecorations
     {
-        get;
+        get => this.textDecorationsField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.textDecorationsField == value)
                 return;
-            SetAndRaise(TextDecorationProperty, ref field, value);
+            SetAndRaise(TextDecorationProperty, ref this.textDecorationsField, value);
             InvalidateTextProperties();
         }
     }
@@ -612,34 +635,36 @@ public sealed class SyntaxHighlighter : AvaloniaObject, IDisposable
     /// <summary>
     /// Get or set text trimming.
     /// </summary>
+    private TextTrimming textTrimmingField = TextTrimming.CharacterEllipsis;
     public TextTrimming TextTrimming
     {
-        get;
+        get => this.textTrimmingField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.textTrimmingField == value)
                 return;
-            SetAndRaise(TextTrimmingProperty, ref field, value);
+            SetAndRaise(TextTrimmingProperty, ref this.textTrimmingField, value);
             InvalidateTextLayout();
         }
-    } = TextTrimming.CharacterEllipsis;
+    }
 
     /// <summary>
     /// Get or set text wrapping.
     /// </summary>
+    private TextWrapping textWrappingField = TextWrapping.NoWrap;
     public TextWrapping TextWrapping
     {
-        get;
+        get => this.textWrappingField;
         set
         {
             VerifyAccess();
-            if (field == value)
+            if (this.textWrappingField == value)
                 return;
-            SetAndRaise(TextWrappingProperty, ref field, value);
+            SetAndRaise(TextWrappingProperty, ref this.textWrappingField, value);
             InvalidateTextLayout();
         }
-    } = TextWrapping.NoWrap;
+    }
 
     /// <summary>
     /// Create text layout.

@@ -52,7 +52,7 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     {
         Id = id;
         Name = name;
-        Pattern = pattern;
+        this.patternField = pattern;
     }
 
     /// <summary>
@@ -73,14 +73,15 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// <summary>
     /// Get or set pattern of the token.
     /// </summary>
+    private Regex patternField;
     public Regex Pattern
     {
-        get;
+        get => this.patternField;
         set
         {
-            if (ArePatternsEqual(field, value))
+            if (ArePatternsEqual(this.patternField, value))
                 return;
-            field = value;
+            this.patternField = value;
             Validate();
             OnPropertyChanged(nameof(Pattern));
         }
@@ -94,19 +95,20 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// <summary>
     /// Get or set background brush of the definition.
     /// </summary>
+    private IBrush? backgroundField;
     public IBrush? Background
     {
-        get;
+        get => this.backgroundField;
         set
         {
-            if (ReferenceEquals(field, value))
+            if (ReferenceEquals(this.backgroundField, value))
                 return;
             this.backgroundPropertyChangedHandlerToken?.Dispose();
             if (value is AvaloniaObject aobj)
             {
                 this.backgroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
-            field = value;
+            this.backgroundField = value;
             Validate();
             OnPropertyChanged(nameof(Background));
         }
@@ -115,14 +117,15 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// <summary>
     /// Get or set font family of the definition.
     /// </summary>
+    private FontFamily? fontFamilyField;
     public FontFamily? FontFamily
     {
-        get;
+        get => this.fontFamilyField;
         set
         {
-            if (field?.Equals(value) ?? value is null)
+            if (this.fontFamilyField?.Equals(value) ?? value is null)
                 return;
-            field = value;
+            this.fontFamilyField = value;
             Validate();
             OnPropertyChanged(nameof(FontFamily));
         }
@@ -131,32 +134,34 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// <summary>
     /// Get or set font size of the definition.
     /// </summary>
+    private double fontSizeField = double.NaN;
     public double FontSize
     {
-        get;
+        get => this.fontSizeField;
         set
         {
             if (double.IsInfinity(value) || value <= 0)
                 throw new ArgumentOutOfRangeException(nameof(value));
-            if (AreFontSizesEqual(field, value))
+            if (AreFontSizesEqual(this.fontSizeField, value))
                 return;
-            field = value;
+            this.fontSizeField = value;
             Validate();
             OnPropertyChanged(nameof(FontSize));
         }
-    } = double.NaN;
+    }
 
     /// <summary>
     /// Get or set font style of the definition.
     /// </summary>
+    private FontStyle? fontStyleField;
     public FontStyle? FontStyle
     {
-        get;
+        get => this.fontStyleField;
         set
         {
-            if (field == value)
+            if (this.fontStyleField == value)
                 return;
-            field = value;
+            this.fontStyleField = value;
             Validate();
             OnPropertyChanged(nameof(FontStyle));
         }
@@ -165,14 +170,15 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// <summary>
     /// Get or set font weight of the definition.
     /// </summary>
+    private FontWeight? fontWeightField;
     public FontWeight? FontWeight
     {
-        get;
+        get => this.fontWeightField;
         set
         {
-            if (field == value)
+            if (this.fontWeightField == value)
                 return;
-            field = value;
+            this.fontWeightField = value;
             Validate();
             OnPropertyChanged(nameof(FontWeight));
         }
@@ -181,45 +187,48 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// <summary>
     /// Get or set foreground brush of the definition.
     /// </summary>
+    private IBrush? foregroundField;
     public IBrush? Foreground
     {
-        get;
+        get => this.foregroundField;
         set
         {
-            if (ReferenceEquals(field, value))
+            if (ReferenceEquals(this.foregroundField, value))
                 return;
             this.foregroundPropertyChangedHandlerToken?.Dispose();
             if (value is AvaloniaObject aobj)
             {
                 this.foregroundPropertyChangedHandlerToken = new(aobj, nameof(AvaloniaObject.PropertyChanged), OnBrushPropertyChanged);
             }
-            field = value;
+            this.foregroundField = value;
             Validate();
             OnPropertyChanged(nameof(Foreground));
         }
     }
 
+    private Func<Match, int>? regexMatchIdMapperField;
     public Func<Match, int>? RegexMatchIdMapper
     {
-        get;
+        get => this.regexMatchIdMapperField;
         set
         {
-            if (field == value)
+            if (this.regexMatchIdMapperField == value)
                 return;
-            field = value;
+            this.regexMatchIdMapperField = value;
             Validate();
             OnPropertyChanged(nameof(RegexMatchIdMapper));
         }
     }
 
+    private Func<int, IBrush>? regexMatchIdForegroundMapperField;
     public Func<int, IBrush>? RegexMatchIdForegroundMapper
     {
-        get;
+        get => this.regexMatchIdForegroundMapperField;
         set
         {
-            if (field == value)
+            if (this.regexMatchIdForegroundMapperField == value)
                 return;
-            field = value;
+            this.regexMatchIdForegroundMapperField = value;
             Validate();
             OnPropertyChanged(nameof(RegexMatchIdForegroundMapper));
         }
@@ -228,13 +237,15 @@ public sealed class SyntaxHighlightingDefinition : INotifyPropertyChanged, IDisp
     /// <summary>
     /// Get or set text decorations of the definition.
     /// </summary>
+    private TextDecorationCollection? textDecorationsField;
     public TextDecorationCollection? TextDecorations
     {
-        get; set
+        get => this.textDecorationsField;
+        set
         {
-            if (field == value)
+            if (this.textDecorationsField == value)
                 return;
-            field = value;
+            this.textDecorationsField = value;
             Validate();
             OnPropertyChanged(nameof(TextDecorations));
         }
