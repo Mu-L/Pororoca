@@ -182,7 +182,31 @@ public class SyntaxHighlightingTextPresenter : Avalonia.Controls.Presenters.Text
     /// <inheritdoc/>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnPropertyChanged(change);
+        //int currentCaretIndex = CaretIndex, currentSelectionStart = SelectionStart, currentSelectionEnd = SelectionEnd,
+        //        textLength = Text?.Length ?? -1, preeditTextLength = PreeditText?.Length ?? -1;
+        try
+        {
+            base.OnPropertyChanged(change);
+        }
+        catch// (IndexOutOfRangeException)
+        {
+            /*StringBuilder sb = new();
+            sb.AppendLine("Error OnPropertyChanged in SyntaxHighlightingTextPresenter.");
+            sb.AppendLine($"PropertyName: {change.Property.Name}");
+            sb.AppendLine($"OldValue: {change.OldValue}");
+            sb.AppendLine($"NewValue: {change.NewValue}");
+            sb.AppendLine($"CaretIndex: {currentCaretIndex}");
+            sb.AppendLine($"SelectionStart: {currentSelectionStart}");
+            sb.AppendLine($"SelectionEnd: {currentSelectionEnd}");
+            sb.AppendLine($"Text.Length: {textLength}");
+            sb.AppendLine($"PreeditText.Length: {preeditTextLength}");
+
+            PororocaLogger.Instance?.Log(PororocaLogLevel.Error, sb.ToString(), ex);
+#if DEBUG
+            throw;
+#endif*/
+        }
+        
         var property = change.Property;
         if (property == PreeditTextProperty)
         {
