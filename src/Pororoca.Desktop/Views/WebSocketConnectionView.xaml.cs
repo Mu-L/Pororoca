@@ -4,7 +4,6 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaEdit;
-using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
@@ -17,16 +16,9 @@ public sealed class WebSocketConnectionView : UserControl, ICollectionViewModelP
     private readonly AvaloniaEdit.TextMate.TextMate.Installation selectedExchangedMessageEditorTextMateInstallation;
     private string? currentSelectedMsgSyntaxLangId;
 
-    private readonly PororocaVariableSyntaxHighlightingDefinitionSet syntaxHighlightingDefinitionSet;
-
     public WebSocketConnectionView()
     {
         InitializeComponent();
-
-        this.syntaxHighlightingDefinitionSet = new(ProvideVariableResolver);
-
-        var urlInput = this.FindControl<SyntaxHighlightingTextBox>("tbUrl")!;
-        urlInput.DefinitionSet = this.syntaxHighlightingDefinitionSet;
 
         var selectedExchangedMessageEditor = this.FindControl<TextEditor>("SelectedExchangedMessageContentEditor");
         this.selectedExchangedMessageEditorTextMateInstallation = TextEditorConfiguration.Setup(selectedExchangedMessageEditor!, false, null);

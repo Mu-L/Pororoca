@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Threading.Channels;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Converters;
 using Pororoca.Desktop.ExportImport;
 using Pororoca.Desktop.Localization;
@@ -30,6 +31,7 @@ public sealed class HttpRepeaterViewModel : CollectionOrganizationItemViewModel
 
     private readonly PororocaRequester requester = PororocaRequester.Singleton;
     internal CollectionViewModel Collection { get; }
+    internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
     #endregion
 
@@ -319,6 +321,7 @@ public sealed class HttpRepeaterViewModel : CollectionOrganizationItemViewModel
         #region COLLECTION ORGANIZATION
         Localizer.Instance.SubscribeToLanguageChange(OnLanguageChanged);
         Collection = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(() => Collection);
         #endregion
 
         #region REPETITION CONFIG

@@ -4,7 +4,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
-using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
@@ -22,16 +21,9 @@ public sealed class HttpRepeaterView : UserControl, ICollectionViewModelProvider
     private readonly AvaloniaEdit.TextMate.TextMate.Installation httpResRawBodyEditorTextMateInstallation;
     private string? currentHttpResRawBodySyntaxLangId;
 
-    private readonly PororocaVariableSyntaxHighlightingDefinitionSet syntaxHighlightingDefinitionSet;
-
     public HttpRepeaterView()
     {
         InitializeComponent();
-
-        this.syntaxHighlightingDefinitionSet = new(ProvideVariableResolver);
-
-        var tbRepetitionInputDataFileSrcPath = this.FindControl<SyntaxHighlightingTextBox>("tbRepetitionInputDataFileSrcPath")!;
-        tbRepetitionInputDataFileSrcPath.DefinitionSet = this.syntaxHighlightingDefinitionSet;
 
         var rawInputDataEditor = this.FindControl<TextEditor>("teRepetitionInputDataRaw")!;
         this.rawInputDataEditorTextMateInstallation = TextEditorConfiguration.Setup(rawInputDataEditor, true, ProvideVariableResolver);

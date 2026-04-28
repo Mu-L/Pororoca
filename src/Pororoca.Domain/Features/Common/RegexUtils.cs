@@ -29,7 +29,7 @@ public static class RegexUtils
 
         if (list.Count == 0)
         {
-            return [(null!, 0, input.Length, null)];
+            return [(null, 0, input.Length, null)];
         }
         else
         {

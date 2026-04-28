@@ -19,16 +19,9 @@ public sealed class WebSocketClientMessageView : UserControl, ICollectionViewMod
     //private readonly ComboBox syntaxThemeCombo;
     private CompletionWindow? rawContentCompletionWindow;
 
-    private readonly PororocaVariableSyntaxHighlightingDefinitionSet syntaxHighlightingDefinitionSet;
-
     public WebSocketClientMessageView()
     {
         InitializeComponent();
-
-        this.syntaxHighlightingDefinitionSet = new(ProvideVariableResolver);
-
-        var tbContentFileSrcPath = this.FindControl<SyntaxHighlightingTextBox>("tbContentFileSrcPath")!;
-        tbContentFileSrcPath.DefinitionSet = this.syntaxHighlightingDefinitionSet;
 
         var rawContentTextEditor = this.FindControl<TextEditor>("teContentRaw")!;
         this.rawContentEditorTextMateInstallation = TextEditorConfiguration.Setup(rawContentTextEditor, true, ProvideVariableResolver);

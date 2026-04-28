@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using AvaloniaEdit.Document;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Converters;
 using Pororoca.Desktop.ExportImport;
 using Pororoca.Desktop.Localization;
@@ -25,6 +26,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
 
     private readonly PororocaRequester requester = PororocaRequester.Singleton;
     internal readonly CollectionViewModel col;
+    internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
     // To preserve the state of the last shown request tab
     [Reactive]
@@ -268,13 +270,11 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         #region COLLECTION ORGANIZATION
         Localizer.Instance.SubscribeToLanguageChange(OnLanguageChanged);
         NameEditableVm.Icon = EditableTextBlockIcon.HttpRequest;
+        this.col = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(() => this.col);
         #endregion
 
         #region REQUEST
-
-        this.col = col;
-
-        #endregion
 
         #region REQUEST HTTP METHOD, HTTP VERSION, URL AND HEADERS
         RequestMethodSelectionOptions = new(AvailableHttpMethods.Select(m => m.ToString()));
@@ -311,6 +311,8 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
 
         #region REQUEST AUTH
         RequestAuthDataCtx = new(col, req.CustomAuth, true, ClearInvalidRequestWarnings);
+        #endregion
+
         #endregion
 
         #region SEND OR CANCEL REQUEST

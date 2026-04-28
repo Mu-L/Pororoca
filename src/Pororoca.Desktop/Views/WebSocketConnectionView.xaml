@@ -64,6 +64,7 @@
           <controls:SyntaxHighlightingTextBox
               x:Name="tbUrl"
               Height="40"
+              DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
               Text="{Binding Url}"
               Watermark="{Binding i18n.WebSocketConnection.UrlWatermark, Mode=OneWay}"
               VerticalContentAlignment="Center"

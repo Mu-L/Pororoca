@@ -76,6 +76,7 @@
           <controls:SyntaxHighlightingTextBox
               x:Name="tbUrl"
               Height="40"
+              DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
               Text="{Binding RequestUrl}"
               Watermark="{Binding i18n.HttpRequest.UrlWatermark, Mode=OneWay}"
               VerticalContentAlignment="Center"
@@ -309,6 +310,7 @@
                     VerticalContentAlignment="Center"
                     Classes="SingleLine"
                     Classes.HasValidationProblem="{Binding HasRequestBodyFileSrcPathValidationProblem, Mode=OneWay}"
+                    DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
                     Text="{Binding RequestBodyFileSrcPath}"/>
                 <Button
                     Name="btReqBodyFileSearch"
@@ -601,6 +603,7 @@
                     Watermark="{Binding i18n.HttpRequest.BodyGraphQlVariablesWatermark, Mode=OneWay}"
                     HorizontalAlignment="Stretch"
                     Classes="CodeTextBox"
+                    DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
                     Text="{Binding RequestBodyGraphQlVariables}"/>
               </Grid>
             </Grid>
