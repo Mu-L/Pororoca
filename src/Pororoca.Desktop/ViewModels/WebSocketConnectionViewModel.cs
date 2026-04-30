@@ -6,6 +6,7 @@ using System.Threading.Channels;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using MsBox.Avalonia.Enums;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Converters;
 using Pororoca.Desktop.ExportImport;
 using Pororoca.Desktop.HotKeys;
@@ -35,6 +36,8 @@ namespace Pororoca.Desktop.ViewModels;
 public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemParentViewModel<WebSocketClientMessageViewModel>
 {
     #region COLLECTION ORGANIZATION
+
+    internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
     public ReactiveCommand<Unit, Unit> AddNewWebSocketClientMessageCmd { get; }
 
@@ -361,11 +364,12 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
         NameEditableVm.Icon = EditableTextBlockIcon.DisconnectedWebSocket;
         AddNewWebSocketClientMessageCmd = ReactiveCommand.Create(AddNewWebSocketClientMessage);
+        this.col = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(() => this.col);
         #endregion
 
         #region CONNECTION
 
-        this.col = col;
         this.httpClientProvider = PororocaHttpClientProvider.Singleton;
         this.connector = new(collectOnlyServerSideMessages: false, bufferSize: 65_536);
         this.connector.OnConnectionChanged = OnWebSocketConnectionChanged;

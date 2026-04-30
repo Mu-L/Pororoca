@@ -5,7 +5,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
-using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
@@ -23,20 +22,9 @@ public sealed class HttpRequestView : UserControl, ICollectionViewModelProvider
     private readonly AvaloniaEdit.TextMate.TextMate.Installation httpResRawBodyEditorTextMateInstallation;
     private string? currentHttpResRawBodySyntaxLangId;
 
-    private readonly PororocaVariableSyntaxHighlightingDefinitionSet syntaxHighlightingDefinitionSet;
-
     public HttpRequestView()
     {
         InitializeComponent();
-
-        this.syntaxHighlightingDefinitionSet = new(ProvideVariableResolver);
-
-        var urlInput = this.FindControl<SyntaxHighlightingTextBox>("tbUrl")!;
-        var reqBodyFileSrcPath = this.FindControl<SyntaxHighlightingTextBox>("tbReqBodyFileSrcPath")!;
-        var reqBodyGraphQlVariables = this.FindControl<SyntaxHighlightingTextBox>("tbReqBodyGraphQlVariables")!;
-        urlInput.DefinitionSet = this.syntaxHighlightingDefinitionSet;
-        reqBodyFileSrcPath.DefinitionSet = this.syntaxHighlightingDefinitionSet;
-        reqBodyGraphQlVariables.DefinitionSet = this.syntaxHighlightingDefinitionSet;
 
         var httpReqRawBodyEditor = this.FindControl<TextEditor>("teReqBodyRawContent")!;
         this.httpReqRawBodyEditorTextMateInstallation = TextEditorConfiguration.Setup(httpReqRawBodyEditor, true, ProvideVariableResolver);

@@ -385,6 +385,7 @@
                     VerticalContentAlignment="Center"
                     Classes="SingleLine"
                     Classes.HasValidationProblem="{Binding HasInputDataFileSrcPathValidationProblem, Mode=OneWay}"
+                    DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
                     Text="{Binding InputDataFileSrcPath}"/>
                 <Button
                     Name="btRepetitionInputDataFileSearch"

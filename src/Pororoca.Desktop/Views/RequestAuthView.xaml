@@ -102,6 +102,7 @@
           VerticalContentAlignment="Center"
           Watermark="{Binding i18n.RequestAuth.AuthModeBasicLoginWatermark, Mode=OneWay}"
           Classes="SingleLine"
+          DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
           Text="{Binding BasicAuthLogin}"/>
       <controls:SyntaxHighlightingTextBox
           Name="tbBasicAuthPassword"
@@ -111,6 +112,7 @@
           VerticalContentAlignment="Center"
           Watermark="{Binding i18n.RequestAuth.AuthModeBasicPasswordWatermark, Mode=OneWay}"
           Classes="SingleLine"
+          DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
           Text="{Binding BasicAuthPassword}"/>
     </StackPanel>
     <!-- BEARER AUTH -->
@@ -130,6 +132,7 @@
           VerticalContentAlignment="Center"
           Watermark="{Binding i18n.RequestAuth.AuthModeBearerTokenWatermark, Mode=OneWay}"
           Classes="SingleLine"
+          DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
           Text="{Binding BearerAuthToken}"/>
     </StackPanel>
     <!-- WINDOWS AUTH-->
@@ -156,6 +159,7 @@
           Classes="SingleLine"
           Classes.HasValidationProblem="{Binding HasWindowsAuthLoginProblem, Mode=OneWay}"
           IsVisible="{Binding !WindowsAuthUseCurrentUser, Mode=OneWay}"
+          DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
           Text="{Binding WindowsAuthLogin}"/>
       <controls:SyntaxHighlightingTextBox
           Name="tbWindowsAuthPassword"
@@ -167,6 +171,7 @@
           Classes="SingleLine"
           Classes.HasValidationProblem="{Binding HasWindowsAuthPasswordProblem, Mode=OneWay}"
           IsVisible="{Binding !WindowsAuthUseCurrentUser, Mode=OneWay}"
+          DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
           Text="{Binding WindowsAuthPassword}"/>
       <controls:SyntaxHighlightingTextBox
           Name="tbWindowsAuthDomain"
@@ -178,6 +183,7 @@
           Classes="SingleLine"
           Classes.HasValidationProblem="{Binding HasWindowsAuthDomainProblem, Mode=OneWay}"
           IsVisible="{Binding !WindowsAuthUseCurrentUser, Mode=OneWay}"
+          DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
           Text="{Binding WindowsAuthDomain}"/>
     </StackPanel>
     <!-- CLIENT CERTIFICATE AUTH -->
@@ -214,6 +220,7 @@
             VerticalContentAlignment="Center"
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPkcs12CertificateFilePathProblem, Mode=OneWay}"
+            DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPkcs12CertificateFilePath}"/>
         <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePkcs12FilePassword"
@@ -224,6 +231,7 @@
             VerticalContentAlignment="Center"
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPkcs12FilePasswordProblem, Mode=OneWay}"
+            DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPkcs12FilePassword}"/>
         <Button
             Margin="0,12,0,0"
@@ -248,6 +256,7 @@
             VerticalContentAlignment="Center"
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPemCertificateFilePathProblem, Mode=OneWay}"
+            DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPemCertificateFilePath}"/>
         <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePemPrivateKeyFilePath"
@@ -258,6 +267,7 @@
             VerticalContentAlignment="Center"
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPemPrivateKeyFilePathProblem, Mode=OneWay}"
+            DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPemPrivateKeyFilePath}"/>
         <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePemPrivateKeyPassword"
@@ -267,6 +277,7 @@
             HorizontalAlignment="Left"
             VerticalContentAlignment="Center"
             Classes="SingleLine"
+            DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPemFilePassword}"/>
         <StackPanel
             Orientation="Horizontal"

@@ -1,4 +1,5 @@
 using System.Reactive;
+using Pororoca.Desktop.Controls;
 using Pororoca.Desktop.Converters;
 using Pororoca.Desktop.ExportImport;
 using Pororoca.Domain.Features.Entities.Pororoca;
@@ -11,6 +12,7 @@ namespace Pororoca.Desktop.ViewModels;
 public sealed class RequestAuthViewModel : ViewModelBase
 {
     internal readonly CollectionViewModel col;
+    internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
     #region REQUEST AUTH
 
@@ -221,6 +223,7 @@ public sealed class RequestAuthViewModel : ViewModelBase
     public RequestAuthViewModel(CollectionViewModel col, PororocaRequestAuth? customAuth, bool isInheritFromCollectionOptionEnabled, Action clearInvalidWarningsCallback)
     {
         this.col = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(() => this.col);
         this.clearInvalidWarningsCallback = clearInvalidWarningsCallback;
         AuthModeSelectedIndex = AuthModeMapping.MapEnumToIndex(customAuth?.Mode);
         IsInheritFromCollectionOptionEnabled = isInheritFromCollectionOptionEnabled;
