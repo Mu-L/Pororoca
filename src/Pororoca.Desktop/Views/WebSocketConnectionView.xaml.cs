@@ -1,17 +1,15 @@
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaEdit;
-using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Common;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class WebSocketConnectionView : UserControl, ICollectionViewModelProvider
+public sealed class WebSocketConnectionView : UserControl
 {
     private readonly AvaloniaEdit.TextMate.TextMate.Installation selectedExchangedMessageEditorTextMateInstallation;
     private string? currentSelectedMsgSyntaxLangId;
@@ -64,7 +62,7 @@ public sealed class WebSocketConnectionView : UserControl, ICollectionViewModelP
     // e não simplesmente uma coleção, pois senão não vai atualizar
     // as variáveis de coleção e de ambiente.
     public CollectionViewModel ProvideVariableResolver() =>
-        ((WebSocketConnectionViewModel)DataContext!).col;
+        ((WebSocketConnectionViewModel)DataContext!).Collection;
 
     #endregion
 }

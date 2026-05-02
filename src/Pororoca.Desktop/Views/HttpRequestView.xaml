@@ -88,7 +88,7 @@
             <ToolTip.Tip>
               <MultiBinding Converter="{StaticResource pvToolTipConverter}">
                 <Binding Path="RequestUrl"/>
-                <Binding Path="col"/>
+                <Binding Path="Collection"/>
               </MultiBinding>
             </ToolTip.Tip>
           </controls:SyntaxHighlightingTextBox>
@@ -323,7 +323,7 @@
                   <ToolTip.Tip>
                     <MultiBinding Converter="{StaticResource pvToolTipConverter}">
                       <Binding Path="RequestBodyFileSrcPath"/>
-                      <Binding Path="col"/>
+                      <Binding Path="Collection"/>
                     </MultiBinding>
                   </ToolTip.Tip>
                 </controls:SyntaxHighlightingTextBox>
@@ -436,7 +436,7 @@
                             <TextBlock.Inlines>
                               <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
                                 <Binding Path="Value"/>
-                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).col"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).Collection"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
                               </MultiBinding>
                             </TextBlock.Inlines>
@@ -580,7 +580,7 @@
                             <TextBlock.Inlines>
                               <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
                                 <Binding Path="Value"/>
-                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).col"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).Collection"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
                               </MultiBinding>
                             </TextBlock.Inlines>

@@ -7,11 +7,14 @@ namespace Pororoca.Desktop.Controls;
 
 internal sealed class PororocaVariableSyntaxHighlightingDefinitionSet : SyntaxHighlightingDefinitionSet
 {
-    private readonly Func<IPororocaVariableResolver> varResolverObtainer;
+    private readonly IPororocaVariableResolver varResolver;
 
-    internal PororocaVariableSyntaxHighlightingDefinitionSet(Func<IPororocaVariableResolver> varResolverObtainer) : base(string.Empty)
+    // IMPORTANTE: este método deve receber um CollectionViewModel,
+    // e não simplesmente uma coleção, pois senão não vai atualizar
+    // as variáveis de coleção e de ambiente.
+    internal PororocaVariableSyntaxHighlightingDefinitionSet(IPororocaVariableResolver varResolver) : base(string.Empty)
     {
-        this.varResolverObtainer = varResolverObtainer;
+        this.varResolver = varResolver;
         TokenDefinitions =
         [
             new(id: 1, name: "Pororoca Variable", IPororocaVariableResolver.PororocaVariableRegex)
@@ -40,8 +43,7 @@ internal sealed class PororocaVariableSyntaxHighlightingDefinitionSet : SyntaxHi
         }
         else
         {
-            var varResolver = this.varResolverObtainer();
-            return varResolver.IsEffectiveVariable(keyName) ? 1 : 0;
+            return this.varResolver.IsEffectiveVariable(keyName) ? 1 : 0;
         }
     }
 }

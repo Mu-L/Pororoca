@@ -44,7 +44,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
     #region CONNECTION
 
-    internal CollectionViewModel col { get; }
+    internal CollectionViewModel Collection { get; }
     private readonly IPororocaHttpClientProvider httpClientProvider;
     private readonly WebSocketClientSideConnector connector;
 
@@ -360,8 +360,8 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
         NameEditableVm.Icon = EditableTextBlockIcon.DisconnectedWebSocket;
         AddNewWebSocketClientMessageCmd = ReactiveCommand.Create(AddNewWebSocketClientMessage);
-        this.col = col;
-        PororocaVarSyntaxHighlightingDefinitionSet = new(() => this.col);
+        Collection = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(Collection);
         #endregion
 
         #region CONNECTION
@@ -402,7 +402,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
         #region CONNECTION OPTION HEADERS
 
-        RequestHeadersTableVm = new(this.col, ws.Headers);
+        RequestHeadersTableVm = new(this.Collection, ws.Headers);
 
         #endregion
 
@@ -585,14 +585,14 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
     public async Task ConnectAsync()
     {
         var wsConn = ToWebSocketConnection();
-        var effectiveVars = ((IPororocaVariableResolver)this.col).GetEffectiveVariables();
+        var effectiveVars = ((IPororocaVariableResolver)this.Collection).GetEffectiveVariables();
         bool disableTlsVerification = MainWindowVm.IsSslVerificationDisabled;
 
-        if (!IsValidConnection(effectiveVars, this.col.CollectionScopedAuth, wsConn, out var resolvedUri, out string? translateUriErrorCode))
+        if (!IsValidConnection(effectiveVars, this.Collection.CollectionScopedAuth, wsConn, out var resolvedUri, out string? translateUriErrorCode))
         {
             InvalidConnectionErrorCode = translateUriErrorCode;
         }
-        else if (!TryTranslateConnection(effectiveVars, this.col.CollectionScopedAuth, this.col.CollectionScopedRequestHeaders, this.httpClientProvider, wsConn, disableTlsVerification,
+        else if (!TryTranslateConnection(effectiveVars, this.Collection.CollectionScopedAuth, this.Collection.CollectionScopedRequestHeaders, this.httpClientProvider, wsConn, disableTlsVerification,
                                          out var resolvedClients, out string? translateConnErrorCode))
         {
             InvalidConnectionErrorCode = translateConnErrorCode;
@@ -666,7 +666,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
         else
         {
             var msg = Items[MessageToSendSelectedIndex].ToWebSocketClientMessage();
-            var effectiveVars = ((IPororocaVariableResolver)this.col).GetEffectiveVariables();
+            var effectiveVars = ((IPororocaVariableResolver)this.Collection).GetEffectiveVariables();
             if (!IsValidClientMessage(effectiveVars, msg, out string? validationErrorCode))
             {
                 InvalidClientMessageErrorCode = validationErrorCode;

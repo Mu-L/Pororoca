@@ -66,8 +66,8 @@ public sealed class WebSocketClientMessageViewModel : CollectionOrganizationItem
                                            PororocaWebSocketClientMessage msg) : base(parentVm, msg.Name)
     {
         #region WEBSOCKET REQUEST MESSAGE
-        PororocaVarSyntaxHighlightingDefinitionSet = new(() => ((WebSocketConnectionViewModel)parentVm).col);
-        Collection = parentVm.col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(parentVm.Collection);
+        Collection = parentVm.Collection;
         DisableCompressionForThisMessage = msg.DisableCompressionForThis;
         MessageTypeSelectedIndex = WebSocketMessageTypeMapping.MapEnumToIndex(msg.MessageType);
         ContentModeSelectedIndex = WebSocketClientMessageContentModeMapping.MapEnumToIndex(msg.ContentMode);

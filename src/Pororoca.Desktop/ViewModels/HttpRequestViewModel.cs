@@ -25,9 +25,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
     #region REQUEST
 
     private readonly PororocaRequester requester = PororocaRequester.Singleton;
-    internal CollectionViewModel col { get; }
-
-    internal Func<CollectionViewModel> VarResolverProvider { get; }
+    internal CollectionViewModel Collection { get; }
     internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
     // To preserve the state of the last shown request tab
@@ -269,9 +267,8 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         #region COLLECTION ORGANIZATION
         Localizer.Instance.SubscribeToLanguageChange(OnLanguageChanged);
         NameEditableVm.Icon = EditableTextBlockIcon.HttpRequest;
-        this.col = col;
-        VarResolverProvider = () => this.col;
-        PororocaVarSyntaxHighlightingDefinitionSet = new(VarResolverProvider);
+        Collection = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(Collection);
         #endregion
 
         #region REQUEST
@@ -287,7 +284,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         int reqHttpVersionSelectionIndex = RequestHttpVersionSelectionOptions.IndexOf(FormatHttpVersion(req.HttpVersion));
         RequestHttpVersionSelectedIndex = reqHttpVersionSelectionIndex >= 0 ? reqHttpVersionSelectionIndex : 0;
 
-        RequestHeadersTableVm = new(this.col, req.Headers);
+        RequestHeadersTableVm = new(this.Collection, req.Headers);
         #endregion
 
         #region REQUEST BODY
@@ -321,7 +318,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         #endregion
 
         #region RESPONSE
-        ResponseDataCtx = new(this.col);
+        ResponseDataCtx = new(this.Collection);
         #region RESPONSE CAPTURES
         ResCapturesTableVm = new(req.ResponseCaptures);
         #endregion
@@ -345,16 +342,16 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
     protected override void OnNameUpdated(string newName)
     {
         // IMPORTANT: always update list of http reqs paths after renaming HTTP request
-        this.col.RemoveHttpRequestPathFromList(GetRequestPathInCollection());
+        this.Collection.RemoveHttpRequestPathFromList(GetRequestPathInCollection());
         base.OnNameUpdated(newName);
-        this.col.AddHttpRequestPathToList(GetRequestPathInCollection());
+        this.Collection.AddHttpRequestPathToList(GetRequestPathInCollection());
     }
 
     public override void DeleteThis()
     {
         base.DeleteThis();
         // IMPORTANT: always update list of http reqs paths after renaming HTTP request
-        this.col.RemoveHttpRequestPathFromList(GetRequestPathInCollection());
+        this.Collection.RemoveHttpRequestPathFromList(GetRequestPathInCollection());
     }
 
     public string GetRequestPathInCollection()
@@ -448,8 +445,8 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
     {
         ClearInvalidRequestWarnings();
         var generatedReq = ToHttpRequest();
-        var effectiveVars = ((IPororocaVariableResolver)this.col).GetEffectiveVariables();
-        if (!this.requester.IsValidRequest(effectiveVars, this.col.CollectionScopedAuth, generatedReq, out string? errorCode))
+        var effectiveVars = ((IPororocaVariableResolver)this.Collection).GetEffectiveVariables();
+        if (!this.requester.IsValidRequest(effectiveVars, this.Collection.CollectionScopedAuth, generatedReq, out string? errorCode))
         {
             this.invalidRequestMessageErrorCode = errorCode;
             ShowInvalidRequestWarnings();
@@ -551,7 +548,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         // Awaiting the request.RequestAsync() here, or simply returning its Task,
         // causes the UI to freeze for a few seconds, especially when performing the first request to a server.
         // That is why we are invoking the code to run in a new thread, like below.
-        return Task.Run(async () => await this.requester.RequestAsync(effectiveVars, this.col.CollectionScopedAuth, this.col.CollectionScopedRequestHeaders, generatedReq, this.sendRequestCancellationTokenSourceField.Token));
+        return Task.Run(async () => await this.requester.RequestAsync(effectiveVars, this.Collection.CollectionScopedAuth, this.Collection.CollectionScopedRequestHeaders, generatedReq, this.sendRequestCancellationTokenSourceField.Token));
     }
 
     #endregion
