@@ -5,6 +5,8 @@ using static Pororoca.Domain.Features.VariableResolution.PororocaPredefinedVaria
 
 namespace Pororoca.Desktop.Controls;
 
+// TODO: Use this as a singleton,
+// testing if it works with the same text whilst changing between Collections
 internal sealed class PororocaVariableSyntaxHighlightingDefinitionSet : SyntaxHighlightingDefinitionSet
 {
     private readonly IPororocaVariableResolver varResolver;
