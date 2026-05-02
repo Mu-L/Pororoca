@@ -29,7 +29,7 @@ public sealed class EnvironmentsGroupViewModel : CollectionOrganizationItemParen
 
     #endregion
 
-    public EnvironmentsGroupViewModel(ICollectionOrganizationItemParentViewModel parentVm,
+    public EnvironmentsGroupViewModel(CollectionViewModel parentVm,
                                       IEnumerable<PororocaEnvironment> envs) : base(parentVm, string.Empty)
     {
         #region COLLECTION ORGANIZATION
@@ -93,6 +93,7 @@ public sealed class EnvironmentsGroupViewModel : CollectionOrganizationItemParen
             }
         }
         UpdateSelectedEnvironmentName();
+        UpdateVariableHighlightsWhenCurrentEnvChanges();
     }
 
     public void CycleActiveEnvironment(bool trueIfNextFalseIfPrevious)
@@ -131,14 +132,6 @@ public sealed class EnvironmentsGroupViewModel : CollectionOrganizationItemParen
         else
         {
             ToggleEnabledEnvironment(nextEnv);
-            // GAMBIARRA!!!
-            // Se o usuário estiver rotacionando o ambiente ativo,
-            // significa que talvez uma variável que não é efetiva em um ambiente seja efetiva em outro,
-            // de modo que ela deva ficar colorida ou descolorida nos TextEditors e SyntaxHighlighterTextBoxes,
-            // por exemplo, na URL, no corpo de requisição HTTP, mensagem de cliente WebSocket
-            // ou dados de entrada de repetidora.
-            TextEditorConfiguration.InvalidateTextEditorsAreas();
-            SyntaxHighlighter.InvalidateSyntaxHighlighterTextBoxesTexts();
         }
     }
 
@@ -155,6 +148,19 @@ public sealed class EnvironmentsGroupViewModel : CollectionOrganizationItemParen
 
     public Task ImportEnvironmentsAsync() =>
         FileExporterImporter.ImportEnvironmentsAsync(this);
+
+    private void UpdateVariableHighlightsWhenCurrentEnvChanges()
+    {
+        // GAMBIARRA!!!
+        // Se o usuário estiver rotacionando o ambiente ativo,
+        // significa que talvez uma variável que não é efetiva em um ambiente seja efetiva em outro,
+        // de modo que ela deva ficar colorida ou descolorida nos TextEditors, SyntaxHighlighterTextBoxes e PVSHTextBlocks,
+        // por exemplo, na URL, no corpo de requisição HTTP, mensagem de cliente WebSocket,
+        // dados de entrada de repetidora, valores de headers, URL-encoded params e form data params.
+        TextEditorConfiguration.InvalidateTextEditorsAreas();
+        SyntaxHighlighter.InvalidateSyntaxHighlighterTextBoxesTexts();
+        MainWindowVm.EffectiveVariablesMayHaveChanged++;
+    }
 
     #endregion
 }

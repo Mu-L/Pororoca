@@ -26,6 +26,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
 
     private readonly PororocaRequester requester = PororocaRequester.Singleton;
     internal readonly CollectionViewModel col;
+    internal Func<CollectionViewModel> VarResolverProvider { get; }
     internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
     // To preserve the state of the last shown request tab
@@ -271,7 +272,8 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         Localizer.Instance.SubscribeToLanguageChange(OnLanguageChanged);
         NameEditableVm.Icon = EditableTextBlockIcon.HttpRequest;
         this.col = col;
-        PororocaVarSyntaxHighlightingDefinitionSet = new(() => this.col);
+        VarResolverProvider = () => this.col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(VarResolverProvider);
         #endregion
 
         #region REQUEST
@@ -287,7 +289,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         int reqHttpVersionSelectionIndex = RequestHttpVersionSelectionOptions.IndexOf(FormatHttpVersion(req.HttpVersion));
         RequestHttpVersionSelectedIndex = reqHttpVersionSelectionIndex >= 0 ? reqHttpVersionSelectionIndex : 0;
 
-        RequestHeadersTableVm = new(req.Headers);
+        RequestHeadersTableVm = new(this.col, req.Headers);
         #endregion
 
         #region REQUEST BODY

@@ -15,4 +15,7 @@ public abstract class ViewModelBase : ReactiveObject
 
     protected static MainWindowViewModel MainWindowVm =>
         (MainWindowViewModel)MainWindow.Instance!.DataContext!;
+
+    // GAMBIARRA
+    public MainWindowViewModel MainWindowVm2 => MainWindowVm;
 }

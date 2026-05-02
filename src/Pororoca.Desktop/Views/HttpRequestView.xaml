@@ -14,10 +14,12 @@
     x:Class="Pororoca.Desktop.Views.HttpRequestView"
     x:CompileBindings="True"
     x:DataType="vm:HttpRequestViewModel"
+    Name="httpReqView"
     FontSize="14">
 
   <UserControl.Resources>
     <conv:HttpRequestBodyModeMatchConverter x:Key="reqBodyModeMatch"/>
+    <conv:PororocaVariableSyntaxHighlightingInlinesConverter x:Key="pvshInlinesConverter"/>
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -408,13 +410,40 @@
                         <TextBlock Text="{Binding i18n.HttpRequest.BodyUrlEncodedParamName, Mode=OneWay}"/>
                       </DataGridTextColumn.Header>
                     </DataGridTextColumn>
-                    <DataGridTextColumn
-                        Width="0.32*"
-                        Binding="{Binding Value}">
-                      <DataGridTextColumn.Header>
+                    <DataGridTemplateColumn Width="0.32*">
+                      <DataGridTemplateColumn.Header>
                         <TextBlock Text="{Binding i18n.HttpRequest.BodyUrlEncodedParamValue, Mode=OneWay}"/>
-                      </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                      </DataGridTemplateColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>                          
+                          <TextBlock
+                            Text=""
+                            VerticalAlignment="Center"
+                            Padding="12,0,0,0">
+                            <TextBlock.Inlines>
+                              <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
+                                <Binding Path="Value"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).VarResolverProvider"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+                              </MultiBinding>
+                            </TextBlock.Inlines>
+                          </TextBlock>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                      <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                          <TextBox Text="{Binding Value}"/>
+                          <!--
+                          TODO: Infelizmente não dá para usar o SyntaxHighlightingTextBox ainda
+                          porque ele crasha a aplicação quando se pressiona Ctrl + SetaParaEsquerda / SetaParaDireita ou Ctrl + Del.
+                          Vamos tentar usá-lo quando migrar para o Avalonia 12.0.
+                          -->
+                          <!--controls:SyntaxHighlightingTextBox
+                              DefinitionSet="{Binding #variablesTableView.((vm:VariablesDataGridViewModel)DataContext).PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
+                              Text="{Binding Value}"/-->
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTemplateColumn
                         Width="0.14*"
                         Header="">
@@ -525,13 +554,40 @@
                         <TextBlock Text="{Binding i18n.HttpRequest.BodyFormDataParamName, Mode=OneWay}"/>
                       </DataGridTextColumn.Header>
                     </DataGridTextColumn>
-                    <DataGridTextColumn
-                        Width="0.21*"
-                        Binding="{Binding Value}">
-                      <DataGridTextColumn.Header>
+                    <DataGridTemplateColumn Width="0.21*">
+                      <DataGridTemplateColumn.Header>
                         <TextBlock Text="{Binding i18n.HttpRequest.BodyFormDataParamTextOrSrcPath, Mode=OneWay}"/>
-                      </DataGridTextColumn.Header>
-                    </DataGridTextColumn>
+                      </DataGridTemplateColumn.Header>
+                      <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                          <TextBlock
+                            Text=""
+                            VerticalAlignment="Center"
+                            Padding="12,0,0,0">
+                            <TextBlock.Inlines>
+                              <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
+                                <Binding Path="Value"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).VarResolverProvider"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+                              </MultiBinding>
+                            </TextBlock.Inlines>
+                          </TextBlock>
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellTemplate>
+                      <DataGridTemplateColumn.CellEditingTemplate>
+                        <DataTemplate>
+                          <TextBox Text="{Binding Value}"/>
+                          <!--
+                          TODO: Infelizmente não dá para usar o SyntaxHighlightingTextBox ainda
+                          porque ele crasha a aplicação quando se pressiona Ctrl + SetaParaEsquerda / SetaParaDireita ou Ctrl + Del.
+                          Vamos tentar usá-lo quando migrar para o Avalonia 12.0.
+                          -->
+                          <!--controls:SyntaxHighlightingTextBox
+                              DefinitionSet="{Binding #variablesTableView.((vm:VariablesDataGridViewModel)DataContext).PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
+                              Text="{Binding Value}"/-->
+                        </DataTemplate>
+                      </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn
                         Width="0.23*"
                         Binding="{Binding ContentType}">

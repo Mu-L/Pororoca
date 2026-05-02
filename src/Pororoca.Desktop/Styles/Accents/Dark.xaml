@@ -49,6 +49,7 @@
       <Color x:Key="PredefinedVariablePopupForegroundColor">LightSeaGreen</Color>
       <Color x:Key="NoMatchingVariableForegroundColor">Crimson</Color>
       <Color x:Key="NoMatchingVariablePopupForegroundColor">Crimson</Color>
+      <Color x:Key="PVSHTextBlockDefaultForegroundColor">White</Color>
       <!-- don't rename key below -->
       <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#814718"/>
       <!-- value below sets hover variable popup max width -->

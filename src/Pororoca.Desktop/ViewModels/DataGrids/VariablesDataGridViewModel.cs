@@ -5,11 +5,14 @@ namespace Pororoca.Desktop.ViewModels.DataGrids;
 
 public sealed class VariablesDataGridViewModel : BaseDataGridWithOperationsViewModel<VariableViewModel, PororocaVariable>
 {
+    internal Func<CollectionViewModel> VarResolverProvider { get; }
+
     public override SimpleClipboardArea<PororocaVariable> InnerClipboardArea =>
         VariablesClipboardArea.Instance;
 
-    public VariablesDataGridViewModel(List<PororocaVariable>? initialValues = null) : base(initialValues)
+    public VariablesDataGridViewModel(CollectionViewModel col, List<PororocaVariable>? initialValues = null) : base(initialValues)
     {
+        VarResolverProvider = () => col;
     }
 
     public List<PororocaVariable> GetVariables(bool includeSecretVariables) =>

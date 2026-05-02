@@ -406,7 +406,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
         #region CONNECTION OPTION HEADERS
 
-        RequestHeadersTableVm = new(ws.Headers);
+        RequestHeadersTableVm = new(this.col, ws.Headers);
 
         #endregion
 

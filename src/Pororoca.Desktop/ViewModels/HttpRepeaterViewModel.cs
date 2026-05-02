@@ -349,7 +349,7 @@ public sealed class HttpRepeaterViewModel : CollectionOrganizationItemViewModel
 
         #region REPETITION RESULT DETAILS
         ResponseDataCtx = new(Collection);
-        InputLineTableVm = new();
+        InputLineTableVm = new(Collection);
         #endregion
     }
 
