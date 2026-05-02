@@ -4,7 +4,6 @@ using Avalonia.Controls.Documents;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 using Pororoca.Desktop.ViewModels;
-using Pororoca.Desktop.Views;
 using Pororoca.Domain.Features.Common;
 using Pororoca.Domain.Features.VariableResolution;
 using static Pororoca.Domain.Features.VariableResolution.PororocaPredefinedVariableEvaluator;
@@ -16,10 +15,10 @@ internal class PororocaVariableSyntaxHighlightingInlinesConverter : IMultiValueC
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
         if (values[0] is string srcTxt
-            && values[1] is Func<CollectionViewModel> varResolverProvider
+            && values[1] is CollectionViewModel varResolver
             && targetType.IsAssignableTo(typeof(InlineCollection)))
         {
-            return GenerateInlinesForText(varResolverProvider(), srcTxt);
+            return GenerateInlinesForText(varResolver, srcTxt);
         }
         // converter used for the wrong type
         return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);

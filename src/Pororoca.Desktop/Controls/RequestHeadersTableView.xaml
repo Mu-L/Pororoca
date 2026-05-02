@@ -99,7 +99,7 @@
               <TextBlock.Inlines>
                 <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
                   <Binding Path="Value"/>
-                  <Binding Path="#reqHeadersTableView.((vmdg:RequestHeadersDataGridViewModel)DataContext).VarResolverProvider"/>
+                  <Binding Path="#reqHeadersTableView.((vmdg:RequestHeadersDataGridViewModel)DataContext).Collection"/>
                   <Binding Path="#reqHeadersTableView.((vmdg:RequestHeadersDataGridViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
                 </MultiBinding>
               </TextBlock.Inlines>
