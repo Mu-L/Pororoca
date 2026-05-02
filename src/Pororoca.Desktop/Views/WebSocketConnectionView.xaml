@@ -18,6 +18,7 @@
 
   <UserControl.Resources>
     <conv:WebSocketConnectionOptionMatchConverter x:Key="connectionOptionMatch"/>
+    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -68,10 +69,15 @@
               Text="{Binding Url}"
               Watermark="{Binding i18n.WebSocketConnection.UrlWatermark, Mode=OneWay}"
               VerticalContentAlignment="Center"
-              ToolTip.Tip="{Binding ResolvedUrlToolTip, Mode=OneWay}"
               Classes="SingleLine"
-              PointerEntered="OnUrlPointerEnter"
-              Classes.HasValidationProblem="{Binding HasUrlValidationProblem, Mode=OneWay}"/>
+              Classes.HasValidationProblem="{Binding HasUrlValidationProblem, Mode=OneWay}">
+            <ToolTip.Tip>
+              <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+                <Binding Path="Url"/>
+                <Binding Path="col"/>
+              </MultiBinding>
+            </ToolTip.Tip>
+          </controls:SyntaxHighlightingTextBox>
 
           <TextBlock
               Name="tbErrorMsg"

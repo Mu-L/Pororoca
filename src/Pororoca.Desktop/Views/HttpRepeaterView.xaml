@@ -19,6 +19,7 @@
   <UserControl.Resources>
     <conv:RepetitionModeMatchConverter x:Key="repetitionModeMatch"/>
     <conv:RepetitionInputDataTypeMatchConverter x:Key="repetitionInputDataTypeMatch"/>
+    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -386,7 +387,14 @@
                     Classes="SingleLine"
                     Classes.HasValidationProblem="{Binding HasInputDataFileSrcPathValidationProblem, Mode=OneWay}"
                     DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
-                    Text="{Binding InputDataFileSrcPath}"/>
+                    Text="{Binding InputDataFileSrcPath}">
+                  <ToolTip.Tip>
+                    <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+                      <Binding Path="InputDataFileSrcPath"/>
+                      <Binding Path="Collection"/>
+                    </MultiBinding>
+                  </ToolTip.Tip>
+                </controls:SyntaxHighlightingTextBox>
                 <Button
                     Name="btRepetitionInputDataFileSearch"
                     Content="{Binding i18n.HttpRepeater.InputDataFileSearch, Mode=OneWay}"

@@ -25,7 +25,8 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
     #region REQUEST
 
     private readonly PororocaRequester requester = PororocaRequester.Singleton;
-    internal readonly CollectionViewModel col;
+    internal CollectionViewModel col { get; }
+
     internal Func<CollectionViewModel> VarResolverProvider { get; }
     internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
@@ -58,9 +59,6 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
                 ClearInvalidRequestWarnings();
         }
     }
-
-    [Reactive]
-    public string ResolvedRequestUrlToolTip { get; set; }
 
     [Reactive]
     public bool HasRequestUrlValidationProblem { get; set; }
@@ -283,7 +281,7 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
         int reqMethodSelectionIndex = RequestMethodSelectionOptions.IndexOf(req.HttpMethod);
         RequestMethodSelectedIndex = reqMethodSelectionIndex >= 0 ? reqMethodSelectionIndex : 0;
 
-        ResolvedRequestUrlToolTip = this.requestUrlField = req.Url;
+        this.requestUrlField = req.Url;
 
         RequestHttpVersionSelectionOptions = new(AvailableHttpVersionsForHttp.Select(FormatHttpVersion));
         int reqHttpVersionSelectionIndex = RequestHttpVersionSelectionOptions.IndexOf(FormatHttpVersion(req.HttpVersion));
@@ -378,12 +376,6 @@ public sealed class HttpRequestViewModel : CollectionOrganizationItemViewModel
     #endregion
 
     #region REQUEST HTTP METHOD, HTTP VERSION AND URL
-
-    public void UpdateResolvedRequestUrlToolTip()
-    {
-        var varResolver = ((IPororocaVariableResolver)this.col);
-        ResolvedRequestUrlToolTip = IPororocaVariableResolver.ReplaceTemplates(RequestUrl, varResolver.GetEffectiveVariables());
-    }
 
     #endregion
 

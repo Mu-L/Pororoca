@@ -17,6 +17,7 @@
   <UserControl.Resources>
       <conv:AuthModeMatchConverter x:Key="authModeMatch"/>
       <conv:ClientCertificateTypeMatchConverter x:Key="clientCertificateTypeMatch"/>
+    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
   </UserControl.Resources>
 
   <Grid Margin="0,12,0,0">
@@ -221,7 +222,14 @@
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPkcs12CertificateFilePathProblem, Mode=OneWay}"
             DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
-            Text="{Binding ClientCertificateAuthPkcs12CertificateFilePath}"/>
+            Text="{Binding ClientCertificateAuthPkcs12CertificateFilePath}">
+          <ToolTip.Tip>
+            <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+              <Binding Path="ClientCertificateAuthPkcs12CertificateFilePath"/>
+              <Binding Path="Collection"/>
+            </MultiBinding>
+          </ToolTip.Tip>
+        </controls:SyntaxHighlightingTextBox>
         <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePkcs12FilePassword"
             Width="240"
@@ -257,7 +265,14 @@
             Classes="SingleLine"
             Classes.HasValidationProblem="{Binding HasClientCertificateAuthPemCertificateFilePathProblem, Mode=OneWay}"
             DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
-            Text="{Binding ClientCertificateAuthPemCertificateFilePath}"/>
+            Text="{Binding ClientCertificateAuthPemCertificateFilePath}">
+          <ToolTip.Tip>
+            <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+              <Binding Path="ClientCertificateAuthPemCertificateFilePath"/>
+              <Binding Path="Collection"/>
+            </MultiBinding>
+          </ToolTip.Tip>
+        </controls:SyntaxHighlightingTextBox>
         <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePemPrivateKeyFilePath"
             Width="240"

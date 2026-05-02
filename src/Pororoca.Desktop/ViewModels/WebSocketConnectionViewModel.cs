@@ -3,7 +3,6 @@ using System.Net;
 using System.Reactive;
 using System.Security.Authentication;
 using System.Threading.Channels;
-using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using MsBox.Avalonia.Enums;
 using Pororoca.Desktop.Controls;
@@ -45,7 +44,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
     #region CONNECTION
 
-    internal readonly CollectionViewModel col;
+    internal CollectionViewModel col { get; }
     private readonly IPororocaHttpClientProvider httpClientProvider;
     private readonly WebSocketClientSideConnector connector;
 
@@ -136,9 +135,6 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
     [Reactive]
     public bool HasUrlValidationProblem { get; set; }
-
-    [Reactive]
-    public string ResolvedUrlToolTip { get; set; }
 
     public override ObservableCollection<WebSocketClientMessageViewModel> Items { get; } = new();
 
@@ -389,7 +385,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
         #endregion
 
         #region CONNECTION REQUEST HTTP VERSION AND URL
-        ResolvedUrlToolTip = this.urlField = ws.Url;
+        this.urlField = ws.Url;
 
         HttpVersionSelectionOptions = new(AvailableHttpVersionsForWebSockets.Select(FormatHttpVersion));
         int httpVersionSelectionIndex = HttpVersionSelectionOptions.IndexOf(FormatHttpVersion(ws.HttpVersion));
@@ -504,9 +500,6 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
     #endregion
 
     #region REQUEST HTTP METHOD, HTTP VERSION AND URL
-
-    public void UpdateResolvedUrlToolTip() =>
-        ResolvedUrlToolTip = IPororocaVariableResolver.ReplaceTemplates(Url, ((IPororocaVariableResolver)this.col).GetEffectiveVariables());
 
     #endregion
 

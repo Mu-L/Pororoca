@@ -40,12 +40,6 @@ public sealed class WebSocketConnectionView : UserControl, ICollectionViewModelP
     public void OnSelectedSubprotocolsChanged(object sender, SelectionChangedEventArgs e) =>
         ((WebSocketConnectionViewModel)DataContext!).SubprotocolsTableVm.UpdateSelectedItems(e);
 
-    public void OnUrlPointerEnter(object sender, PointerEventArgs e)
-    {
-        var vm = (WebSocketConnectionViewModel)DataContext!;
-        vm.UpdateResolvedUrlToolTip();
-    }
-
     private void OnSelectedExchangedMessageChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems is not null

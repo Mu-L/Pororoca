@@ -20,6 +20,7 @@
   <UserControl.Resources>
     <conv:HttpRequestBodyModeMatchConverter x:Key="reqBodyModeMatch"/>
     <conv:PororocaVariableSyntaxHighlightingInlinesConverter x:Key="pvshInlinesConverter"/>
+    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
   </UserControl.Resources>
 
   <UserControl.Styles>
@@ -82,10 +83,15 @@
               Text="{Binding RequestUrl}"
               Watermark="{Binding i18n.HttpRequest.UrlWatermark, Mode=OneWay}"
               VerticalContentAlignment="Center"
-              ToolTip.Tip="{Binding ResolvedRequestUrlToolTip, Mode=OneWay}"
               Classes="SingleLine"
-              Classes.HasValidationProblem="{Binding HasRequestUrlValidationProblem, Mode=OneWay}"
-              PointerEntered="OnRequestUrlPointerEnter"/>
+              Classes.HasValidationProblem="{Binding HasRequestUrlValidationProblem, Mode=OneWay}">
+            <ToolTip.Tip>
+              <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+                <Binding Path="RequestUrl"/>
+                <Binding Path="col"/>
+              </MultiBinding>
+            </ToolTip.Tip>
+          </controls:SyntaxHighlightingTextBox>
 
           <TextBlock
               Name="tbErrorMsg"
@@ -313,7 +319,14 @@
                     Classes="SingleLine"
                     Classes.HasValidationProblem="{Binding HasRequestBodyFileSrcPathValidationProblem, Mode=OneWay}"
                     DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
-                    Text="{Binding RequestBodyFileSrcPath}"/>
+                    Text="{Binding RequestBodyFileSrcPath}">
+                  <ToolTip.Tip>
+                    <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+                      <Binding Path="RequestBodyFileSrcPath"/>
+                      <Binding Path="col"/>
+                    </MultiBinding>
+                  </ToolTip.Tip>
+                </controls:SyntaxHighlightingTextBox>
                 <Button
                     Name="btReqBodyFileSearch"
                     Content="{Binding i18n.HttpRequest.BodyFileSearchFile, Mode=OneWay}"

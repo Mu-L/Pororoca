@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -77,12 +76,6 @@ public sealed class HttpRequestView : UserControl, ICollectionViewModelProvider
 
     public void OnSelectedResponseCapturesChanged(object sender, SelectionChangedEventArgs e) =>
         ((HttpRequestViewModel)DataContext!).ResCapturesTableVm.UpdateSelectedItems(e);
-
-    public void OnRequestUrlPointerEnter(object sender, PointerEventArgs e)
-    {
-        var vm = (HttpRequestViewModel)DataContext!;
-        vm.UpdateResolvedRequestUrlToolTip();
-    }
 
     private void OnRequestBodyRawContentTypeChanged(object? sender, SelectionChangedEventArgs e)
     {
