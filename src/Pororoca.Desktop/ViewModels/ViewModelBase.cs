@@ -13,9 +13,6 @@ public abstract class ViewModelBase : ReactiveObject
 
     public ClipboardArea ClipboardArea { get; } = ClipboardArea.Instance;
 
-    protected static MainWindowViewModel MainWindowVm =>
+    public MainWindowViewModel MainWindowVm =>
         (MainWindowViewModel)MainWindow.Instance!.DataContext!;
-
-    // GAMBIARRA
-    public MainWindowViewModel MainWindowVm2 => MainWindowVm;
 }

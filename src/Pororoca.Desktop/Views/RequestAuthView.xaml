@@ -227,7 +227,7 @@
             <MultiBinding Converter="{StaticResource pvToolTipConverter}">
               <Binding Path="ClientCertificateAuthPkcs12CertificateFilePath"/>
               <Binding Path="Collection"/>
-              <Binding Path="MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+              <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
             </MultiBinding>
           </ToolTip.Tip>
         </controls:SyntaxHighlightingTextBox>
@@ -271,7 +271,7 @@
             <MultiBinding Converter="{StaticResource pvToolTipConverter}">
               <Binding Path="ClientCertificateAuthPemCertificateFilePath"/>
               <Binding Path="Collection"/>
-              <Binding Path="MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+              <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
             </MultiBinding>
           </ToolTip.Tip>
         </controls:SyntaxHighlightingTextBox>

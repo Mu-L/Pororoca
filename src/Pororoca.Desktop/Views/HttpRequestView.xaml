@@ -89,7 +89,7 @@
               <MultiBinding Converter="{StaticResource pvToolTipConverter}">
                 <Binding Path="RequestUrl"/>
                 <Binding Path="Collection"/>
-                <Binding Path="MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+                <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
               </MultiBinding>
             </ToolTip.Tip>
           </controls:SyntaxHighlightingTextBox>
@@ -325,7 +325,7 @@
                     <MultiBinding Converter="{StaticResource pvToolTipConverter}">
                       <Binding Path="RequestBodyFileSrcPath"/>
                       <Binding Path="Collection"/>
-                      <Binding Path="MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+                      <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
                     </MultiBinding>
                   </ToolTip.Tip>
                 </controls:SyntaxHighlightingTextBox>
@@ -439,7 +439,7 @@
                               <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
                                 <Binding Path="Value"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).Collection"/>
-                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm.EffectiveVariablesMayHaveChanged"/>
                               </MultiBinding>
                             </TextBlock.Inlines>
                           </TextBlock>
@@ -583,7 +583,7 @@
                               <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
                                 <Binding Path="Value"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).Collection"/>
-                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+                                <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm.EffectiveVariablesMayHaveChanged"/>
                               </MultiBinding>
                             </TextBlock.Inlines>
                           </TextBlock>

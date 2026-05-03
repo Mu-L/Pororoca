@@ -85,7 +85,7 @@
                 <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
                   <Binding Path="Value"/>
                   <Binding Path="#variablesTableView.((vmdg:VariablesDataGridViewModel)DataContext).Collection"/>
-                  <Binding Path="#variablesTableView.((vmdg:VariablesDataGridViewModel)DataContext).MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
+                  <Binding Path="#variablesTableView.((vmdg:VariablesDataGridViewModel)DataContext).MainWindowVm.EffectiveVariablesMayHaveChanged"/>
                 </MultiBinding>                
               </TextBlock.Inlines>
             </TextBlock>
