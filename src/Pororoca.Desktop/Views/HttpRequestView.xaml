@@ -89,6 +89,7 @@
               <MultiBinding Converter="{StaticResource pvToolTipConverter}">
                 <Binding Path="RequestUrl"/>
                 <Binding Path="Collection"/>
+                <Binding Path="MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
               </MultiBinding>
             </ToolTip.Tip>
           </controls:SyntaxHighlightingTextBox>
@@ -324,6 +325,7 @@
                     <MultiBinding Converter="{StaticResource pvToolTipConverter}">
                       <Binding Path="RequestBodyFileSrcPath"/>
                       <Binding Path="Collection"/>
+                      <Binding Path="MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
                     </MultiBinding>
                   </ToolTip.Tip>
                 </controls:SyntaxHighlightingTextBox>

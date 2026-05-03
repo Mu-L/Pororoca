@@ -392,6 +392,7 @@
                     <MultiBinding Converter="{StaticResource pvToolTipConverter}">
                       <Binding Path="InputDataFileSrcPath"/>
                       <Binding Path="Collection"/>
+                      <Binding Path="MainWindowVm2.EffectiveVariablesMayHaveChanged"/>
                     </MultiBinding>
                   </ToolTip.Tip>
                 </controls:SyntaxHighlightingTextBox>
