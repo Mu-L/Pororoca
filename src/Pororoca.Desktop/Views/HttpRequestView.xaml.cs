@@ -1,18 +1,16 @@
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
-using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Entities.Pororoca.Http;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class HttpRequestView : UserControl, ICollectionViewModelProvider
+public sealed class HttpRequestView : UserControl
 {
     private readonly AvaloniaEdit.TextMate.TextMate.Installation httpReqRawBodyEditorTextMateInstallation;
     private string? currentHttpReqRawBodySyntaxLangId;
@@ -78,12 +76,6 @@ public sealed class HttpRequestView : UserControl, ICollectionViewModelProvider
     public void OnSelectedResponseCapturesChanged(object sender, SelectionChangedEventArgs e) =>
         ((HttpRequestViewModel)DataContext!).ResCapturesTableVm.UpdateSelectedItems(e);
 
-    public void OnRequestUrlPointerEnter(object sender, PointerEventArgs e)
-    {
-        var vm = (HttpRequestViewModel)DataContext!;
-        vm.UpdateResolvedRequestUrlToolTip();
-    }
-
     private void OnRequestBodyRawContentTypeChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (e.AddedItems is not null
@@ -112,7 +104,7 @@ public sealed class HttpRequestView : UserControl, ICollectionViewModelProvider
     // e não simplesmente uma coleção, pois senão não vai atualizar
     // as variáveis de coleção e de ambiente.
     public CollectionViewModel ProvideVariableResolver() =>
-        ((HttpRequestViewModel)DataContext!).col;
+        ((HttpRequestViewModel)DataContext!).Collection;
 
     #endregion
 }

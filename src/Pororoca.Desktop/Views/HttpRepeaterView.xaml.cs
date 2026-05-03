@@ -4,14 +4,13 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.CodeCompletion;
-using Pororoca.Desktop.Others;
 using Pororoca.Desktop.TextEditorConfig;
 using Pororoca.Desktop.ViewModels;
 using Pororoca.Domain.Features.Common;
 
 namespace Pororoca.Desktop.Views;
 
-public sealed class HttpRepeaterView : UserControl, ICollectionViewModelProvider
+public sealed class HttpRepeaterView : UserControl
 {
     private readonly AvaloniaEdit.TextMate.TextMate.Installation rawInputDataEditorTextMateInstallation;
     private string? currentRawInputDataSyntaxLangId;

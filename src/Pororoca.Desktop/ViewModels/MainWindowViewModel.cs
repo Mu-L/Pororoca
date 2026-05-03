@@ -38,6 +38,12 @@ public sealed class MainWindowViewModel : ViewModelBase, ICollectionOrganization
 
     public ReactiveCommand<Unit, Unit> SaveAllCmd { get; }
 
+    // This property exists to cause an update on PVSHTextBlocks inside DataGrids.
+    // It's an int, but it could be anything.
+    // DON'T REMOVE.
+    [Reactive]
+    public int EffectiveVariablesMayHaveChanged { get; set; } = 0;
+
     #endregion
 
     #region SCREENS

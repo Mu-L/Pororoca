@@ -43,12 +43,13 @@
       <Color x:Key="TextEditorBackgroundColor">#181818</Color>
       <Color x:Key="TextEditorForegroundColor">#D4D4D4</Color>
       <Color x:Key="TextEditorHyperlinkForegroundColor">LightBlue</Color>
-      <Color x:Key="RegularVariableForegroundColor">#99E3D5</Color>
-      <Color x:Key="RegularVariablePopupForegroundColor">#99E3D5</Color>
-      <Color x:Key="PredefinedVariableForegroundColor">LightSeaGreen</Color>
-      <Color x:Key="PredefinedVariablePopupForegroundColor">LightSeaGreen</Color>
-      <Color x:Key="NoMatchingVariableForegroundColor">Crimson</Color>
-      <Color x:Key="NoMatchingVariablePopupForegroundColor">Crimson</Color>
+      <Color x:Key="RegularVariableForegroundColor">SandyBrown</Color>
+      <Color x:Key="RegularVariablePopupForegroundColor">SandyBrown</Color>
+      <Color x:Key="PredefinedVariableForegroundColor">PeachPuff</Color>
+      <Color x:Key="PredefinedVariablePopupForegroundColor">PeachPuff</Color>
+      <Color x:Key="NoMatchingVariableForegroundColor">#bb1133</Color>
+      <Color x:Key="NoMatchingVariablePopupForegroundColor">#bb1133</Color>
+      <Color x:Key="PVSHTextBlockDefaultForegroundColor">White</Color>
       <!-- don't rename key below -->
       <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#814718"/>
       <!-- value below sets hover variable popup max width -->
