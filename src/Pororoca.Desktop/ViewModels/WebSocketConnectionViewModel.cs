@@ -3,7 +3,6 @@ using System.Net;
 using System.Reactive;
 using System.Security.Authentication;
 using System.Threading.Channels;
-using Avalonia.Threading;
 using AvaloniaEdit.Document;
 using MsBox.Avalonia.Enums;
 using Pororoca.Desktop.Controls;
@@ -45,7 +44,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
     #region CONNECTION
 
-    internal readonly CollectionViewModel col;
+    internal CollectionViewModel Collection { get; }
     private readonly IPororocaHttpClientProvider httpClientProvider;
     private readonly WebSocketClientSideConnector connector;
 
@@ -136,9 +135,6 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
     [Reactive]
     public bool HasUrlValidationProblem { get; set; }
-
-    [Reactive]
-    public string ResolvedUrlToolTip { get; set; }
 
     public override ObservableCollection<WebSocketClientMessageViewModel> Items { get; } = new();
 
@@ -364,8 +360,8 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
         NameEditableVm.Icon = EditableTextBlockIcon.DisconnectedWebSocket;
         AddNewWebSocketClientMessageCmd = ReactiveCommand.Create(AddNewWebSocketClientMessage);
-        this.col = col;
-        PororocaVarSyntaxHighlightingDefinitionSet = new(() => this.col);
+        Collection = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(Collection);
         #endregion
 
         #region CONNECTION
@@ -389,7 +385,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
         #endregion
 
         #region CONNECTION REQUEST HTTP VERSION AND URL
-        ResolvedUrlToolTip = this.urlField = ws.Url;
+        this.urlField = ws.Url;
 
         HttpVersionSelectionOptions = new(AvailableHttpVersionsForWebSockets.Select(FormatHttpVersion));
         int httpVersionSelectionIndex = HttpVersionSelectionOptions.IndexOf(FormatHttpVersion(ws.HttpVersion));
@@ -406,7 +402,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
         #region CONNECTION OPTION HEADERS
 
-        RequestHeadersTableVm = new(ws.Headers);
+        RequestHeadersTableVm = new(this.Collection, ws.Headers);
 
         #endregion
 
@@ -505,9 +501,6 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
 
     #region REQUEST HTTP METHOD, HTTP VERSION AND URL
 
-    public void UpdateResolvedUrlToolTip() =>
-        ResolvedUrlToolTip = IPororocaVariableResolver.ReplaceTemplates(Url, ((IPororocaVariableResolver)this.col).GetEffectiveVariables());
-
     #endregion
 
     #region CONNECTION REQUEST HEADERS
@@ -592,14 +585,14 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
     public async Task ConnectAsync()
     {
         var wsConn = ToWebSocketConnection();
-        var effectiveVars = ((IPororocaVariableResolver)this.col).GetEffectiveVariables();
+        var effectiveVars = ((IPororocaVariableResolver)this.Collection).GetEffectiveVariables();
         bool disableTlsVerification = MainWindowVm.IsSslVerificationDisabled;
 
-        if (!IsValidConnection(effectiveVars, this.col.CollectionScopedAuth, wsConn, out var resolvedUri, out string? translateUriErrorCode))
+        if (!IsValidConnection(effectiveVars, this.Collection.CollectionScopedAuth, wsConn, out var resolvedUri, out string? translateUriErrorCode))
         {
             InvalidConnectionErrorCode = translateUriErrorCode;
         }
-        else if (!TryTranslateConnection(effectiveVars, this.col.CollectionScopedAuth, this.col.CollectionScopedRequestHeaders, this.httpClientProvider, wsConn, disableTlsVerification,
+        else if (!TryTranslateConnection(effectiveVars, this.Collection.CollectionScopedAuth, this.Collection.CollectionScopedRequestHeaders, this.httpClientProvider, wsConn, disableTlsVerification,
                                          out var resolvedClients, out string? translateConnErrorCode))
         {
             InvalidConnectionErrorCode = translateConnErrorCode;
@@ -673,7 +666,7 @@ public sealed class WebSocketConnectionViewModel : CollectionOrganizationItemPar
         else
         {
             var msg = Items[MessageToSendSelectedIndex].ToWebSocketClientMessage();
-            var effectiveVars = ((IPororocaVariableResolver)this.col).GetEffectiveVariables();
+            var effectiveVars = ((IPororocaVariableResolver)this.Collection).GetEffectiveVariables();
             if (!IsValidClientMessage(effectiveVars, msg, out string? validationErrorCode))
             {
                 InvalidClientMessageErrorCode = validationErrorCode;

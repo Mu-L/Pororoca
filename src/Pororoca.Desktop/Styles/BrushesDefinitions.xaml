@@ -100,5 +100,6 @@
     <SolidColorBrush x:Key="PredefinedVariablePopupForegroundBrush" Color="{DynamicResource PredefinedVariablePopupForegroundColor}"/>
     <SolidColorBrush x:Key="NoMatchingVariableForegroundBrush" Color="{DynamicResource NoMatchingVariableForegroundColor}"/>
     <SolidColorBrush x:Key="NoMatchingVariablePopupForegroundBrush" Color="{DynamicResource NoMatchingVariablePopupForegroundColor}"/>
+    <SolidColorBrush x:Key="PVSHTextBlockDefaultForegroundBrush" Color="{DynamicResource PVSHTextBlockDefaultForegroundColor}"/>
   </Styles.Resources>
 </Styles>

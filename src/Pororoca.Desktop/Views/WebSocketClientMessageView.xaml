@@ -19,6 +19,7 @@
   <UserControl.Resources>
     <!--conv:WebSocketMessageTypeMatchConverter x:Key="messageTypeMatch"/-->
     <conv:WebSocketClientMessageContentModeMatchConverter x:Key="contentModeMatch"/>
+    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
     <!--conv:WebSocketMessageRawContentSyntaxMatchConverter x:Key="rawContentSyntaxMatch"/-->
   </UserControl.Resources>
 
@@ -161,7 +162,15 @@
             Watermark="{Binding i18n.WebSocketClientMessage.ContentFileSrcPathWatermark, Mode=OneWay}"
             Classes="SingleLine"
             DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
-            Text="{Binding ContentFileSrcPath, Mode=TwoWay}"/>
+            Text="{Binding ContentFileSrcPath, Mode=TwoWay}">
+          <ToolTip.Tip>
+            <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+              <Binding Path="ContentFileSrcPath"/>
+              <Binding Path="Collection"/>
+              <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
+            </MultiBinding>
+          </ToolTip.Tip>
+        </controls:SyntaxHighlightingTextBox>
 
         <Button
             Margin="0,12,0,0"

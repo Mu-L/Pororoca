@@ -11,7 +11,7 @@ namespace Pororoca.Desktop.ViewModels;
 
 public sealed class RequestAuthViewModel : ViewModelBase
 {
-    internal readonly CollectionViewModel col;
+    internal CollectionViewModel Collection { get; }
     internal PororocaVariableSyntaxHighlightingDefinitionSet PororocaVarSyntaxHighlightingDefinitionSet { get; }
 
     #region REQUEST AUTH
@@ -222,8 +222,8 @@ public sealed class RequestAuthViewModel : ViewModelBase
 
     public RequestAuthViewModel(CollectionViewModel col, PororocaRequestAuth? customAuth, bool isInheritFromCollectionOptionEnabled, Action clearInvalidWarningsCallback)
     {
-        this.col = col;
-        PororocaVarSyntaxHighlightingDefinitionSet = new(() => this.col);
+        Collection = col;
+        PororocaVarSyntaxHighlightingDefinitionSet = new(Collection);
         this.clearInvalidWarningsCallback = clearInvalidWarningsCallback;
         AuthModeSelectedIndex = AuthModeMapping.MapEnumToIndex(customAuth?.Mode);
         IsInheritFromCollectionOptionEnabled = isInheritFromCollectionOptionEnabled;

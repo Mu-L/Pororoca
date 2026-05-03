@@ -42,6 +42,9 @@ public static class PororocaThemeManager
     public static SolidColorBrush NoMatchingVariableForegroundBrush =>
         GetResource<SolidColorBrush>("NoMatchingVariableForegroundBrush");
 
+    public static SolidColorBrush PVSHTextBlockDefaultForegroundBrush =>
+        GetResource<SolidColorBrush>("PVSHTextBlockDefaultForegroundBrush");
+
     public static ThemeName TextEditorThemeName =>
         Enum.Parse<ThemeName>(GetResource<string>("TextEditorTheme"));
 
