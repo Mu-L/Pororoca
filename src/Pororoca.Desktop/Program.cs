@@ -2,6 +2,7 @@ using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
 using Avalonia.ReactiveUI;
 using Pororoca.Desktop.UserData;
 using Pororoca.Desktop.ViewModels;
