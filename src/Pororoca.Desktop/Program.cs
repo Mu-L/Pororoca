@@ -42,7 +42,7 @@ public static class Program
             {
                 // https://github.com/AvaloniaUI/Avalonia/issues/4427#issuecomment-1303697872
                 DefaultFamilyName = "avares://Pororoca.Desktop/Assets/Fonts#Cabin"
-            }
+            })
             .AfterSetup(ab =>
             {
                 var appLifetime = ab.Instance!.ApplicationLifetime!;
