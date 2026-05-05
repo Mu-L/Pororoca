@@ -199,7 +199,7 @@ jobs:
           --self-contained true `
           --runtime linux-x64 `
           --output $OUTPUT_FOLDER;
-        chmod +x "$OUTPUT_FOLDER/Pororoca.TestServer"
+        chmod +x "$OUTPUT_FOLDER/PororocaTestServer"
         [void](New-Item "$OUTPUT_FOLDER/TestFiles" -ItemType Directory -ErrorAction Ignore);
         Copy-Item -Path "./tests/TestFiles/*" -Destination "$OUTPUT_FOLDER/TestFiles" -Recurse -Force
 
