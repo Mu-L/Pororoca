@@ -29,6 +29,10 @@ on:
         required: false
         default: false
         type: boolean
+      produceTestServerLinuxX64:
+        required: false
+        default: false
+        type: boolean
       pushPackageToNuGetServer:
         required: false
         default: false
@@ -180,6 +184,27 @@ jobs:
 
     # finished CD steps - NuGet
 
+    # start CD steps - TestServer
+
+    - name: Publish TestServer Linux x64
+      if: ${{ inputs.runCD && inputs.produceTestServerLinuxX64 }}
+      shell: pwsh
+      run: |
+        $OUTPUT_FOLDER = "./out/testserver-linux-x64"
+        [void](New-Item $OUTPUT_FOLDER -ItemType Directory -ErrorAction Ignore);
+          dotnet publish ./tests/Pororoca.TestServer/Pororoca.TestServer.csproj `
+          --verbosity quiet `
+          --nologo `
+          --configuration Release `
+          --self-contained true `
+          --runtime linux-x64 `
+          --output $OUTPUT_FOLDER;
+        chmod +x "$OUTPUT_FOLDER/Pororoca.TestServer"
+        [void](New-Item "$OUTPUT_FOLDER/TestFiles" -ItemType Directory -ErrorAction Ignore);
+        Copy-Item -Path "./tests/TestFiles/*" -Destination "$OUTPUT_FOLDER/TestFiles" -Recurse -Force
+
+    # end CD steps - TestServer
+
     # start CD steps - desktop
 
     - name: Read desktop program version
@@ -321,22 +346,24 @@ jobs:
         }
 
     - name: Compress package
-      if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX86Portable) }}
+      if: ${{ inputs.runCD && (inputs.produceTestServerLinuxX64 || inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX86Portable) }}
       shell: pwsh
       run: |
         $arr = @()
-        if ($env:LINUX_X64_PORTABLE -eq 'true'){ $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-portable"} };
-        if ($env:OSX -eq 'true')               { $arr += @{   rid="osx-x64"; outputFolder="./out/osx-x64"           } };
-        if ($env:WIN_X64_PORTABLE -eq 'true')  { $arr += @{   rid="win-x64"; outputFolder="./out/win-x64-portable"  } };
-        if ($env:WIN_X86_PORTABLE -eq 'true')  { $arr += @{   rid="win-x86"; outputFolder="./out/win-x86-portable"  } };
+        if ($env:TESTSERVER_LINUX_X64 -eq 'true'){ $arr += @{ rid="testserver-linux-x64"; outputFolder="./out/testserver-linux-x64"} };
+        if ($env:LINUX_X64_PORTABLE -eq 'true')  { $arr += @{ rid="linux-x64"; outputFolder="./out/linux-x64-portable"} };
+        if ($env:OSX -eq 'true')                 { $arr += @{ rid="osx-x64"; outputFolder="./out/osx-x64"           } };
+        if ($env:WIN_X64_PORTABLE -eq 'true')    { $arr += @{ rid="win-x64"; outputFolder="./out/win-x64-portable"  } };
+        if ($env:WIN_X86_PORTABLE -eq 'true')    { $arr += @{ rid="win-x86"; outputFolder="./out/win-x86-portable"  } };
 
         foreach ($artifact in $arr)
         {
           $OUTPUT_FOLDER = $artifact.outputFolder
 
-          $zipName = if ($artifact.rid -like "win*")     { "Pororoca_${env:VERSION_NAME}_$($artifact.rid)_portable.zip" }
-                     elseif ($artifact.rid -like "osx*") { "Pororoca_${env:VERSION_NAME}_osx.zip" }
-                     else                                { "Pororoca_${env:VERSION_NAME}_$($artifact.rid).zip" }
+          $zipName = if ($artifact.rid -like "win*")            { "Pororoca_${env:VERSION_NAME}_$($artifact.rid)_portable.zip" }
+                     elseif ($artifact.rid -like "osx*")        { "Pororoca_${env:VERSION_NAME}_osx.zip" }
+                     elseif ($artifact.rid -like "testserver*") { "PororocaTestServer_${env:VERSION_NAME}_linux-x64.zip" }
+                     else                                       { "Pororoca_${env:VERSION_NAME}_$($artifact.rid).zip" }
 
           if ($IsWindows) {
             Compress-Archive -CompressionLevel Optimal -Path "${OUTPUT_FOLDER}/*" -DestinationPath "./out/${zipName}"
@@ -349,6 +376,7 @@ jobs:
           Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
         }
       env:
+        TESTSERVER_LINUX_X64: ${{ inputs.produceTestServerLinuxX64 }}
         LINUX_X64_PORTABLE: ${{ inputs.produceDesktopLinuxPortableX64 }}
         OSX: ${{ inputs.produceDesktopMacOSX }}
         WIN_X64_PORTABLE: ${{ inputs.produceDesktopWinX64Portable }}

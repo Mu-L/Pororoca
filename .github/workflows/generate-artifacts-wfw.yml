@@ -7,6 +7,10 @@ on:
         required: true
         default: true
         type: boolean
+      testServer_linux_x64:
+        required: true
+        default: false
+        type: boolean
       enableDesktopUITesting:
         required: true
         default: false
@@ -53,6 +57,7 @@ jobs:
       runCD: true
       enableUITesting: ${{ inputs.enableDesktopUITesting }}
       producePororocaTestNuget: ${{ inputs.nuget }}
+      produceTestServerLinuxX64: ${{ inputs.testServer_linux_x64 }}
       produceDesktopLinuxPortableX64: ${{ inputs.linux_x64_portable }}
       produceDesktopLinuxInstallersX64: ${{ inputs.linux_x64_installers }}
       produceDesktopMacOSX: ${{ inputs.osx }}
