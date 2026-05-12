@@ -94,8 +94,8 @@ jobs:
       uploadArtifactsToRelease: true
       enableUITesting: false
       producePororocaTestNuget: true
-      produceDesktopLinuxX64: true
-      produceDesktopDebianX64: true
+      produceDesktopLinuxPortableX64: true
+      produceDesktopLinuxInstallersX64: true
       produceDesktopMacOSX: true
       produceDesktopWinX64Portable: true
       produceDesktopWinX86Portable: true
