@@ -316,11 +316,14 @@ public sealed class MainWindowViewModel : ViewModelBase, ICollectionOrganization
                 // de modo que ela deva ficar colorida ou descolorida nos TextEditors e SyntaxHighlighterTextBoxes,
                 // por exemplo, na URL, no corpo de requisição HTTP, mensagem de cliente WebSocket
                 // ou dados de entrada de repetidora.
+                // Isso também pode afetar as tooltips de URL e caminho de arquivos,
+                // por isso EffectiveVariablesMayHaveChanged é incrementada (para forçar uma atualização).
                 if (currentPage.PageType == typeof(CollectionVariablesViewModel)
                  || currentPage.PageType == typeof(EnvironmentViewModel))
                 {
                     TextEditorConfiguration.InvalidateTextEditorsAreas();
                     SyntaxHighlighter.InvalidateSyntaxHighlighterTextBoxesTexts();
+                    MainWindowVm.EffectiveVariablesMayHaveChanged++;
                 }
             }
             nextPage.Visible = true;

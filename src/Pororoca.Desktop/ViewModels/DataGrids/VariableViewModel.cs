@@ -55,11 +55,6 @@ public sealed class VariableViewModel : ViewModelBase
             else
             {
                 this.RaiseAndSetIfChanged(ref this.valueField, value!);
-                // GAMBIARRA!!!
-                // Precisamos invalidar a renderização dos textos sempre que uma variável muda 
-                // de estado (ativa / inativa) ou de chave, pois essas mudanças podem alterar
-                // o syntax highlighting de outras variáveis que dependem desta.
-                MainWindowVm.EffectiveVariablesMayHaveChanged++;
             }
         }
     }
