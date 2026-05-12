@@ -6,8 +6,12 @@ using Pororoca.Domain.Features.VariableResolution;
 
 namespace Pororoca.Desktop.Converters;
 
-internal class PororocaVariableToolTipConverter : IMultiValueConverter
+public class PororocaVariableToolTipConverter : IMultiValueConverter
 {
+    public static readonly PororocaVariableToolTipConverter Instance = new();
+
+    private PororocaVariableToolTipConverter() { }
+
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
         if (values[0] is string srcTxt && values[1] is CollectionViewModel varResolver)

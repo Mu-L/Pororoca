@@ -16,11 +16,6 @@
     d:DesignHeight="700"
     FontSize="14">
 
-  <UserControl.Resources>
-    <conv:WebSocketConnectionOptionMatchConverter x:Key="connectionOptionMatch"/>
-    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
-  </UserControl.Resources>
-
   <UserControl.Styles>
     <Style Selector="TabItem">
       <Setter
@@ -72,7 +67,7 @@
               Classes="SingleLine"
               Classes.HasValidationProblem="{Binding HasUrlValidationProblem, Mode=OneWay}">
             <ToolTip.Tip>
-              <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+              <MultiBinding Converter="{x:Static conv:PororocaVariableToolTipConverter.Instance}">
                 <Binding Path="Url"/>
                 <Binding Path="Collection"/>
                 <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
@@ -216,7 +211,7 @@
                   Margin="-12,12,-12,12"
                   IsVisible="{Binding ConnectionOptionSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource connectionOptionMatch},
+                              Converter={x:Static conv:WebSocketConnectionOptionMatchConverter.Instance},
                               ConverterParameter=Headers}"
                   RowDefinitions="Auto,*">
                 <Button
@@ -259,7 +254,7 @@
                   Margin="-12,12,-12,12"
                   IsVisible="{Binding ConnectionOptionSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource connectionOptionMatch},
+                              Converter={x:Static conv:WebSocketConnectionOptionMatchConverter.Instance},
                               ConverterParameter=Subprotocols}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*"/>
@@ -375,7 +370,7 @@
                   Margin="0,12,0,12"
                   IsVisible="{Binding ConnectionOptionSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource connectionOptionMatch},
+                              Converter={x:Static conv:WebSocketConnectionOptionMatchConverter.Instance},
                               ConverterParameter=Compression}">
                 <CheckBox
                     x:Name="cbWsConnReqCompressionEnable"

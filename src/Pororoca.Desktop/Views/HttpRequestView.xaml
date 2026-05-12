@@ -17,12 +17,6 @@
     Name="httpReqView"
     FontSize="14">
 
-  <UserControl.Resources>
-    <conv:HttpRequestBodyModeMatchConverter x:Key="reqBodyModeMatch"/>
-    <conv:PororocaVariableSyntaxHighlightingInlinesConverter x:Key="pvshInlinesConverter"/>
-    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
-  </UserControl.Resources>
-
   <UserControl.Styles>
     <Style Selector="TabItem">
       <Setter
@@ -86,7 +80,7 @@
               Classes="SingleLine"
               Classes.HasValidationProblem="{Binding HasRequestUrlValidationProblem, Mode=OneWay}">
             <ToolTip.Tip>
-              <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+              <MultiBinding Converter="{x:Static conv:PororocaVariableToolTipConverter.Instance}">
                 <Binding Path="RequestUrl"/>
                 <Binding Path="Collection"/>
                 <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
@@ -265,7 +259,7 @@
                     Classes.HasValidationProblem="{Binding HasRequestRawContentTypeValidationProblem, Mode=OneWay}"
                     IsVisible="{Binding RequestBodyModeSelectedIndex,
                                 Mode=OneWay,
-                                Converter={StaticResource reqBodyModeMatch},
+                                Converter={x:Static conv:HttpRequestBodyModeMatchConverter.Instance},
                                 ConverterParameter=Raw}"/>
               </StackPanel>
               <!-- REQUEST BODY RAW -->
@@ -280,7 +274,7 @@
                   Document="{Binding RequestRawContentTextDocument, Mode=TwoWay}"
                   IsVisible="{Binding RequestBodyModeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource reqBodyModeMatch},
+                              Converter={x:Static conv:HttpRequestBodyModeMatchConverter.Instance},
                               ConverterParameter=Raw}">
                 <FlyoutBase.AttachedFlyout>
                   <Flyout ShowMode="TransientWithDismissOnPointerMoveAway">
@@ -298,7 +292,7 @@
                   VerticalAlignment="Stretch"
                   IsVisible="{Binding RequestBodyModeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource reqBodyModeMatch},
+                              Converter={x:Static conv:HttpRequestBodyModeMatchConverter.Instance},
                               ConverterParameter=File}">
                 <AutoCompleteBox
                     Name="acbReqBodyFileContentType"
@@ -322,7 +316,7 @@
                     DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
                     Text="{Binding RequestBodyFileSrcPath}">
                   <ToolTip.Tip>
-                    <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+                    <MultiBinding Converter="{x:Static conv:PororocaVariableToolTipConverter.Instance}">
                       <Binding Path="RequestBodyFileSrcPath"/>
                       <Binding Path="Collection"/>
                       <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
@@ -343,7 +337,7 @@
                   VerticalAlignment="Stretch"
                   IsVisible="{Binding RequestBodyModeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource reqBodyModeMatch},
+                              Converter={x:Static conv:HttpRequestBodyModeMatchConverter.Instance},
                               ConverterParameter=UrlEncoded}"
                   RowDefinitions="Auto,*">
                 <Button
@@ -436,7 +430,7 @@
                             VerticalAlignment="Center"
                             Padding="12,0,0,0">
                             <TextBlock.Inlines>
-                              <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
+                              <MultiBinding Converter="{x:Static conv:PororocaVariableSyntaxHighlightingInlinesConverter.Instance}">
                                 <Binding Path="Value"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).Collection"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm.EffectiveVariablesMayHaveChanged"/>
@@ -486,7 +480,7 @@
                   VerticalAlignment="Stretch"
                   IsVisible="{Binding RequestBodyModeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource reqBodyModeMatch},
+                              Converter={x:Static conv:HttpRequestBodyModeMatchConverter.Instance},
                               ConverterParameter=FormData}"
                   RowDefinitions="Auto,*">
                 <StackPanel
@@ -580,7 +574,7 @@
                             VerticalAlignment="Center"
                             Padding="12,0,0,0">
                             <TextBlock.Inlines>
-                              <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
+                              <MultiBinding Converter="{x:Static conv:PororocaVariableSyntaxHighlightingInlinesConverter.Instance}">
                                 <Binding Path="Value"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).Collection"/>
                                 <Binding Path="#httpReqView.((vm:HttpRequestViewModel)DataContext).MainWindowVm.EffectiveVariablesMayHaveChanged"/>
@@ -638,7 +632,7 @@
                   VerticalAlignment="Stretch"
                   IsVisible="{Binding RequestBodyModeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource reqBodyModeMatch},
+                              Converter={x:Static conv:HttpRequestBodyModeMatchConverter.Instance},
                               ConverterParameter=GraphQl}">
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition

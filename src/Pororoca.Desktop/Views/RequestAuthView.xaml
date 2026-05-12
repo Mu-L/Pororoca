@@ -14,12 +14,6 @@
     x:DataType="vm:RequestAuthViewModel"
     FontSize="14">
 
-  <UserControl.Resources>
-      <conv:AuthModeMatchConverter x:Key="authModeMatch"/>
-      <conv:ClientCertificateTypeMatchConverter x:Key="clientCertificateTypeMatch"/>
-    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
-  </UserControl.Resources>
-
   <Grid Margin="0,12,0,0">
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*"/>
@@ -72,7 +66,7 @@
           SelectedIndex="{Binding ClientCertificateTypeSelectedIndex}"
           IsVisible="{Binding AuthModeSelectedIndex, 
                       Mode=OneWay,
-                      Converter={StaticResource authModeMatch}, 
+                      Converter={x:Static conv:AuthModeMatchConverter.Instance}, 
                       ConverterParameter=ClientCertificate}">
         <ComboBoxItem
             x:Name="cbiReqAuthClientCertificateNone"
@@ -94,7 +88,7 @@
         Margin="0,12,0,0"
         IsVisible="{Binding AuthModeSelectedIndex, 
                     Mode=OneWay,
-                    Converter={StaticResource authModeMatch}, 
+                    Converter={x:Static conv:AuthModeMatchConverter.Instance}, 
                     ConverterParameter=Basic}">
       <controls:SyntaxHighlightingTextBox
           Name="tbBasicAuthLogin"
@@ -124,7 +118,7 @@
         Margin="0,12,0,0"
         IsVisible="{Binding AuthModeSelectedIndex, 
                     Mode=OneWay,
-                    Converter={StaticResource authModeMatch}, 
+                    Converter={x:Static conv:AuthModeMatchConverter.Instance}, 
                     ConverterParameter=Bearer}">
       <controls:SyntaxHighlightingTextBox
           Name="tbBearerAuthToken"
@@ -144,7 +138,7 @@
         Margin="0,12,0,0"
         IsVisible="{Binding AuthModeSelectedIndex, 
                     Mode=OneWay,
-                    Converter={StaticResource authModeMatch}, 
+                    Converter={x:Static conv:AuthModeMatchConverter.Instance}, 
                     ConverterParameter=Windows}">
       <CheckBox
           Name="chkbWindowsAuthUseCurrentUser"
@@ -195,7 +189,7 @@
         Margin="0,12,0,0"
         IsVisible="{Binding AuthModeSelectedIndex, 
                     Mode=OneWay,
-                    Converter={StaticResource authModeMatch}, 
+                    Converter={x:Static conv:AuthModeMatchConverter.Instance}, 
                     ConverterParameter=ClientCertificate}">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
@@ -211,7 +205,7 @@
           Grid.Row="0"
           IsVisible="{Binding ClientCertificateTypeSelectedIndex, 
                       Mode=OneWay,
-                      Converter={StaticResource clientCertificateTypeMatch}, 
+                      Converter={x:Static conv:ClientCertificateTypeMatchConverter.Instance}, 
                       ConverterParameter=Pkcs12}">
         <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePkcs12FilePath"
@@ -224,7 +218,7 @@
             DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPkcs12CertificateFilePath}">
           <ToolTip.Tip>
-            <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+            <MultiBinding Converter="{x:Static conv:PororocaVariableToolTipConverter.Instance}">
               <Binding Path="ClientCertificateAuthPkcs12CertificateFilePath"/>
               <Binding Path="Collection"/>
               <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
@@ -255,7 +249,7 @@
           Grid.Row="0"
           IsVisible="{Binding ClientCertificateTypeSelectedIndex, 
                       Mode=OneWay,
-                      Converter={StaticResource clientCertificateTypeMatch}, 
+                      Converter={x:Static conv:ClientCertificateTypeMatchConverter.Instance}, 
                       ConverterParameter=Pem}">
         <controls:SyntaxHighlightingTextBox
             Name="tbClientCertificatePemCertificateFilePath"
@@ -268,7 +262,7 @@
             DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
             Text="{Binding ClientCertificateAuthPemCertificateFilePath}">
           <ToolTip.Tip>
-            <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+            <MultiBinding Converter="{x:Static conv:PororocaVariableToolTipConverter.Instance}">
               <Binding Path="ClientCertificateAuthPemCertificateFilePath"/>
               <Binding Path="Collection"/>
               <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>

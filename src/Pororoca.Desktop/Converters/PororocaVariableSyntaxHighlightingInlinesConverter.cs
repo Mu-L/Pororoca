@@ -10,8 +10,12 @@ using static Pororoca.Domain.Features.VariableResolution.PororocaPredefinedVaria
 
 namespace Pororoca.Desktop.Converters;
 
-internal class PororocaVariableSyntaxHighlightingInlinesConverter : IMultiValueConverter
+public class PororocaVariableSyntaxHighlightingInlinesConverter : IMultiValueConverter
 {
+    public static readonly PororocaVariableSyntaxHighlightingInlinesConverter Instance = new();
+
+    private PororocaVariableSyntaxHighlightingInlinesConverter() { }
+
     public object? Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
     {
         if (values[0] is string srcTxt

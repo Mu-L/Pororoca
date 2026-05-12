@@ -14,10 +14,6 @@
     x:DataType="vmdg:VariablesDataGridViewModel"
     Name="variablesTableView">
 
-  <UserControl.Resources>
-    <converters:PororocaVariableSyntaxHighlightingInlinesConverter x:Key="pvshInlinesConverter"/>
-  </UserControl.Resources>
-
   <DataGrid
       Name="datagrid"
       HorizontalAlignment="Stretch"
@@ -82,7 +78,7 @@
               VerticalAlignment="Center"
               Padding="12,0,0,0">
               <TextBlock.Inlines>
-                <MultiBinding Converter="{StaticResource pvshInlinesConverter}">
+                <MultiBinding Converter="{x:Static converters:PororocaVariableSyntaxHighlightingInlinesConverter.Instance}">
                   <Binding Path="Value"/>
                   <Binding Path="#variablesTableView.((vmdg:VariablesDataGridViewModel)DataContext).Collection"/>
                   <Binding Path="#variablesTableView.((vmdg:VariablesDataGridViewModel)DataContext).MainWindowVm.EffectiveVariablesMayHaveChanged"/>

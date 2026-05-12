@@ -16,12 +16,6 @@
     d:DesignHeight="700"
     FontSize="14">
 
-  <UserControl.Resources>
-    <conv:RepetitionModeMatchConverter x:Key="repetitionModeMatch"/>
-    <conv:RepetitionInputDataTypeMatchConverter x:Key="repetitionInputDataTypeMatch"/>
-    <conv:PororocaVariableToolTipConverter x:Key="pvToolTipConverter"/>
-  </UserControl.Resources>
-
   <UserControl.Styles>
     <Style Selector="TabItem">
       <Setter
@@ -217,7 +211,7 @@
                   Orientation="Horizontal"
                   IsVisible="{Binding RepetitionModeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource repetitionModeMatch},
+                              Converter={x:Static conv:RepetitionModeMatchConverter.Instance},
                               ConverterParameter='Simple,Random'}">
                 <TextBlock
                     TextWrapping="Wrap"
@@ -242,7 +236,7 @@
                   Orientation="Horizontal"
                   IsVisible="{Binding RepetitionModeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource repetitionModeMatch},
+                              Converter={x:Static conv:RepetitionModeMatchConverter.Instance},
                               ConverterParameter='Simple,Random'}">
                 <TextBlock
                     TextWrapping="Wrap"
@@ -320,7 +314,7 @@
               Name="tabItemRepetitionInputData"
               IsVisible="{Binding RepetitionModeSelectedIndex,
                           Mode=OneWay,
-                          Converter={StaticResource repetitionModeMatch},
+                          Converter={x:Static conv:RepetitionModeMatchConverter.Instance},
                           ConverterParameter='Sequential,Random'}">
             <TabItem.Header>
               <TextBlock
@@ -362,7 +356,7 @@
                   Document="{Binding InputDataRawTextDocument, Mode=TwoWay}"
                   IsVisible="{Binding InputDataTypeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource repetitionInputDataTypeMatch},
+                              Converter={x:Static conv:RepetitionInputDataTypeMatchConverter.Instance},
                               ConverterParameter=RawJsonArray}">
                 <FlyoutBase.AttachedFlyout>
                   <Flyout ShowMode="TransientWithDismissOnPointerMoveAway">
@@ -376,7 +370,7 @@
                   Orientation="Vertical"
                   IsVisible="{Binding InputDataTypeSelectedIndex,
                               Mode=OneWay,
-                              Converter={StaticResource repetitionInputDataTypeMatch},
+                              Converter={x:Static conv:RepetitionInputDataTypeMatchConverter.Instance},
                               ConverterParameter=File}">
                 <controls:SyntaxHighlightingTextBox
                     Name="tbRepetitionInputDataFileSrcPath"
@@ -389,7 +383,7 @@
                     DefinitionSet="{Binding PororocaVarSyntaxHighlightingDefinitionSet, Mode=OneWay}"
                     Text="{Binding InputDataFileSrcPath}">
                   <ToolTip.Tip>
-                    <MultiBinding Converter="{StaticResource pvToolTipConverter}">
+                    <MultiBinding Converter="{x:Static conv:PororocaVariableToolTipConverter.Instance}">
                       <Binding Path="InputDataFileSrcPath"/>
                       <Binding Path="Collection"/>
                       <Binding Path="MainWindowVm.EffectiveVariablesMayHaveChanged"/>
