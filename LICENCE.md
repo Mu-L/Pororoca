@@ -42,7 +42,7 @@ made by third-parties, that includes this kind of features.
 
 You are allowed to develop your own derivative version of Pororoca that has server-syncing 
 capabilities, with the restrictions of being closed-source, not shared with the community, 
-and not for direct money-making purposes, e.g., selling or providing it as a SaaS.
+and not for direct money-making purposes, e.g., selling or providing it as a SaaS. You can make this derivative version for your own private use, for example, for yourself or for your company.
 
 GNU General Public License
 ==========================
