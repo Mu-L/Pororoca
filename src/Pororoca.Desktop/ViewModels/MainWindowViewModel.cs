@@ -38,7 +38,8 @@ public sealed class MainWindowViewModel : ViewModelBase, ICollectionOrganization
 
     public ReactiveCommand<Unit, Unit> SaveAllCmd { get; }
 
-    // This property exists to cause an update on PVSHTextBlocks inside DataGrids.
+    // This property exists to cause an update on PVSHTextBlocks inside DataGrids
+    // and ToolTips (URL, input file paths).
     // It's an int, but it could be anything.
     // DON'T REMOVE.
     [Reactive]
