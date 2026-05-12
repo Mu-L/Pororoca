@@ -44,12 +44,12 @@
       <Color x:Key="TextEditorBackgroundColor">#1E1E1E</Color>
       <Color x:Key="TextEditorForegroundColor">#D4D4D4</Color>
       <Color x:Key="TextEditorHyperlinkForegroundColor">LightBlue</Color>
-      <Color x:Key="RegularVariableForegroundColor">DarkGoldenrod</Color>
-      <Color x:Key="RegularVariablePopupForegroundColor">DarkGoldenrod</Color>
-      <Color x:Key="PredefinedVariableForegroundColor">Goldenrod</Color>
-      <Color x:Key="PredefinedVariablePopupForegroundColor">Goldenrod</Color>
-      <Color x:Key="NoMatchingVariableForegroundColor">Crimson</Color>
-      <Color x:Key="NoMatchingVariablePopupForegroundColor">Crimson</Color>
+      <Color x:Key="RegularVariableForegroundColor">#99E3D5</Color>
+      <Color x:Key="RegularVariablePopupForegroundColor">#99E3D5</Color>
+      <Color x:Key="PredefinedVariableForegroundColor">BlanchedAlmond</Color>
+      <Color x:Key="PredefinedVariablePopupForegroundColor">BlanchedAlmond</Color>
+      <Color x:Key="NoMatchingVariableForegroundColor">Red</Color>
+      <Color x:Key="NoMatchingVariablePopupForegroundColor">Red</Color>
       <Color x:Key="PVSHTextBlockDefaultForegroundColor">White</Color>
       <!-- don't rename key below -->
       <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#562f10"/>
