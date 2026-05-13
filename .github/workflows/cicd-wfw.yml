@@ -506,6 +506,85 @@ jobs:
         # Don't delete the output folder, it will be reused for RPM packages
     
     # code below taken from:
+    # https://github.com/git-ecosystem/git-credential-manager/blob/6847fba88b5adfd631e6a1163c91c2b316f52701/.github/workflows/release.yml
+    - name: Sign Debian / Ubuntu package
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: bash # !!!
+      run: |
+        # Install debsigs
+        sudo apt install debsigs
+
+        # Stop using SHA-1 for the signature. For details, see
+        # https://gitlab.com/debsigs/debsigs/-/commit/75c6c8f96e6cdc33bca9c5f32195b68ff35bc32f
+        # which seems to have made it to have made it into debsigs v0.2.1, but Ubuntu 24.04 is
+        # stuck with v1.19.
+        mkdir -p patched-debsigs &&
+        sed 's/, "--openpgp"//' </usr/bin/debsigs >patched-debsigs/debsigs &&
+        chmod a+x patched-debsigs/debsigs &&
+        echo "$PWD/patched-debsigs" >>$GITHUB_PATH
+
+        # Import GPG key
+        echo "$ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD" | gpg --import --no-tty --batch --yes
+
+        # Configure GPG
+        echo "allow-preset-passphrase" > ~/.gnupg/gpg-agent.conf
+        gpg-connect-agent RELOADAGENT /bye
+        /usr/lib/gnupg2/gpg-preset-passphrase --preset "$ALEXANDREHTRB_GPG_KEYGRIP" <<<"$ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD"
+
+        # Sign .deb file
+        $debFilePath = "./out/Pororoca_$VERSION_NAME_amd64.deb"
+        debsigs --sign=origin --verify --check $debFilePath
+      env:
+        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
+        ALEXANDREHTRB_GPG_KEYGRIP: ${{ secrets.ALEXANDREHTRB_GPG_KEYGRIP }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
+
+    # code below taken from:
+    # https://blog.packagecloud.io/how-to-gpg-sign-and-verify-deb-packages-and-apt-repositories/
+    - name: Verify Debian / Ubuntu package signature
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh # !!!
+      run: |
+        # Install debsig-verify
+
+        sudo apt install debsig-verify
+
+        # Import public key
+
+        [void](mkdir "/usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/")
+
+        gpg --no-default-keyring \
+          --keyring /usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/debsig.gpg \
+          --import ${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}
+
+        # Create debsig-verify policy for public key
+
+        [void](mkdir "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/")
+
+        $policyXml = @"
+        <?xml version="1.0"?>
+        <!DOCTYPE Policy SYSTEM "http://www.debian.org/debsig/1.0/policy.dtd">
+        <Policy xmlns="http://www.debian.org/debsig/1.0/">
+          <Origin Name="test" id="${env:KEY_ID}" Description="Test package"/>
+          <Selection>
+            <Required Type="origin" File="debsig.gpg" id="${env:KEY_ID}"/>
+          </Selection>
+          <Verification MinOptional="0">
+            <Required Type="origin" File="debsig.gpg" id="${env:KEY_ID}"/>
+          </Verification>
+        </Policy>
+        "@
+
+        echo $policyXml >> "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/policy.pol"
+
+        # Verify package signature
+        $debFilePath = "./out/Pororoca_${env:VERSION_NAME}_amd64.deb"
+        debsig-verify $debFilePath
+      env:
+        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
+        ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
+
+    # code below taken from:
     # https://github.com/PowerShell/PowerShell/pull/26337
     # https://github.com/PowerShell/PowerShell/blob/master/tools/packaging/packaging.psm1
     # https://janikvonrotz.ch/2019/03/20/the-final-rpm-packaging-guide/
