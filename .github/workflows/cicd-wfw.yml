@@ -291,6 +291,44 @@ jobs:
         WIN_X86_PORTABLE: ${{ inputs.produceDesktopWinX86Portable }}
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
 
+    - name: Fetch PFX certificate and add Windows SignTool to PATH
+      if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      shell: pwsh
+      run: |
+        # Fetch PFX certificate from GitHub Actions secrets
+        [void](New-Item "./certs/" -ItemType Directory -ErrorAction Ignore);
+        $pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+        # Below needs absolute path (relative path doesn't work)
+        [System.IO.File]::WriteAllBytes($pfxFilePath, [Convert]::FromBase64String(($env:ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64)))
+
+        # Add SignTool.exe directory to PATH
+        echo "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64" | Out-File -FilePath "$env:GITHUB_PATH" -Append
+      env:
+        ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64: ${{ secrets.ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64 }}
+
+    - name: Sign Pororoca executable files for Windows
+      if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      shell: pwsh
+      run: |
+        $arr = @()
+        if ($env:WIN_X64_INSTALLER -eq 'true') { $arr += "./out/win-x64-installer/Pororoca.exe"; };
+        if ($env:WIN_X64_PORTABLE -eq 'true')  { $arr += "./out/win-x64-portable/Pororoca.exe" ; };
+        if ($env:WIN_X86_INSTALLER -eq 'true') { $arr += "./out/win-x86-installer/Pororoca.exe"; };
+        if ($env:WIN_X86_PORTABLE -eq 'true')  { $arr += "./out/win-x86-portable/Pororoca.exe" ; };
+
+        $pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+
+        foreach ($exeFilePath in $arr)
+        {
+          signtool sign /f $pfxFilePath /fd SHA256 /p $env:ALEXANDREHTRB_PFX_FILE_PASSWORD /t http://timestamp.digicert.com $exeFilePath
+        }
+      env:
+        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
+        WIN_X64_PORTABLE: ${{ inputs.produceDesktopWinX64Portable }}
+        WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
+        WIN_X86_PORTABLE: ${{ inputs.produceDesktopWinX86Portable }}
+        WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
+
     - name: Make Pororoca.app structure (Mac OSX only)
       if: ${{ inputs.runCD && inputs.produceDesktopMacOSX }}
       shell: pwsh
@@ -390,6 +428,8 @@ jobs:
         if ($env:WIN_X64_INSTALLER -eq 'true') { $arr += @{ rid="win-x64"; outputFolder="./out/win-x64-installer" } };
         if ($env:WIN_X86_INSTALLER -eq 'true') { $arr += @{ rid="win-x86"; outputFolder="./out/win-x86-installer" } };
 
+        $pfxAbsoluteFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+
         foreach ($artifact in $arr)
         {
           $OUTPUT_FOLDER = $artifact.outputFolder;
@@ -403,11 +443,17 @@ jobs:
           makensis -WX -V2 "/XOutFile ${installerOutFileAbsolutePath}" `
             "/DSHORT_VERSION=${env:VERSION_NAME}" `
             "/DINPUT_FILES_DIR=${installerFilesDirAbsolutePath}" `
+            "/DCODE_SIGNING_CERTIFICATE_FILE_PATH=${pfxAbsoluteFilePath}" `
+            "/DCODE_SIGNING_CERTIFICATE_FILE_PASSWORD=${env:ALEXANDREHTRB_PFX_FILE_PASSWORD}" `
             .\src\Pororoca.Desktop.WindowsInstaller\Installer.nsi
 
           Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
         }
+
+        # let's delete the certificate file now, won't be used afterwards
+        Remove-Item $pfxAbsoluteFilePath -Force -Recurse -ErrorAction Ignore
       env:
+        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
         WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
 
