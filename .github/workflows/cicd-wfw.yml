@@ -523,8 +523,8 @@ jobs:
         chmod a+x patched-debsigs/debsigs &&
         echo "$PWD/patched-debsigs" >>$GITHUB_PATH
 
-        # Import GPG key
-        echo "$ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD" | gpg --import --no-tty --batch --yes
+        # Import GPG private key
+        echo "$ALEXANDREHTRB_GPG_PRIVATE_KEY" | gpg --import --no-tty --batch --yes
 
         # Configure GPG
         echo "allow-preset-passphrase" > ~/.gnupg/gpg-agent.conf
@@ -679,6 +679,8 @@ jobs:
           # Sign with passphrase from a file
           rpm -K --verbose $rpmFilePath         
         }
+
+        Remove-Item "./certs/" -Force -Recurse -ErrorAction Ignore
       env:
         ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
 
