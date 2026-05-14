@@ -234,9 +234,13 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
+        # Create certs directory
+        $certsDir = Join-Path (Get-Location) "certs"
+        [void](New-Item $certsDir -ItemType Directory -ErrorAction Ignore);
+
         # Import public and private keys
-        $publicKeyFilePath = Join-Path (Get-Location) "certs" "public-key.gpg"
-        $privateKeyFilePath = Join-Path (Get-Location) "certs" "private-key.gpg"
+        $publicKeyFilePath = Join-Path $certsDir "public-key.gpg"
+        $privateKeyFilePath = Join-Path $certsDir "private-key.gpg"
         echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" > $publicKeyFilePath
         echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" > $privateKeyFilePath
         Write-Host "Public key file size: $((Get-Item $publicKeyFilePath).Length)"
