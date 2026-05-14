@@ -288,8 +288,8 @@ jobs:
         Write-Host "Listing public keys..."
         gpg --list-keys --with-keygrip
 
-        # Import private key to RPM
-        rpm --import $privateKeyFilePath
+        # Import public key to RPM
+        rpm --import $publicKeyFilePath
 
       env:
         ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
@@ -720,9 +720,6 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        # Import public key to RPM
-        rpm --import ./certs/public-key.gpg
-
         # Listing imported public keys
         rpm -qa gpg-pubkey*
 
