@@ -301,10 +301,14 @@ jobs:
         # Below needs absolute path (relative path doesn't work)
         [System.IO.File]::WriteAllBytes($pfxFilePath, [Convert]::FromBase64String(($env:ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64)))
 
+        # Verify certificate integrity
+        certutil -p "${env:ALEXANDREHTRB_PFX_FILE_PASSWORD}" -dump $pfxFilePath
+
         # Add SignTool.exe directory to PATH
         echo "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64" | Out-File -FilePath "$env:GITHUB_PATH" -Append
       env:
         ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64: ${{ secrets.ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64 }}
+        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
 
     - name: Sign Pororoca executable files for Windows
       if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
@@ -505,6 +509,20 @@ jobs:
         Remove-Item "./out/deb" -Force -Recurse -ErrorAction Ignore
         # Don't delete the output folder, it will be reused for RPM packages
     
+    - name: Import GPG public and private keys
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        # Import public and private keys
+        [void](mkdir "./certs/")
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" >> ./certs/private-key.gpg
+        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" >> ./certs/public-key.gpg
+        gpg --import ./certs/private-key.gpg
+        gpg --import ./certs/public-key.gpg
+      env:
+        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
+
     # code below taken from:
     # https://github.com/git-ecosystem/git-credential-manager/blob/6847fba88b5adfd631e6a1163c91c2b316f52701/.github/workflows/release.yml
     - name: Sign Debian / Ubuntu package
@@ -523,9 +541,6 @@ jobs:
         chmod a+x patched-debsigs/debsigs &&
         echo "$PWD/patched-debsigs" >>$GITHUB_PATH
 
-        # Import GPG private key
-        echo "$ALEXANDREHTRB_GPG_PRIVATE_KEY" | gpg --import --no-tty --batch --yes
-
         # Configure GPG
         echo "allow-preset-passphrase" > ~/.gnupg/gpg-agent.conf
         gpg-connect-agent RELOADAGENT /bye
@@ -535,7 +550,6 @@ jobs:
         $debFilePath = "./out/Pororoca_$VERSION_NAME_amd64.deb"
         debsigs --sign=origin --verify --check $debFilePath
       env:
-        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
         ALEXANDREHTRB_GPG_KEYGRIP: ${{ secrets.ALEXANDREHTRB_GPG_KEYGRIP }}
         ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
 
@@ -624,9 +638,7 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        # Import private key
-        [void](mkdir "./certs/")
-        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" >> ./certs/private-key.gpg
+        # Import private key to RPM
         rpm --import ./certs/private-key.gpg
 
         # Create .rpmmacros file
@@ -662,9 +674,7 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        # Import public key
-        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" >> ./certs/public-key.gpg
-        gpg --import ./certs/public-key.gpg
+        # Import public key to RPM
         rpm --import ./certs/public-key.gpg
 
         # Listing imported public keys
