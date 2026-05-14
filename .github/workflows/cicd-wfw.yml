@@ -261,6 +261,11 @@ jobs:
         "@
         echo $gpgAgentConfFileContent >> $gpgAgentConfFilePath
 
+        # Fix ~/.gnupg directory permissions
+        chown -R $(whoami) $gpgDir
+        (Get-ChildItem $gpgDir -Directory -Recurse) | ForEach-Object { chmod 700 $_.FullName }
+        (Get-ChildItem $gpgDir -File -Recurse) | ForEach-Object { chmod 600 $_.FullName }
+
         # Restart GPG agent
         gpg-connect-agent RELOADAGENT /bye
 
