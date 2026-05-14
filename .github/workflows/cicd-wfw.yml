@@ -275,8 +275,8 @@ jobs:
         # Import public and private keys
         $publicKeyFilePath = Join-Path $certsDir "public-key.gpg"
         $privateKeyFilePath = Join-Path $certsDir "private-key.gpg"
-        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" > $publicKeyFilePath
-        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" > $privateKeyFilePath
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" > $privateKeyFilePath
+        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" > $publicKeyFilePath
         Write-Host "Public key file size: $((Get-Item $publicKeyFilePath).Length)"
         Write-Host "Private key file size: $((Get-Item $privateKeyFilePath).Length)"
         Write-Host "Importing private key..."
@@ -620,8 +620,8 @@ jobs:
 
         [void](mkdir "/usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/")
 
-        gpg --no-default-keyring \
-          --keyring /usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/debsig.gpg \
+        gpg --no-default-keyring `
+          --keyring /usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/debsig.gpg `
           --import ${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}
 
         # Create debsig-verify policy for public key
