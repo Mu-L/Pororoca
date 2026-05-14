@@ -238,6 +238,35 @@ jobs:
         $certsDir = Join-Path (Get-Location) "certs"
         [void](New-Item $certsDir -ItemType Directory -ErrorAction Ignore);
 
+        # Import keys without prompting user input (for CI / CD)
+        # https://d.sb/2016/11/gpg-inappropriate-ioctl-for-device-errors
+        #   use-agent, pinentry-mode --> no ask for user input
+        #   allow-loopback-pinentry --> use TTY terminal, no ask for user input
+        #   allow-preset-passphrase --> set fixed passphrase, no ask for user input
+        
+        $gpgDir = Join-Path $env:HOME ".gnupg"
+        [void](New-Item $gpgDir -ItemType Directory -ErrorAction Ignore);
+
+        $gpgConfFilePath = Join-Path $env:HOME ".gnupg" "gpg.conf"
+        $gpgConfFileContent = @"
+        use-agent
+        pinentry-mode loopback
+        "@
+        echo $gpgConfFileContent >> $gpgConfFilePath
+
+        $gpgAgentConfFilePath = Join-Path $env:HOME ".gnupg" "gpg-agent.conf"
+        $gpgAgentConfFileContent = @"
+        allow-loopback-pinentry
+        allow-preset-passphrase
+        "@
+        echo $gpgAgentConfFileContent >> $gpgAgentConfFilePath
+
+        # Restart GPG agent
+        gpg-connect-agent RELOADAGENT /bye
+
+        # Set default passphrase for private key
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD}" | /usr/lib/gnupg2/gpg-preset-passphrase --preset "${env:ALEXANDREHTRB_GPG_KEYGRIP}"
+
         # Import public and private keys
         $publicKeyFilePath = Join-Path $certsDir "public-key.gpg"
         $privateKeyFilePath = Join-Path $certsDir "private-key.gpg"
@@ -249,11 +278,16 @@ jobs:
         gpg --import $publicKeyFilePath
         gpg --list-keys --with-keygrip
         gpg --list-secret-keys --with-keygrip
-        expect -c 'spawn gpg --edit-key ${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT} trust quit; send "5\ry\r"; expect eof'
+
+        # Import private key to RPM
+        rpm --import $privateKeyFilePath
+
       env:
         ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
         ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
         ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
+        ALEXANDREHTRB_GPG_KEYGRIP: ${{ secrets.ALEXANDREHTRB_GPG_KEYGRIP }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
 
     - name: Read desktop program version
       if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
@@ -556,17 +590,9 @@ jobs:
         chmod a+x patched-debsigs/debsigs &&
         echo "$PWD/patched-debsigs" >>$GITHUB_PATH
 
-        # Configure GPG
-        echo "allow-preset-passphrase" > ~/.gnupg/gpg-agent.conf
-        gpg-connect-agent RELOADAGENT /bye
-        /usr/lib/gnupg2/gpg-preset-passphrase --preset "$ALEXANDREHTRB_GPG_KEYGRIP" <<<"$ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD"
-
         # Sign .deb file
         $debFilePath = "./out/Pororoca_$VERSION_NAME_amd64.deb"
         debsigs --sign=origin --verify --check $debFilePath
-      env:
-        ALEXANDREHTRB_GPG_KEYGRIP: ${{ secrets.ALEXANDREHTRB_GPG_KEYGRIP }}
-        ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
 
     # code below taken from:
     # https://blog.packagecloud.io/how-to-gpg-sign-and-verify-deb-packages-and-apt-repositories/
@@ -653,9 +679,6 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        # Import private key to RPM
-        rpm --import ./certs/private-key.gpg
-
         # Create .rpmmacros file
         $rpmMacrosFilePath = Join-Path $env:HOME ".rpmmacros"
         $rpmMacrosContent = @"
@@ -667,11 +690,6 @@ jobs:
         %__gpg_sign_cmd %{__gpg} gpg --force-v3-sigs --batch --verbose --no-armor --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} --digest-algo sha256 %{__plaintext_filename}'
         "@
         echo $rpmMacrosContent >> $rpmMacrosFilePath
-
-        # Configure gpg-agent to allow loopback pinentry
-        $gpgAgentConfFilePath = Join-Path $env:HOME ".gnupg" "gpg-agent.conf"
-        echo "allow-loopback-pinentry" >> $gpgAgentConfFilePath
-        gpg-connect-agent reloadagent /bye
 
         $distros = @("openSUSE", "RHEL")
         foreach ($distro in $distros)
