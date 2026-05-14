@@ -207,6 +207,48 @@ jobs:
 
     # start CD steps - desktop
 
+    - name: Fetch PFX certificate and add Windows SignTool to PATH
+      if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      shell: pwsh
+      run: |
+        # Fetch PFX certificate from GitHub Actions secrets
+        [void](New-Item "./certs/" -ItemType Directory -ErrorAction Ignore);
+        $pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+        # Below needs absolute path (relative path doesn't work)
+        [System.IO.File]::WriteAllBytes($pfxFilePath, [Convert]::FromBase64String(($env:ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64)))
+
+        # Verify certificate integrity
+        Write-Host "PFX file size: $((Get-Item ./certs/cert.pfx).Length)"
+        certutil -p "${env:ALEXANDREHTRB_PFX_FILE_PASSWORD}" -dump $pfxFilePath
+
+        # Add SignTool.exe directory to PATH
+        echo "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64" | Out-File -FilePath "$env:GITHUB_PATH" -Append
+      env:
+        ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64: ${{ secrets.ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64 }}
+        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
+
+    - name: Import GPG public and private keys
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        # Import public and private keys
+        [void](mkdir "./certs/")
+        $publicKeyFilePath = Join-Path (Get-Location) "certs" "public-key.gpg"
+        $privateKeyFilePath = Join-Path (Get-Location) "certs" "private-key.gpg"
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" > $publicKeyFilePath
+        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" > $privateKeyFilePath
+        Write-Host "Public key file size: $((Get-Item $publicKeyFilePath).Length)"
+        Write-Host "Private key file size: $((Get-Item $privateKeyFilePath).Length)"
+        gpg --import $privateKeyFilePath
+        gpg --import $publicKeyFilePath
+        gpg --list-keys --with-keygrip
+        gpg --list-secret-keys --with-keygrip
+        expect -c 'spawn gpg --edit-key ${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT} trust quit; send "5\ry\r"; expect eof'
+      env:
+        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
+        ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
+
     - name: Read desktop program version
       if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
@@ -290,25 +332,6 @@ jobs:
         WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
         WIN_X86_PORTABLE: ${{ inputs.produceDesktopWinX86Portable }}
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
-
-    - name: Fetch PFX certificate and add Windows SignTool to PATH
-      if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
-      shell: pwsh
-      run: |
-        # Fetch PFX certificate from GitHub Actions secrets
-        [void](New-Item "./certs/" -ItemType Directory -ErrorAction Ignore);
-        $pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
-        # Below needs absolute path (relative path doesn't work)
-        [System.IO.File]::WriteAllBytes($pfxFilePath, [Convert]::FromBase64String(($env:ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64)))
-
-        # Verify certificate integrity
-        certutil -p "${env:ALEXANDREHTRB_PFX_FILE_PASSWORD}" -dump $pfxFilePath
-
-        # Add SignTool.exe directory to PATH
-        echo "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64" | Out-File -FilePath "$env:GITHUB_PATH" -Append
-      env:
-        ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64: ${{ secrets.ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64 }}
-        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
 
     - name: Sign Pororoca executable files for Windows
       if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
@@ -509,20 +532,6 @@ jobs:
         Remove-Item "./out/deb" -Force -Recurse -ErrorAction Ignore
         # Don't delete the output folder, it will be reused for RPM packages
     
-    - name: Import GPG public and private keys
-      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
-      shell: pwsh
-      run: |
-        # Import public and private keys
-        [void](mkdir "./certs/")
-        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" >> ./certs/private-key.gpg
-        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" >> ./certs/public-key.gpg
-        gpg --import ./certs/private-key.gpg
-        gpg --import ./certs/public-key.gpg
-      env:
-        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
-        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
-
     # code below taken from:
     # https://github.com/git-ecosystem/git-credential-manager/blob/6847fba88b5adfd631e6a1163c91c2b316f52701/.github/workflows/release.yml
     - name: Sign Debian / Ubuntu package
