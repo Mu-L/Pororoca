@@ -618,6 +618,70 @@ jobs:
         }
         Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
 
+    # code below taken from:
+    # https://oneuptime.com/blog/post/2026-03-04-sign-verify-rpm-packages-gpg-rhel-9/view
+    - name: Sign RHEL and openSUSE packages
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        # Import private key
+        [void](mkdir "./certs/")
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" >> ./certs/private-key.gpg
+        rpm --import ./certs/private-key.gpg
+
+        # Create .rpmmacros file
+        $rpmMacrosFilePath = Join-Path $env:HOME ".rpmmacros"
+        $rpmMacrosContent = @"
+        # GPG signing configuration
+        %_signature gpg
+        %_gpg_path ~/.gnupg
+        %_gpg_name ${env:ALEXANDREHTRB_GPG_KEY_NAME}
+        %_gpgbin /usr/bin/gpg2
+        %__gpg_sign_cmd %{__gpg} gpg --force-v3-sigs --batch --verbose --no-armor --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} --digest-algo sha256 %{__plaintext_filename}'
+        "@
+        echo $rpmMacrosContent >> $rpmMacrosFilePath
+
+        # Configure gpg-agent to allow loopback pinentry
+        $gpgAgentConfFilePath = Join-Path $env:HOME ".gnupg" "gpg-agent.conf"
+        echo "allow-loopback-pinentry" >> $gpgAgentConfFilePath
+        gpg-connect-agent reloadagent /bye
+
+        $distros = @("openSUSE", "RHEL")
+        foreach ($distro in $distros)
+        {
+          $rpmFilePath = "./out/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
+          
+          # Sign with passphrase from a file
+          echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD}" | rpm --addsign $rpmFilePath
+        }
+      env:
+        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
+
+    - name: Verify RHEL and openSUSE packages signatures
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        # Import public key
+        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" >> ./certs/public-key.gpg
+        gpg --import ./certs/public-key.gpg
+        rpm --import ./certs/public-key.gpg
+
+        # Listing imported public keys
+        rpm -qa gpg-pubkey*
+
+        # Check signatures
+        $distros = @("openSUSE", "RHEL")
+        foreach ($distro in $distros)
+        {
+          $rpmFilePath = "./out/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
+          
+          # Sign with passphrase from a file
+          rpm -K --verbose $rpmFilePath         
+        }
+      env:
+        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
+
     # finished CD steps - desktop
 
     # start upload CD artifacts
