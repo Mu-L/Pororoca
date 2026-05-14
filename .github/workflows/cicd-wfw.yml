@@ -211,8 +211,11 @@ jobs:
       if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
       run: |
+        # Create certs directory
+        $certsDir = Join-Path (Get-Location) "certs"
+        [void](New-Item $certsDir -ItemType Directory -ErrorAction Ignore);
+
         # Fetch PFX certificate from GitHub Actions secrets
-        [void](New-Item "./certs/" -ItemType Directory -ErrorAction Ignore);
         $pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
         # Below needs absolute path (relative path doesn't work)
         [System.IO.File]::WriteAllBytes($pfxFilePath, [Convert]::FromBase64String(($env:ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64)))
@@ -232,7 +235,6 @@ jobs:
       shell: pwsh
       run: |
         # Import public and private keys
-        [void](mkdir "./certs/")
         $publicKeyFilePath = Join-Path (Get-Location) "certs" "public-key.gpg"
         $privateKeyFilePath = Join-Path (Get-Location) "certs" "private-key.gpg"
         echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" > $publicKeyFilePath
