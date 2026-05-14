@@ -262,9 +262,9 @@ jobs:
         echo $gpgAgentConfFileContent >> $gpgAgentConfFilePath
 
         # Fix ~/.gnupg directory permissions
-        chown -R $(whoami) $gpgDir
-        (Get-ChildItem $gpgDir -Directory -Recurse) | ForEach-Object { chmod 700 $_.FullName }
-        (Get-ChildItem $gpgDir -File -Recurse) | ForEach-Object { chmod 600 $_.FullName }
+        # chown -R $(whoami) $gpgDir
+        # (Get-ChildItem $gpgDir -Directory -Recurse) | ForEach-Object { chmod 700 $_.FullName }
+        # (Get-ChildItem $gpgDir -File -Recurse) | ForEach-Object { chmod 600 $_.FullName }
 
         # Restart GPG agent
         gpg-connect-agent RELOADAGENT /bye
@@ -279,10 +279,14 @@ jobs:
         echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" > $privateKeyFilePath
         Write-Host "Public key file size: $((Get-Item $publicKeyFilePath).Length)"
         Write-Host "Private key file size: $((Get-Item $privateKeyFilePath).Length)"
-        gpg --import $privateKeyFilePath
-        gpg --import $publicKeyFilePath
-        gpg --list-keys --with-keygrip
+        Write-Host "Importing private key..."
+        gpg --batch --no-tty --import $privateKeyFilePath
+        Write-Host "Importing public key..."
+        gpg --batch --no-tty --import $publicKeyFilePath
+        Write-Host "Listing private keys..."
         gpg --list-secret-keys --with-keygrip
+        Write-Host "Listing public keys..."
+        gpg --list-keys --with-keygrip
 
         # Import private key to RPM
         rpm --import $privateKeyFilePath
