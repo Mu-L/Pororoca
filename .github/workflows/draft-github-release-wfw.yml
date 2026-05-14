@@ -86,6 +86,7 @@ jobs:
   nuget_linux_osx:
     needs: draft_github_release
     uses: ./.github/workflows/cicd-wfw.yml
+    secrets: inherit
     with:
       os: ubuntu-latest
       postUnitTestsCoverageInPR: true
@@ -101,6 +102,7 @@ jobs:
   win_installer_portable:
     needs: draft_github_release
     uses: ./.github/workflows/cicd-wfw.yml
+    secrets: inherit
     with:
       os: windows-2022 # running on Windows because we need NSIS. TODO: 'windows-2025' and later does not contain NSIS, we need to install manually
       runCD: true
