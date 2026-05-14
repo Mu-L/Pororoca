@@ -591,8 +591,9 @@ jobs:
         echo "$PWD/patched-debsigs" >>$GITHUB_PATH
 
         # Sign .deb file
+        keyId="$(echo -n $str | tail -c 16)"
         debFilePath="./out/Pororoca_${VERSION_NAME}_amd64.deb"
-        debsigs --sign=origin --verify --check $debFilePath
+        debsigs --sign=origin --default-key=$keyId $debFilePath
 
     # code below taken from:
     # https://blog.packagecloud.io/how-to-gpg-sign-and-verify-deb-packages-and-apt-repositories/
