@@ -614,7 +614,7 @@ jobs:
     # code below taken from:
     # https://blog.packagecloud.io/how-to-gpg-sign-and-verify-deb-packages-and-apt-repositories/
     # TODO: Fix this, it's not working, error: 'debsig: No applicable policy found.'
-    - name: Verify Debian / Ubuntu package signature
+    - name: Verify Debian / Ubuntu package signature (NOT WORKING)
       if: ${{ false && inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh # !!!
       run: |
