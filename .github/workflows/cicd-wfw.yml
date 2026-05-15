@@ -645,8 +645,10 @@ jobs:
           </Verification>
         </Policy>
         "@
+        $tempPolicyFilePath = Join-Path (Get-Location) "certs" "policy.pol"
+        echo $policyXml >> $tempPolicyFilePath
         $policyXmlFilePath = "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/policy.pol"
-        sudo echo $policyXml >> $policyXmlFilePath
+        sudo cp $tempPolicyFilePath $policyXmlFilePath
 
         # Verify package signature
         Write-Host "Verifying deb package signature..."
