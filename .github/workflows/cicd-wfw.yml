@@ -631,7 +631,7 @@ jobs:
 
         # Create debsig-verify policy for public key
 
-        [void](mkdir "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/")
+        [void](sudo mkdir "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/")
 
         $policyXml = @"
         <?xml version="1.0"?>
@@ -646,7 +646,9 @@ jobs:
           </Verification>
         </Policy>
         "@
-        echo $policyXml >> "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/policy.pol"
+        $policyXmlFilePath = "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/policy.pol"
+        sudo touch $policyXmlFilePath
+        sudo echo $policyXml >> $policyXmlFilePath
 
         # Verify package signature
         Write-Host "Verifying deb package signature..."
