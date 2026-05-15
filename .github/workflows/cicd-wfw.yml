@@ -646,7 +646,6 @@ jobs:
         </Policy>
         "@
         $policyXmlFilePath = "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/policy.pol"
-        sudo touch $policyXmlFilePath
         sudo echo $policyXml >> $policyXmlFilePath
 
         # Verify package signature
