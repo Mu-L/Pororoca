@@ -207,6 +207,101 @@ jobs:
 
     # start CD steps - desktop
 
+    - name: Fetch PFX certificate and add Windows SignTool to PATH
+      if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      shell: pwsh
+      run: |
+        # Create certs directory
+        $certsDir = Join-Path (Get-Location) "certs"
+        [void](New-Item $certsDir -ItemType Directory -ErrorAction Ignore);
+
+        # Fetch PFX certificate from GitHub Actions secrets
+        $pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+        # Below needs absolute path (relative path doesn't work)
+        [System.IO.File]::WriteAllBytes($pfxFilePath, [Convert]::FromBase64String(($env:ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64)))
+
+        # Verify certificate integrity
+        Write-Host "PFX file size: $((Get-Item ./certs/cert.pfx).Length)"
+        certutil -p "${env:ALEXANDREHTRB_PFX_FILE_PASSWORD}" -dump $pfxFilePath
+
+        # Add SignTool.exe directory to PATH
+        echo "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64" | Out-File -FilePath "$env:GITHUB_PATH" -Append
+      env:
+        ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64: ${{ secrets.ALEXANDREHTRB_PFX_FILE_CONTENT_BASE64 }}
+        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
+
+    - name: Import GPG public and private keys
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        # Create certs directory
+        $certsDir = Join-Path (Get-Location) "certs"
+        [void](New-Item $certsDir -ItemType Directory -ErrorAction Ignore);
+
+        # Import keys without prompting user input (for CI / CD)
+        # https://d.sb/2016/11/gpg-inappropriate-ioctl-for-device-errors
+        #   use-agent, pinentry-mode --> no ask for user input
+        #   allow-loopback-pinentry --> use TTY terminal, no ask for user input
+        #   allow-preset-passphrase --> set fixed passphrase, no ask for user input
+        
+        $gpgDir = Join-Path $env:HOME ".gnupg"
+        [void](New-Item $gpgDir -ItemType Directory -ErrorAction Ignore);
+        chmod 700 $gpgDir
+
+        $gpgConfFilePath = Join-Path $env:HOME ".gnupg" "gpg.conf"
+        $gpgConfFileContent = @"
+        use-agent
+        pinentry-mode loopback
+        "@
+        echo $gpgConfFileContent >> $gpgConfFilePath
+        chmod 600 $gpgConfFilePath
+
+        $gpgAgentConfFilePath = Join-Path $env:HOME ".gnupg" "gpg-agent.conf"
+        $gpgAgentConfFileContent = @"
+        allow-loopback-pinentry
+        allow-preset-passphrase
+        "@
+        echo $gpgAgentConfFileContent >> $gpgAgentConfFilePath
+        chmod 600 $gpgAgentConfFilePath
+
+        # Fix ~/.gnupg directory permissions
+        chown -R $(whoami) $gpgDir
+
+        # Restart GPG agent
+        Write-Host "Restarting GPG agent..."
+        gpg-connect-agent RELOADAGENT /bye
+
+        # Set default passphrase for private key
+        Write-Host "Setting default preset passphrase for GPG..."
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD}" | /usr/lib/gnupg2/gpg-preset-passphrase --preset "${env:ALEXANDREHTRB_GPG_KEYGRIP}"
+
+        # Import public and private keys
+        $publicKeyFilePath = Join-Path $certsDir "public-key.gpg"
+        $privateKeyFilePath = Join-Path $certsDir "private-key.gpg"
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" > $privateKeyFilePath
+        echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" > $publicKeyFilePath
+        Write-Host "Public key file size: $((Get-Item $publicKeyFilePath).Length)"
+        Write-Host "Private key file size: $((Get-Item $privateKeyFilePath).Length)"
+        Write-Host "Importing private key..."
+        gpg --batch --no-tty --import $privateKeyFilePath
+        Write-Host "Importing public key..."
+        gpg --batch --no-tty --import $publicKeyFilePath
+        Write-Host "Listing private keys..."
+        gpg --list-secret-keys --with-keygrip
+        Write-Host "Listing public keys..."
+        gpg --list-keys --with-keygrip
+
+        # Import public key to RPM
+        Write-Host "Importing public key to RPM..."
+        rpm --import $publicKeyFilePath
+
+      env:
+        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
+        ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
+        ALEXANDREHTRB_GPG_KEYGRIP: ${{ secrets.ALEXANDREHTRB_GPG_KEYGRIP }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
+
     - name: Read desktop program version
       if: ${{ inputs.runCD && (inputs.produceDesktopLinuxPortableX64 || inputs.produceDesktopLinuxInstallersX64 || inputs.produceDesktopMacOSX || inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
       shell: pwsh
@@ -286,6 +381,29 @@ jobs:
         LINUX_X64_PORTABLE: ${{ inputs.produceDesktopLinuxPortableX64 }}
         LINUX_X64_INSTALLER: ${{ inputs.produceDesktopLinuxInstallersX64 }}
         OSX: ${{ inputs.produceDesktopMacOSX }}
+        WIN_X64_PORTABLE: ${{ inputs.produceDesktopWinX64Portable }}
+        WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
+        WIN_X86_PORTABLE: ${{ inputs.produceDesktopWinX86Portable }}
+        WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
+
+    - name: Sign Pororoca executable files for Windows
+      if: ${{ inputs.runCD && (inputs.produceDesktopWinX64Portable || inputs.produceDesktopWinX64Installer || inputs.produceDesktopWinX86Portable || inputs.produceDesktopWinX86Installer) }}
+      shell: pwsh
+      run: |
+        $arr = @()
+        if ($env:WIN_X64_INSTALLER -eq 'true') { $arr += "./out/win-x64-installer/Pororoca.exe"; };
+        if ($env:WIN_X64_PORTABLE -eq 'true')  { $arr += "./out/win-x64-portable/Pororoca.exe" ; };
+        if ($env:WIN_X86_INSTALLER -eq 'true') { $arr += "./out/win-x86-installer/Pororoca.exe"; };
+        if ($env:WIN_X86_PORTABLE -eq 'true')  { $arr += "./out/win-x86-portable/Pororoca.exe" ; };
+
+        $pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+
+        foreach ($exeFilePath in $arr)
+        {
+          signtool sign /f $pfxFilePath /fd SHA256 /p $env:ALEXANDREHTRB_PFX_FILE_PASSWORD /t http://timestamp.digicert.com $exeFilePath
+        }
+      env:
+        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
         WIN_X64_PORTABLE: ${{ inputs.produceDesktopWinX64Portable }}
         WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
         WIN_X86_PORTABLE: ${{ inputs.produceDesktopWinX86Portable }}
@@ -390,6 +508,8 @@ jobs:
         if ($env:WIN_X64_INSTALLER -eq 'true') { $arr += @{ rid="win-x64"; outputFolder="./out/win-x64-installer" } };
         if ($env:WIN_X86_INSTALLER -eq 'true') { $arr += @{ rid="win-x86"; outputFolder="./out/win-x86-installer" } };
 
+        $pfxAbsoluteFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+
         foreach ($artifact in $arr)
         {
           $OUTPUT_FOLDER = $artifact.outputFolder;
@@ -403,11 +523,17 @@ jobs:
           makensis -WX -V2 "/XOutFile ${installerOutFileAbsolutePath}" `
             "/DSHORT_VERSION=${env:VERSION_NAME}" `
             "/DINPUT_FILES_DIR=${installerFilesDirAbsolutePath}" `
+            "/DCODE_SIGNING_CERTIFICATE_FILE_PATH=${pfxAbsoluteFilePath}" `
+            "/DCODE_SIGNING_CERTIFICATE_FILE_PASSWORD=${env:ALEXANDREHTRB_PFX_FILE_PASSWORD}" `
             .\src\Pororoca.Desktop.WindowsInstaller\Installer.nsi
 
           Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
         }
+
+        # let's delete the certificate file now, won't be used afterwards
+        Remove-Item $pfxAbsoluteFilePath -Force -Recurse -ErrorAction Ignore
       env:
+        ALEXANDREHTRB_PFX_FILE_PASSWORD: ${{ secrets.ALEXANDREHTRB_PFX_FILE_PASSWORD }}
         WIN_X64_INSTALLER: ${{ inputs.produceDesktopWinX64Installer }}
         WIN_X86_INSTALLER: ${{ inputs.produceDesktopWinX86Installer }}
 
@@ -460,6 +586,86 @@ jobs:
         # Don't delete the output folder, it will be reused for RPM packages
     
     # code below taken from:
+    # https://github.com/git-ecosystem/git-credential-manager/blob/6847fba88b5adfd631e6a1163c91c2b316f52701/.github/workflows/release.yml
+    - name: Sign Debian / Ubuntu package
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: bash # !!!
+      run: |
+        # Install debsigs
+        sudo apt install debsigs
+
+        # Stop using SHA-1 for the signature. For details, see
+        # https://gitlab.com/debsigs/debsigs/-/commit/75c6c8f96e6cdc33bca9c5f32195b68ff35bc32f
+        # which seems to have made it to have made it into debsigs v0.2.1, but Ubuntu 24.04 is
+        # stuck with v1.19.
+        mkdir -p patched-debsigs &&
+        sed 's/, "--openpgp"//' </usr/bin/debsigs >patched-debsigs/debsigs &&
+        chmod a+x patched-debsigs/debsigs &&
+        echo "$PWD/patched-debsigs" >>$GITHUB_PATH
+
+        # Sign .deb file
+        keyId="$(echo -n $ALEXANDREHTRB_GPG_KEY_FINGERPRINT | tail -c 16)"
+        debFilePath="./out/Pororoca_${VERSION_NAME}_amd64.deb"
+        echo "Signing deb package..."
+        debsigs --sign=origin --default-key=$keyId $debFilePath
+      env:
+        ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
+
+    # code below taken from:
+    # https://blog.packagecloud.io/how-to-gpg-sign-and-verify-deb-packages-and-apt-repositories/
+    # TODO: Fix this, it's not working, error: 'debsig: No applicable policy found.'
+    - name: Verify Debian / Ubuntu package signature (NOT WORKING)
+      if: ${{ false && inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh # !!!
+      run: |
+        # Install debsig-verify
+
+        sudo apt install debsig-verify
+
+        # Import public key
+        $keyId = "${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}".Substring(24,16)
+        $keyringDirPath = "/usr/share/debsig/keyrings/${keyId}"
+        [void](mkdir $keyringDirPath)
+        $publicKeyFilePath = Join-Path (Get-Location) "certs" "public-key.gpg"
+
+        gpg --no-default-keyring `
+            --keyring "/usr/share/debsig/keyrings/${keyId}/debsig.gpg" `
+            --import $publicKeyFilePath
+
+        # Create debsig-verify policy for public key
+
+        sudo mkdir "/etc/debsig/policies/${keyId}/"
+
+        $policyXml = @"
+        <?xml version="1.0"?>
+        <!DOCTYPE Policy SYSTEM "http://www.debian.org/debsig/1.0/policy.dtd">
+        <Policy xmlns="http://www.debian.org/debsig/1.0/">
+          <Origin Name="test" id="${keyId}" Description="Test package"/>
+          <Selection>
+            <Required Type="origin" File="debsig.gpg" id="${keyId}"/>
+          </Selection>
+          <Verification MinOptional="0">
+            <Required Type="origin" File="debsig.gpg" id="${keyId}"/>
+          </Verification>
+        </Policy>
+        "@
+        $tempPolicyFilePath = Join-Path (Get-Location) "certs" "policy.pol"
+        echo $policyXml >> $tempPolicyFilePath
+        $policyXmlFilePath = "/etc/debsig/policies/${keyId}/policy.pol"
+        sudo cp $tempPolicyFilePath $policyXmlFilePath
+
+        Write-Host "XML policy file path: ${policyXmlFilePath}" 
+        Write-Host "XML policy:`n$(Get-Content $policyXmlFilePath)" 
+
+        # Verify package signature
+        Write-Host "Verifying deb package signature..."
+        $debFilePath = "./out/Pororoca_${env:VERSION_NAME}_amd64.deb"
+        debsig-verify $debFilePath
+      env:
+        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
+        ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
+
+    # code below taken from:
     # https://github.com/PowerShell/PowerShell/pull/26337
     # https://github.com/PowerShell/PowerShell/blob/master/tools/packaging/packaging.psm1
     # https://janikvonrotz.ch/2019/03/20/the-final-rpm-packaging-guide/
@@ -492,6 +698,61 @@ jobs:
           Copy-Item -Path "${rpmbuildRpmsDir}/x86_64/Pororoca-${env:VERSION_NAME}-1.x86_64.rpm" -Destination "./out/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
         }
         Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
+
+    # code below taken from:
+    # https://oneuptime.com/blog/post/2026-03-04-sign-verify-rpm-packages-gpg-rhel-9/view
+    - name: Sign RHEL and openSUSE packages
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        # Create .rpmmacros file
+        $rpmMacrosFilePath = Join-Path $env:HOME ".rpmmacros"
+        $rpmMacrosContent = @"
+        # GPG signing configuration
+        %_signature gpg
+        %_gpg_path ~/.gnupg
+        %_gpg_name ${env:ALEXANDREHTRB_GPG_KEY_NAME}
+        %_gpgbin /usr/bin/gpg2
+        %__gpg_sign_cmd %{__gpg} gpg --force-v3-sigs --batch --no-tty --verbose --no-armor --no-secmem-warning -u "%{_gpg_name}" -sbo %{__signature_filename} --digest-algo sha256 %{__plaintext_filename}'
+        "@
+        echo $rpmMacrosContent >> $rpmMacrosFilePath
+
+        $distros = @("openSUSE", "RHEL")
+        foreach ($distro in $distros)
+        {
+          Write-Host "Signing ${distro} RPM package..."
+
+          $rpmFilePath = "./out/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
+          
+          # Sign with passphrase from a file
+          echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD}" | rpm --addsign $rpmFilePath
+        }
+      env:
+        ALEXANDREHTRB_GPG_KEY_NAME: ${{ secrets.ALEXANDREHTRB_GPG_KEY_NAME }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
+
+    - name: Verify RHEL and openSUSE packages signatures
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      shell: pwsh
+      run: |
+        Write-Host "Listing RPM imported public keys..."
+        rpm -qa gpg-pubkey*
+
+        # Check signatures
+        $distros = @("openSUSE", "RHEL")
+        foreach ($distro in $distros)
+        {
+          Write-Host "Verifying ${distro} RPM package signature..."
+          $rpmFilePath = "./out/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
+          
+          # Sign with passphrase from a file
+          rpm -K --verbose $rpmFilePath         
+        }
+
+        Remove-Item "./certs/" -Force -Recurse -ErrorAction Ignore
+      env:
+        ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
 
     # finished CD steps - desktop
 

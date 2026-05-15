@@ -46,12 +46,12 @@ function Get-RuntimesToPublishFor
 		#'win7-x64' `
 		#,'win7-x86' `
 		'win-x64_portable' `
-		,'win-x86_portable' `
+		#,'win-x86_portable' `
 		#,'win-arm_portable' `
 		#,'win-arm64_portable' `
 
 		,'win-x64_installer' `
-		,'win-x86_installer' `
+		#,'win-x86_installer' `
 		#,'win-arm_installer' `
 		#,'win-arm64_installer' `
 	)
@@ -60,8 +60,8 @@ function Get-RuntimesToPublishFor
 	# Windows portable releases can be built on either Windows or Linux,
 	# since .NET 8: https://github.com/dotnet/core/issues/8439#issuecomment-1688474268
 	# Linux and macOS releases should be built on one of those OSs, because of chmod and zip
-	return @("win-x64_portable")
-	#return $IsWindows ? $windowsRuntimes : $unixRuntimes
+	#return @("win-x64_portable")
+	return $IsWindows ? $windowsRuntimes : $unixRuntimes
 }
 
 #################### Pre-release build and tests ####################
@@ -224,6 +224,7 @@ function Generate-PororocaDesktopRelease {
 	Publish-PororocaDesktop -DotnetRid $dotnetRid -IsInstallOnWindowsRelease $isInstallOnWindowsRelease -IsInstallOnLinuxRelease $isInstallOnLinuxRelease -OutputFolder $outputFolder
 	Rename-Executable -Runtime $runtime -OutputFolder $outputFolder
 	Set-ExecutableAttributesIfUnix -Runtime $runtime -OutputFolder $outputFolder
+	Sign-WindowsExecutableIfWindows -Runtime $runtime -OutputFolder $outputFolder
 	Make-AppFolderIfMacOS -Runtime $runtime -OutputFolder $outputFolder
 	Copy-LogoIfLinux -Runtime $runtime -OutputFolder $outputFolder
 	Copy-Licence -OutputFolder $outputFolder
@@ -328,6 +329,19 @@ function Rename-Executable
 	}
 }
 
+function Sign-WindowsExecutableIfWindows
+{
+	param (
+		[string]$runtime,
+		[string]$outputFolder
+    )
+
+	$pfxFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
+	$exeFilePath = "${outputFolder}/Pororoca.exe"
+
+	Write-Host "Signing Pororoca.exe for ${runtime}..." -ForegroundColor DarkYellow
+	signtool sign /f $pfxFilePath /fd SHA256 /p $env:ALEXANDREHTRB_PFX_FILE_PASSWORD /t http://timestamp.digicert.com $exeFilePath
+}
 
 function Set-ExecutableAttributesIfUnix
 {
@@ -468,6 +482,7 @@ function Pack-ReleaseInWindowsInstaller
 
 	$installerOutFileAbsolutePath = $((Resolve-Path $generalOutFolder).ToString()) + "\" + $installerFileName
 	$installerFilesDirAbsolutePath = $((Resolve-Path $installerFilesFolder).ToString())
+	$pfxAbsoluteFilePath = Join-Path (Get-Location) "certs" "cert.pfx"
 
 	# makensis must be added to PATH
 	# -WX ` # treat warnings as errors
@@ -475,6 +490,8 @@ function Pack-ReleaseInWindowsInstaller
 	makensis -WX -V2 "/XOutFile ${installerOutFileAbsolutePath}" `
 		"/DSHORT_VERSION=${versionName}" `
 		"/DINPUT_FILES_DIR=${installerFilesDirAbsolutePath}" `
+		"/DCODE_SIGNING_CERTIFICATE_FILE_PATH=${pfxAbsoluteFilePath}" `
+		"/DCODE_SIGNING_CERTIFICATE_FILE_PASSWORD=${env:ALEXANDREHTRB_PFX_FILE_PASSWORD}" `
 		.\src\Pororoca.Desktop.WindowsInstaller\Installer.nsi
 
 	Remove-Item $installerFilesFolder -Force -Recurse -ErrorAction Ignore
