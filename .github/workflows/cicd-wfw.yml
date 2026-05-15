@@ -623,15 +623,14 @@ jobs:
 
         # Import public key
 
-        [void](mkdir "/usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/")
-
-        gpg --no-default-keyring `
-          --keyring /usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/debsig.gpg `
-          --import ${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}
+        $keyringDirPath = "/usr/share/debsig/keyrings/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}"
+        [void](mkdir $keyringDirPath)
+        $publicKeyFilePath = Join-Path (Get-Location) "certs" "public-key.gpg"
+        Copy-Item -Path $publicKeyFilePath -Destination "${keyringDirPath}/debsig.gpg"
 
         # Create debsig-verify policy for public key
 
-        [void](sudo mkdir "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/")
+        sudo mkdir "/etc/debsig/policies/${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}/"
 
         $policyXml = @"
         <?xml version="1.0"?>
