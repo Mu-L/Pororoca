@@ -98,8 +98,7 @@ jobs:
         $hasAnyVulnerability = ($jsonObj.projects[0].frameworks -ne $null);
         if ($hasAnyVulnerability) {
           dotnet list package --vulnerable --include-transitive;
-          echo "::warning file=Pororoca.Desktop.csproj::Vulnerability ignored: Tmds.DBus"
-          # exit 1; # TODO: uncomment
+          exit 1;
         }
 
     - name: Audit Pororoca.Test project
