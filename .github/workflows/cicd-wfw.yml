@@ -653,6 +653,9 @@ jobs:
         $policyXmlFilePath = "/etc/debsig/policies/${keyId}/policy.pol"
         sudo cp $tempPolicyFilePath $policyXmlFilePath
 
+        Write-Host "XML policy file path: ${policyXmlFilePath}" 
+        Write-Host "XML policy:`n$(Get-Content $policyXmlFilePath)" 
+
         # Verify package signature
         Write-Host "Verifying deb package signature..."
         $debFilePath = "./out/Pororoca_${env:VERSION_NAME}_amd64.deb"
