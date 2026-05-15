@@ -58,6 +58,8 @@
   "DeleteItemsDialog/MessageMultipleItems",
   "DeleteItemsDialog/MessageSingleItem",
   "DeleteItemsDialog/Title",
+  "DonationsDialog/Title",
+  "DonationsDialog/Message",
   "EditableTextBlock/RenameToolTip",
   "Environment/AddVariable",
   "Environment/ExportEnvironment",

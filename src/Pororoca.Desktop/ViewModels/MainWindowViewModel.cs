@@ -498,6 +498,16 @@ public sealed class MainWindowViewModel : ViewModelBase, ICollectionOrganization
             UserPrefs.SetLastUpdateCheckDateAsToday();
         }
 
+        if (UserPrefs.NeedsToAskForDonations())
+        {
+            UserPrefs!.SetLastAskedForDonationsDateAsToday();
+            ShowAskForDonationsDialog();
+        }
+        else if (UserPrefs.HasLastAskedForDonationsDate() == false)
+        {
+            UserPrefs.SetLastAskedForDonationsDateAsToday();
+        }
+
         if (UserDataManager.NeedsMacOSXUserDataFolderMigrationToV3())
         {
             // this is a silent migration.
@@ -571,6 +581,13 @@ public sealed class MainWindowViewModel : ViewModelBase, ICollectionOrganization
             message: message,
             buttons: ButtonEnum.Ok);
     }
+
+    private void ShowAskForDonationsDialog() =>
+        Dialogs.ShowDialog(
+            title: Localizer.Instance.DonationsDialog.Title,
+            message: Localizer.Instance.DonationsDialog.Message,
+            buttons: ButtonEnum.OkCancel,
+            onButtonOkClicked: () => OpenWebBrowser(DonationsPageUrl));
 
     private static void OpenWebBrowser(string url)
     {

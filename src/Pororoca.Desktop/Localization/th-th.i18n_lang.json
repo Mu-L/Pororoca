@@ -58,6 +58,8 @@
   "DeleteItemsDialog/MessageMultipleItems": "คุณแน่ใจหรือไม่ว่าต้องการลบรายการที่เลือก?",
   "DeleteItemsDialog/MessageSingleItem": "คุณแน่ใจหรือไม่ว่าต้องการลบ '{0}'?",
   "DeleteItemsDialog/Title": "Pororoca - ลบรายการ",
+  "DonationsDialog/Title": "Pororoca - เป็นผู้สนับสนุน!",
+  "DonationsDialog/Message": "สวัสดี!\\n\\nดูเหมือนว่าคุณจะใช้งาน Pororoca มาระยะหนึ่งแล้ว\\nสนใจช่วยสนับสนุนโครงการของเราไหม?\\n\\nPororoca เป็นซอฟต์แวร์เสรีและโอเพนซอร์ส\\nและเราให้ความสำคัญกับความเป็นส่วนตัวและเสรีภาพของผู้ใช้งาน\\n\\nการสนับสนุนของคุณช่วยให้โครงการยังคงพัฒนาต่อไป\\nพร้อมฟีเจอร์ใหม่ ๆ และการอัปเดตต่าง ๆ การสนับสนุนสามารถเป็นได้ทั้ง\\nการช่วยเหลือทางการเงิน การส่ง pull request หรือข้อเสนอแนะ\\n\\nร่วมสนับสนุนโครงการกับเรา!",
   "EditableTextBlock/RenameToolTip": "เปลี่ยนชื่อ (F2)",
   "Environment/AddVariable": "เพิ่มตัวแปร",
   "Environment/ExportEnvironment": "ส่งออกสภาพแวดล้อม…",

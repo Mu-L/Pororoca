@@ -58,6 +58,8 @@
   "DeleteItemsDialog/MessageMultipleItems": "¿Estás seguro que deseas eliminar los elementos seleccionados?",
   "DeleteItemsDialog/MessageSingleItem": "¿Estás seguro que deseas eliminar '{0}'?",
   "DeleteItemsDialog/Title": "Pororoca - Eliminar elementos",
+  "DonationsDialog/Title": "Pororoca - ¡Apóyanos!",
+  "DonationsDialog/Message": "¡Hola!\\n\\nParece que has estado usando el Pororoca desde hace bastante tiempo. ¿Te gustaría contribuir a nuestro proyecto?\\n\\nPororoca es una herramienta libre y de código abierto, y valoramos la privacidad y la libertad de los usuarios.\\n\\nTu apoyo ayuda a continuar el desarrollo del proyecto, con nuevas funcionalidades y actualizaciones.\\nEl apoyo puede ser tanto económico como a través de pull requests y sugerencias.\\n\\n¡Contribuye!",
   "EditableTextBlock/RenameToolTip": "Renombrar (F2)",
   "Environment/AddVariable": "Agregar variable",
   "Environment/ExportEnvironment": "Exportar entorno",
