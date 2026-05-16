@@ -163,6 +163,6 @@ public partial interface IPororocaVariableResolver
         string hoveringVar = lineText[startIndex..(endIndex + 1)];
 
         var regexMatch = PororocaVariableRegex.Match(hoveringVar);
-        return regexMatch.Success ? hoveringVar : null;
+        return regexMatch.Success ? regexMatch.Groups["k"].Value : null;
     }
 }

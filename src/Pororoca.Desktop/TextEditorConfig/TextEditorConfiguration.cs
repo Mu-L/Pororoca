@@ -92,35 +92,35 @@ internal static class TextEditorConfiguration
                 string lineText = te.Document.GetText(line.Offset, line.Length);
                 int pointerIndex = pos.Value.Column - 1;
 
-                string? hoveringWord = IPororocaVariableResolver.GetPointerHoverVariable(lineText, pointerIndex);
+                string? hoveringVar = IPororocaVariableResolver.GetPointerHoverVariable(lineText, pointerIndex);
 
-                if (hoveringWord != null)
+                if (hoveringVar != null)
                 {
                     var flyout = (Flyout)(FlyoutBase.GetAttachedFlyout(te)!);
                     var flyoutStb = te.FindControl<SelectableTextBlock>("stbPopupText")!;
                     flyoutStb.Classes.RemoveAll(["NoMatchingVariable", "PredefinedVariable"]);
 
-                    if (hoveringWord.Contains('$'))
+                    if (IsPredefinedVariable(hoveringVar))
                     {
-                        // predef var
+                        // predefined var
                         flyoutStb.Classes.Add("PredefinedVariable");
                         flyoutStb.Text = Localizer.Instance.HoverVariableInEditor.PredefinedVariable;
                     }
                     else
                     {
                         var varResolver = varResolverObtainer();
-                        var effectiveVars = varResolver.GetEffectiveVariables();
-                        string resolvedVar = IPororocaVariableResolver.ReplaceTemplates(hoveringWord, effectiveVars);
-                        if (resolvedVar == hoveringWord)
+                        if (varResolver.IsEffectiveVariable(hoveringVar))
+                        {
+                            // regular var
+                            var effectiveVars = varResolver.GetEffectiveVariables();
+                            string resolvedVar = effectiveVars.FirstOrDefault(v => v.Key == hoveringVar)?.Value ?? string.Empty;
+                            flyoutStb.Text = resolvedVar;
+                        }
+                        else
                         {
                             // undefined
                             flyoutStb.Classes.Add("NoMatchingVariable");
                             flyoutStb.Text = Localizer.Instance.HoverVariableInEditor.NoMatchingVariable;
-                        }
-                        else
-                        {
-                            // regular var
-                            flyoutStb.Text = resolvedVar;
                         }
                     }
 
