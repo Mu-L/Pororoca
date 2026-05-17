@@ -606,7 +606,7 @@ jobs:
         keyId="$(echo -n $ALEXANDREHTRB_GPG_KEY_FINGERPRINT | tail -c 16)"
         debFilePath="./out/Pororoca_${VERSION_NAME}_amd64.deb"
         echo "Signing deb package..."
-        debsigs -sign=origin -default-key=$keyId $debFilePath
+        debsigs --sign=origin --default-key=$keyId $debFilePath
       env:
         ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
 
