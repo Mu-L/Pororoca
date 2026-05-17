@@ -200,7 +200,7 @@ jobs:
           --output $OUTPUT_FOLDER;
         chmod +x "$OUTPUT_FOLDER/PororocaTestServer"
         [void](New-Item "$OUTPUT_FOLDER/TestFiles" -ItemType Directory -ErrorAction Ignore);
-        Copy-Item -Path "./tests/TestFiles/*" -Destination "$OUTPUT_FOLDER/TestFiles" -Recurse -Force
+        Copy-Item -Path "./tests/Pororoca.TestServer/TestFiles/*" -Destination "$OUTPUT_FOLDER/TestFiles" -Recurse -Force
 
     # end CD steps - TestServer
 
