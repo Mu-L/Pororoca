@@ -606,15 +606,15 @@ jobs:
         keyId="$(echo -n $ALEXANDREHTRB_GPG_KEY_FINGERPRINT | tail -c 16)"
         debFilePath="./out/Pororoca_${VERSION_NAME}_amd64.deb"
         echo "Signing deb package..."
-        debsigs --sign=origin --default-key=$keyId $debFilePath
+        debsigs -sign=origin -default-key=$keyId $debFilePath
       env:
         ALEXANDREHTRB_GPG_KEY_FINGERPRINT: ${{ secrets.ALEXANDREHTRB_GPG_KEY_FINGERPRINT }}
 
     # code below taken from:
     # https://blog.packagecloud.io/how-to-gpg-sign-and-verify-deb-packages-and-apt-repositories/
-    # TODO: Fix this, it's not working, error: 'debsig: No applicable policy found.'
-    - name: Verify Debian / Ubuntu package signature (NOT WORKING)
-      if: ${{ false && inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+    # https://purplefloyd.wordpress.com/2009/02/05/signing-deb-packages/
+    - name: Verify Debian / Ubuntu package signature
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh # !!!
       run: |
         # Install debsig-verify
@@ -622,12 +622,12 @@ jobs:
         sudo apt install debsig-verify
 
         # Import public key
-        $keyId = "${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}".Substring(24,16)
+        $keyId = "${env:ALEXANDREHTRB_GPG_KEY_FINGERPRINT}"
         $keyringDirPath = "/usr/share/debsig/keyrings/${keyId}"
         [void](mkdir $keyringDirPath)
         $publicKeyFilePath = Join-Path (Get-Location) "certs" "public-key.gpg"
 
-        gpg --no-default-keyring `
+        sudo gpg --no-default-keyring `
             --keyring "/usr/share/debsig/keyrings/${keyId}/debsig.gpg" `
             --import $publicKeyFilePath
 
@@ -637,8 +637,8 @@ jobs:
 
         $policyXml = @"
         <?xml version="1.0"?>
-        <!DOCTYPE Policy SYSTEM "http://www.debian.org/debsig/1.0/policy.dtd">
-        <Policy xmlns="http://www.debian.org/debsig/1.0/">
+        <!DOCTYPE Policy SYSTEM "https://www.debian.org/debsig/1.0/policy.dtd">
+        <Policy xmlns="https://www.debian.org/debsig/1.0/">
           <Origin Name="test" id="${keyId}" Description="Test package"/>
           <Selection>
             <Required Type="origin" File="debsig.gpg" id="${keyId}"/>
