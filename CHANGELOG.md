@@ -81,6 +81,7 @@
 - Raised .NET SDK version to 8.0.421.
 - Raised Tmds.DBus.Protocol version to 0.21.3, to fix vulnerability.
 - Rewrote some Russian text phrasings.
+- Fixed mouse hover preview over invalid predefined variables on text editors.
 
 ### Refactors
 
