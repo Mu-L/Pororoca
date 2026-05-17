@@ -47,8 +47,8 @@
       <Color x:Key="RegularVariablePopupForegroundColor">SandyBrown</Color>
       <Color x:Key="PredefinedVariableForegroundColor">PeachPuff</Color>
       <Color x:Key="PredefinedVariablePopupForegroundColor">PeachPuff</Color>
-      <Color x:Key="NoMatchingVariableForegroundColor">#bb1133</Color>
-      <Color x:Key="NoMatchingVariablePopupForegroundColor">#bb1133</Color>
+      <Color x:Key="NoMatchingVariableForegroundColor">Red</Color>
+      <Color x:Key="NoMatchingVariablePopupForegroundColor">Red</Color>
       <Color x:Key="PVSHTextBlockDefaultForegroundColor">White</Color>
       <!-- don't rename key below -->
       <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#814718"/>
