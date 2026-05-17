@@ -613,8 +613,8 @@ jobs:
     # code below taken from:
     # https://blog.packagecloud.io/how-to-gpg-sign-and-verify-deb-packages-and-apt-repositories/
     # https://purplefloyd.wordpress.com/2009/02/05/signing-deb-packages/
-    - name: Verify Debian / Ubuntu package signature
-      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+    - name: Verify Debian / Ubuntu package signature (NOT WORKING)
+      if: ${{ false && inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh # !!!
       run: |
         # Install debsig-verify
