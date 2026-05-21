@@ -289,11 +289,6 @@ jobs:
         # gpg --list-secret-keys --with-keygrip
         # Write-Host "Listing public keys..."
         # gpg --list-keys --with-keygrip
-
-        # Import public key to RPM
-        Write-Host "Importing public key to RPM..."
-        rpm --import $publicKeyFilePath
-
       env:
         ALEXANDREHTRB_GPG_PUBLIC_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PUBLIC_KEY }}
         ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
@@ -702,7 +697,7 @@ jobs:
     # code below taken from:
     # https://oneuptime.com/blog/post/2026-03-04-sign-verify-rpm-packages-gpg-rhel-9/view
     - name: Sign RHEL and SUSE packages
-      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      if: ${{ false && inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
         # Create .rpmmacros file
@@ -733,9 +728,15 @@ jobs:
         ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
 
     - name: Verify RHEL and SUSE packages signatures
-      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      if: ${{ false && inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
+        # Import public key to RPM
+        Write-Host "Importing public key to RPM..."
+        $certsDir = Join-Path (Get-Location) "certs"
+        $publicKeyFilePath = Join-Path $certsDir "public-key.gpg"
+        rpm --import $publicKeyFilePath
+
         # Write-Host "Listing RPM imported public keys..."
         # rpm -qa gpg-pubkey*
 
