@@ -58,8 +58,8 @@
   - Request headers
   - Recursive variables values
 - Mouse hover to preview on all file input paths.
-- RPM packaging for RHEL-family and openSUSE distros.
-- Code signing for Windows and Linux packages.
+- RPM packaging for RHEL and SUSE distros.
+- Code signing for Windows executables and Linux packages.
 - Add HTTP `QUERY` method.
 - Special thanks to @hamster620 for providing the SyntaxHighlightingTextBox from the ULogViewer project!
 
