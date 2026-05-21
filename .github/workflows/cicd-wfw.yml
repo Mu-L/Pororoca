@@ -279,16 +279,16 @@ jobs:
         $privateKeyFilePath = Join-Path $certsDir "private-key.gpg"
         echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY}" > $privateKeyFilePath
         echo "${env:ALEXANDREHTRB_GPG_PUBLIC_KEY}" > $publicKeyFilePath
-        Write-Host "Public key file size: $((Get-Item $publicKeyFilePath).Length)"
-        Write-Host "Private key file size: $((Get-Item $privateKeyFilePath).Length)"
+        # Write-Host "Public key file size: $((Get-Item $publicKeyFilePath).Length)"
+        # Write-Host "Private key file size: $((Get-Item $privateKeyFilePath).Length)"
         Write-Host "Importing private key..."
         gpg --batch --no-tty --import $privateKeyFilePath
         Write-Host "Importing public key..."
         gpg --batch --no-tty --import $publicKeyFilePath
-        Write-Host "Listing private keys..."
-        gpg --list-secret-keys --with-keygrip
-        Write-Host "Listing public keys..."
-        gpg --list-keys --with-keygrip
+        # Write-Host "Listing private keys..."
+        # gpg --list-secret-keys --with-keygrip
+        # Write-Host "Listing public keys..."
+        # gpg --list-keys --with-keygrip
 
         # Import public key to RPM
         Write-Host "Importing public key to RPM..."
@@ -654,8 +654,8 @@ jobs:
         $policyXmlFilePath = "/etc/debsig/policies/${keyId}/policy.pol"
         sudo cp $tempPolicyFilePath $policyXmlFilePath
 
-        Write-Host "XML policy file path: ${policyXmlFilePath}" 
-        Write-Host "XML policy:`n$(Get-Content $policyXmlFilePath)" 
+        # Write-Host "XML policy file path: ${policyXmlFilePath}" 
+        # Write-Host "XML policy:`n$(Get-Content $policyXmlFilePath)" 
 
         # Verify package signature
         Write-Host "Verifying deb package signature..."
@@ -736,8 +736,8 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
-        Write-Host "Listing RPM imported public keys..."
-        rpm -qa gpg-pubkey*
+        # Write-Host "Listing RPM imported public keys..."
+        # rpm -qa gpg-pubkey*
 
         # Check signatures
         $distros = @("SUSE", "RHEL")
