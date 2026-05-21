@@ -1,6 +1,7 @@
 # This spec file is for SUSE (openSUSE and SLES).
 
 # .NET Linux required packages: https://github.com/dotnet/core/blob/main/release-notes/8.0/os-packages.md
+# Specifically for openSUSE and SLES: https://learn.microsoft.com/en-us/dotnet/core/install/linux-sles?tabs=dotnet8#dependencies
 # Avalonia required packages: https://docs.avaloniaui.net/tools/parcel/packaging-for-linux#avalonia-specific-dependencies
 
 # package compression algorithm and level
@@ -29,6 +30,7 @@ Requires: libstdc++6
 Requires: libicu
 Requires: libopenssl3
 Requires: timezone
+Requires: libz1
 Requires: libICE6
 Requires: libSM6
 Requires: libfontconfig1
