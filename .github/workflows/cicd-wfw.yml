@@ -711,6 +711,7 @@ jobs:
         # First, cache the passphrase
         # Then sign the RPM (gpg-agent will use the cached passphrase)
         echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD}" | gpg --batch --passphrase-fd 0 --pinentry-mode loopback --sign --armor /dev/null 2>/dev/null
+        $env:GPG_TTY="$(tty)"
 
         $distros = @("SUSE", "RHEL")
         foreach ($distro in $distros)
