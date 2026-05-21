@@ -668,6 +668,18 @@ jobs:
       if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
+        # Create .rpmmacros file
+        $rpmMacrosFilePath = Join-Path $env:HOME ".rpmmacros"
+        $rpmMacrosContent = @"
+        %_gpg_name ${env:ALEXANDREHTRB_GPG_KEY_NAME}
+        "@
+        echo $rpmMacrosContent >> $rpmMacrosFilePath
+        
+        # Using gpg-agent with a pre-cached passphrase
+        # First, cache the passphrase
+        # Then sign the RPM (gpg-agent will use the cached passphrase)
+        echo "${env:ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD}" | gpg --batch --passphrase-fd 0 --pinentry-mode loopback --sign --armor /dev/null 2>/dev/null
+        
         # rpmbuild comes pre-installed on Ubuntu runners
         rpmbuild --version
         $OUTPUT_FOLDER = "./out/linux-x64-installer";
@@ -689,10 +701,14 @@ jobs:
         {
           $rpmbuildSpecFilePath = Join-Path $rpmbuildSpecsDir "${distro}.spec"
           Copy-Item -Path "./src/Pororoca.Desktop.LinuxDesktop/${distro}.spec" -Destination $rpmbuildSpecFilePath
-          rpmbuild -bb -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $rpmbuildSpecFilePath
+          rpmbuild -bb --sign -v --define "_topdir ${rpmbuildMainDir}" --buildroot "${rpmbuildMainDir}/BUILDROOT" $rpmbuildSpecFilePath
           Copy-Item -Path "${rpmbuildRpmsDir}/x86_64/Pororoca-${env:VERSION_NAME}-1.x86_64.rpm" -Destination "./out/Pororoca-${env:VERSION_NAME}-1.${distro}.x86_64.rpm"
         }
         Remove-Item $OUTPUT_FOLDER -Force -Recurse -ErrorAction Ignore
+      env:
+        ALEXANDREHTRB_GPG_KEY_NAME: ${{ secrets.ALEXANDREHTRB_GPG_KEY_NAME }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY }}
+        ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
 
     # code below taken from:
     # https://oneuptime.com/blog/post/2026-03-04-sign-verify-rpm-packages-gpg-rhel-9/view
@@ -738,7 +754,7 @@ jobs:
         rpm --import $publicKeyFilePath
 
         # Write-Host "Listing RPM imported public keys..."
-        # rpm -qa gpg-pubkey*
+        rpm -qa gpg-pubkey*
 
         # Check signatures
         $distros = @("SUSE", "RHEL")
