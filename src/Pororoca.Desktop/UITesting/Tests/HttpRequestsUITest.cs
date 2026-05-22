@@ -78,6 +78,8 @@ public sealed partial class HttpRequestsUITest : PororocaUITest
             AppendToLog($"Selecting HTTP version {version}.");
             await HttpRobot.SetHttpVersion(version);
 
+            await TestQueryByHeaders();
+            await TestQueryByBody();
             await TestGetTextResponse();
             await TestGetJsonResponse();
             await TestGetBinaryResponse();
