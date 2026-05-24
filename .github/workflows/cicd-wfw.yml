@@ -74,12 +74,12 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1
 
     - name: Install .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.421
 
@@ -120,7 +120,7 @@ jobs:
 
     - name: Report unit tests coverage
       if: ${{ inputs.postUnitTestsCoverageInPR }}
-      uses: danielpalme/ReportGenerator-GitHub-Action@5.4.8
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.5.10
       with:
         reports: TestResults/**/coverage.cobertura.xml
         targetdir: TestResults
@@ -728,7 +728,7 @@ jobs:
         ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD: ${{ secrets.ALEXANDREHTRB_GPG_PRIVATE_KEY_PASSWORD }}
 
     - name: Verify RHEL and SUSE packages signatures
-      if: ${{ false && inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
+      if: ${{ inputs.runCD && inputs.produceDesktopLinuxInstallersX64 }}
       shell: pwsh
       run: |
         # Import public key to RPM
@@ -772,9 +772,9 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload artifacts to workflow results (Windows machine)
-      # no need if uploading to release
-      if: ${{ inputs.runCD && (inputs.uploadArtifactsToRelease == false) && (inputs.os == 'windows-2022') }} # TODO: Switch to windows-latest and install NSIS
-      uses: actions/upload-artifact@v4
+      # no need if uploading to release // TEMP DISABLED: && (inputs.uploadArtifactsToRelease == false)
+      if: ${{ inputs.runCD && (inputs.os == 'windows-2022') }} # TODO: Switch to windows-latest and install NSIS
+      uses: actions/upload-artifact@v7
       with:
         compression-level: 0 # artifacts already compressed
         name: 'produced_artifacts_win.zip'
@@ -782,9 +782,9 @@ jobs:
         overwrite: true
         
     - name: Upload artifacts to workflow results (Linux machine)
-      # no need if uploading to release
-      if: ${{ inputs.runCD && (inputs.uploadArtifactsToRelease == false) && (inputs.os == 'ubuntu-latest') }}
-      uses: actions/upload-artifact@v4
+      # no need if uploading to release // TEMP DISABLED: && (inputs.uploadArtifactsToRelease == false)
+      if: ${{ inputs.runCD && (inputs.os == 'ubuntu-latest') }}
+      uses: actions/upload-artifact@v7
       with:
         compression-level: 0 # artifacts already compressed
         name: 'produced_artifacts_linux.zip'
