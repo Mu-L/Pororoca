@@ -75,11 +75,11 @@
 
 - Smooth edges on Pororoca Windows icon. (may need to restart the O.S. after installation to take effect)
 - Generate TestServer for Linux-x64 on GitHub Actions.
+- Upgraded various GitHub Actions steps versions.
 - Clarified personal use conditions on license.
 - Add to repo licences of other projects used in Pororoca.
 - Windows portable releases generated on Windows runners.
 - Raised .NET SDK version to 8.0.421.
-- Raised Tmds.DBus.Protocol version to 0.21.3, to fix vulnerability.
 - Rewrote some Russian text phrasings.
 - Fixed mouse hover preview over invalid predefined variables on text editors.
 
