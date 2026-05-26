@@ -477,7 +477,7 @@ jobs:
           $zipName = if ($artifact.rid -like "win*")            { "Pororoca_${env:VERSION_NAME}_$($artifact.rid)_portable.zip" }
                      elseif ($artifact.rid -like "osx*")        { "Pororoca_${env:VERSION_NAME}_osx.zip" }
                      elseif ($artifact.rid -like "testserver*") { "PororocaTestServer_${env:VERSION_NAME}_linux-x64.zip" }
-                     else                                       { "Pororoca_${env:VERSION_NAME}_$($artifact.rid).zip" }
+                     else                                       { "Pororoca_${env:VERSION_NAME}_$($artifact.rid)_portable.zip" }
 
           if ($IsWindows) {
             Compress-Archive -CompressionLevel Optimal -Path "${OUTPUT_FOLDER}/*" -DestinationPath "./out/${zipName}"
@@ -774,8 +774,8 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload artifacts to workflow results (Windows machine)
-      # no need if uploading to release // TEMP DISABLED: && (inputs.uploadArtifactsToRelease == false)
-      if: ${{ inputs.runCD && (inputs.os == 'windows-2022') }} # TODO: Switch to windows-latest and install NSIS
+      # no need if uploading to release
+      if: ${{ inputs.runCD && (inputs.uploadArtifactsToRelease == false) && (inputs.os == 'windows-2022') }} # TODO: Switch to windows-latest and install NSIS
       uses: actions/upload-artifact@v7
       with:
         compression-level: 0 # artifacts already compressed
@@ -784,8 +784,8 @@ jobs:
         overwrite: true
         
     - name: Upload artifacts to workflow results (Linux machine)
-      # no need if uploading to release // TEMP DISABLED: && (inputs.uploadArtifactsToRelease == false)
-      if: ${{ inputs.runCD && (inputs.os == 'ubuntu-latest') }}
+      # no need if uploading to release
+      if: ${{ inputs.runCD && (inputs.uploadArtifactsToRelease == false) && (inputs.os == 'ubuntu-latest') }}
       uses: actions/upload-artifact@v7
       with:
         compression-level: 0 # artifacts already compressed
