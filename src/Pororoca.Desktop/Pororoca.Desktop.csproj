@@ -97,8 +97,9 @@
     <!-- package below is to override version 7.0.0 that has vulnerability -->
     <PackageReference Include="System.Text.Json" Version="9.0.7" />
 
-    <!-- package below is to override version 0.15.0 that has vulnerability -->
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.21.3" />
+    <!-- We can't override Tmds.DBus.Protocol version yet because it breaks save to file dialogs functionalities -->
+    <!-- System.TypeLoadException: Could not load type 'Tmds.DBus.Protocol.Utf8Span' from assembly 'Tmds.DBus.Protocol, Version=0.21.3.0, Culture=neutral, PublicKeyToken=9abd76e9812c1bca'. -->
+    <!-- this needs to be done by upgrading Avalonai version, which will upgrade Tmds.DBus.Protocol version along -->
 
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.1" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.1.5.1" />
