@@ -54,6 +54,7 @@
 - Variable highlight colours on:
   - URLs
   - All file input paths
+  - Authentication fields
   - GraphQL variables
   - Request headers
   - Recursive variables values
