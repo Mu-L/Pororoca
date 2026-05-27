@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 1
 
@@ -83,9 +83,10 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_NUMBER: ${{ github.event.number }}
 
-  nuget_linux_osx_win_portable:
+  nuget_linux_osx:
     needs: draft_github_release
     uses: ./.github/workflows/cicd-wfw.yml
+    secrets: inherit
     with:
       os: ubuntu-latest
       postUnitTestsCoverageInPR: true
@@ -94,15 +95,14 @@ jobs:
       uploadArtifactsToRelease: true
       enableUITesting: false
       producePororocaTestNuget: true
-      produceDesktopLinuxX64: true
-      produceDesktopDebianX64: true
+      produceDesktopLinuxPortableX64: true
+      produceDesktopLinuxInstallersX64: true
       produceDesktopMacOSX: true
-      produceDesktopWinX64Portable: true
-      produceDesktopWinX86Portable: true
 
-  win_installer:
+  win_installer_portable:
     needs: draft_github_release
     uses: ./.github/workflows/cicd-wfw.yml
+    secrets: inherit
     with:
       os: windows-2022 # running on Windows because we need NSIS. TODO: 'windows-2025' and later does not contain NSIS, we need to install manually
       runCD: true
@@ -110,3 +110,5 @@ jobs:
       enableUITesting: false
       produceDesktopWinX64Installer: true
       produceDesktopWinX86Installer: true
+      produceDesktopWinX64Portable: true
+      produceDesktopWinX86Portable: true

@@ -22,8 +22,8 @@ Read the [instructions](https://pororoca.io/docs/installation) and download the 
 * Full export and import compatibility with Postman.
 * Much lower memory usage - two to three times less than Postman.
 * Multilanguage support.
+* WebSockets, over HTTP/1.1 and HTTP/2.
 * Automated testing.
-* WebSockets.
 * Fast startup time.
 * Free and open-source.
 
@@ -53,16 +53,16 @@ Contact us if you are looking for more advanced support, special customizations 
 
 ## Donations
 
-Money donations are very important and help us cover our expenses. Read more in our [announcement](https://github.com/alexandrehtrb/Pororoca/discussions/159)!
+Money donations help us continue the development of the project and cover our expenses. Read more in our [announcement](https://github.com/alexandrehtrb/Pororoca/discussions/159)!
 
 Our donation channels are:
 
 - [OpenCollective](https://opencollective.com/pororoca)
 - [GitHub Sponsors](https://github.com/sponsors/alexandrehtrb)
 - [Wise](https://wise.com/pay/me/alexandrehenriquet2) (tag: **@alexandrehenriquet2**)
-- PIX 🇧🇷 (chave: alexandrehtrb@outlook.com)
+- PIX 🇧🇷 (chave: <b>alexandrehtrb@<span/>outlook.com</b>)
 
 ## Contact
 
 * Creator: Alexandre H. T. R. Bonfitto
-* E-mail: alexandrehtrb@outlook.com
+* E-mail: <a href="mailto:%61%6C%65%78%61%6E%64%72%65%68%74%72%62%40%6F%75%74%6C%6F%6F%6B%2E%63%6F%6D" target="_blank" rel="noreferrer">alexandrehtrb@<span/>outlook.com</a>

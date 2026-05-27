@@ -22,8 +22,8 @@ Pororoca - это инструмент тестирования HTTP, вдохн
 * Полная совместимость с Postman при экспорте и импорте.
 * Гораздо меньшее использование памяти - в два-три раза меньше, чем у Postman.
 * Поддержка нескольких языков.
+* WebSockets в HTTP/1.1 и HTTP/2.
 * Автоматизированное тестирование.
-* WebSockets.
 * Быстрое время запуска.
 * Бесплатный и с открытым исходным кодом.
 
@@ -53,16 +53,16 @@ Pororoca не синхронизирует пользовательские да
 
 ## Пожертвования
 
-Денежные пожертвования очень важны и помогают нам покрывать наши расходы. Подробнее в нашем [объявлении](https://github.com/alexandrehtrb/Pororoca/discussions/159)!
+Денежные пожертвования помогают нам продолжать развитие проекта и покрывать наши расходы. Подробнее в нашем [объявлении](https://github.com/alexandrehtrb/Pororoca/discussions/159)!
 
 Наши каналы пожертвований:
 
 - [OpenCollective](https://opencollective.com/pororoca)
 - [GitHub Sponsors](https://github.com/sponsors/alexandrehtrb)
 - [Wise](https://wise.com/pay/me/alexandrehenriquet2) (tag: **@alexandrehenriquet2**)
-- PIX 🇧🇷 (chave: alexandrehtrb@outlook.com)
+- PIX 🇧🇷 (chave: <b>alexandrehtrb@<span/>outlook.com</b>)
 
 ## Контактная информация
 
 * Создатель: Alexandre H. T. R. Bonfitto
-* E-mail: alexandrehtrb@outlook.com
+* E-mail: <a href="mailto:%61%6C%65%78%61%6E%64%72%65%68%74%72%62%40%6F%75%74%6C%6F%6F%6B%2E%63%6F%6D" target="_blank" rel="noreferrer">alexandrehtrb@<span/>outlook.com</a>

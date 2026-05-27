@@ -19,7 +19,7 @@
       when "-p:PublishForInstallOnWindows" is specified in dotnet build, run or publish
     -->
     <DefineConstants Condition=" '$(PublishForInstallOnWindows)' == 'true' ">$(DefineConstants);INSTALLED_ON_WINDOWS</DefineConstants>
-    <DefineConstants Condition=" '$(PublishForInstallOnDebian)' == 'true' ">$(DefineConstants);INSTALLED_ON_DEBIAN</DefineConstants>
+    <DefineConstants Condition=" '$(PublishForInstallOnLinux)' == 'true' ">$(DefineConstants);INSTALLED_ON_LINUX</DefineConstants>
     <DefineConstants Condition=" '$(UITestsEnabled)' == 'true' ">$(DefineConstants);UI_TESTS_ENABLED</DefineConstants>
     <EnableCompressionInSingleFile>True</EnableCompressionInSingleFile>
     <PublishReadyToRun>True</PublishReadyToRun>
@@ -34,7 +34,7 @@
     <EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
     <!-- trimming properties end -->
     <ApplicationIcon>Assets/pororoca_icon.ico</ApplicationIcon>
-    <Version>3.9.1</Version>
+    <Version>3.10.0</Version>
     <FileVersion>$(Version)</FileVersion>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <Copyright>AlexandreHTRB</Copyright>
@@ -96,6 +96,10 @@
 
     <!-- package below is to override version 7.0.0 that has vulnerability -->
     <PackageReference Include="System.Text.Json" Version="9.0.7" />
+
+    <!-- We can't override Tmds.DBus.Protocol version yet because it breaks save to file dialogs functionalities -->
+    <!-- System.TypeLoadException: Could not load type 'Tmds.DBus.Protocol.Utf8Span' from assembly 'Tmds.DBus.Protocol, Version=0.21.3.0, Culture=neutral, PublicKeyToken=9abd76e9812c1bca'. -->
+    <!-- this needs to be done by upgrading Avalonai version, which will upgrade Tmds.DBus.Protocol version along -->
 
     <PackageReference Include="ReactiveUI.Fody" Version="19.5.1" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.1.5.1" />
