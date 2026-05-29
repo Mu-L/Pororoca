@@ -2,7 +2,7 @@
 
 Şu dilde okuyun: [english](README.md) | [português](README_pt.md) | [русском](README_ru.md) | [italiano](README_it.md) | [中文](README_zh-cn.md) | [Deutsch](README_de.md) | [español](README_es.md) | [polski](README_pl.md) | [ไทย](README_th.md)
 
-Pororoca, Postman'dan ilham alan ancak birçok iyileştirme sunan bir HTTP test aracıdır.
+Pororoca, Postman'dan ilham alan, ancak birçok iyileştirme sunan bir HTTP test aracıdır.
 
 Windows, macOS ve Linux için kullanılabilir.
 
@@ -10,7 +10,7 @@ Windows, macOS ve Linux için kullanılabilir.
 
 ## Kurulum
 
-[Kurulum talimatlarını](https://pororoca.io/docs/installation) okuyun ve programı [buradan](https://github.com/alexandrehtrb/Pororoca/releases) indirin.
+[Kurulum talimatlarını](https://pororoca.io/docs/installation) okuyabilir ve programı [buradan](https://github.com/alexandrehtrb/Pororoca/releases) indirebilirsiniz.
 
 ## Özellikler
 
@@ -20,16 +20,16 @@ Windows, macOS ve Linux için kullanılabilir.
 * Gizli değişkenler.
 * Koleksiyonlar ve ortamlar tek bir dosyada birlikte dışa aktarılabilir.
 * Postman ile tam dışa ve içe aktarma uyumluluğu.
-* Çok daha düşük bellek kullanımı - Postman'dan iki ila üç kat daha az.
-* Çoklu dil desteği.
-* HTTP/1.1 ve HTTP/2 üzerinden WebSocket'ler.
-* Otomatik test.
+* Çok daha düşük bellek kullanımı — Postman'dan iki ila üç kat daha az.
+* Çok dilli arayüz desteği.
+* HTTP/1.1 ve HTTP/2 üzerinden WebSocket desteği.
+* Otomatik test desteği.
 * Hızlı başlatma süresi.
 * Ücretsiz ve açık kaynaklı.
 
-Daha fazlasını öğrenmek için [belgelere](https://pororoca.io/docs/) göz atın.
+Daha fazla bilgi için [belgelere](https://pororoca.io/docs/) göz atın.
 
-*Not*: Windows'ta HTTP/2 desteği için Windows 10 veya üzeri gereklidir. HTTP/3 desteği için Linux veya Windows 11 ve üzeri gereklidir.
+*Not*: Windows'ta HTTP/2 desteği için Windows 10 veya üzeri gereklidir. HTTP/3 desteği için Linux ya da Windows 11 veya üzeri gereklidir.
 
 ### HTTP/2 ve HTTP/3
 
@@ -43,26 +43,26 @@ Uygulamamız [HIPAA uyumludur](https://www.stedi.com/blog/postman-is-probably-no
 
 ## Tasarım
 
-Logo ve grafikler [Anderson Martins](https://www.behance.net/am-dsgn) tarafından oluşturulmuştur.
+Logo ve görseller [Anderson Martins](https://www.behance.net/am-dsgn) tarafından oluşturulmuştur.
 
 ## Katkıda bulunma
 
-Pull request'ler göndererek, issue'lar açarak, hataları bildirerek ve iyileştirmeler önererek bu projeye katkıda bulunabilirsiniz. Beğendiyseniz arkadaşlarınıza Pororoca'dan bahsedin!
+Pull request göndererek, issue açarak, hata bildirerek ve iyileştirme önerileri sunarak bu projeye katkıda bulunabilirsiniz. Pororoca'yı beğendiyseniz arkadaşlarınıza da önerebilirsiniz!
 
-Kod katkıları ve geliştirme için [buradaki](CONTRIBUTING.md) rehberi okuyun.
+Kod katkıları ve geliştirme süreci için [buradaki](CONTRIBUTING.md) rehberi okuyun.
 
 Daha gelişmiş destek, özel özelleştirmeler veya eğitim arıyorsanız bizimle iletişime geçin.
 
 ## Bağışlar
 
-Maddi bağışlar, projenin geliştirilmesine devam etmemize ve masraflarımızı karşılamamıza yardımcı olur. [Duyurumuzda](https://github.com/alexandrehtrb/Pororoca/discussions/159) daha fazlasını okuyun!
+Maddi bağışlar, projenin geliştirilmesini sürdürmemize ve masraflarımızı karşılamamıza yardımcı olur. Daha fazla bilgi için [duyurumuzu](https://github.com/alexandrehtrb/Pororoca/discussions/159) okuyabilirsiniz.
 
 Bağış kanallarımız:
 
-- [OpenCollective](https://opencollective.com/pororoca)
-- [GitHub Sponsors](https://github.com/sponsors/alexandrehtrb)
-- [Wise](https://wise.com/pay/me/alexandrehenriquet2) (etiket: **@alexandrehenriquet2**)
-- PIX 🇧🇷 (anahtar: <b>alexandrehtrb@<span/>outlook.com</b>)
+* [OpenCollective](https://opencollective.com/pororoca)
+* [GitHub Sponsors](https://github.com/sponsors/alexandrehtrb)
+* [Wise](https://wise.com/pay/me/alexandrehenriquet2) (etiket: **@alexandrehenriquet2**)
+* PIX 🇧🇷 (anahtar: <b>alexandrehtrb@<span/>outlook.com</b>)
 
 ## İletişim
 
