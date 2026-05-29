@@ -39,7 +39,7 @@ Do you want to learn more about HTTP/2 and HTTP/3? Check this [article](https://
 
 Pororoca does not sync user data, such as preferences, collections, environments, machine info or telemetry, to any remote server. User preferences and collections are saved as files in the user machine.
 
-Pororoca is [HIPAA-compliant](https://www.stedi.com/blog/postman-is-probably-not-hipaa-compliant).
+Our app is [HIPAA-compliant](https://www.stedi.com/blog/postman-is-probably-not-hipaa-compliant).
 
 ## Design
 
