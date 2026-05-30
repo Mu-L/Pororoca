@@ -281,6 +281,20 @@
                 </Image>
               </MenuItem.Icon>
             </MenuItem>
+            <MenuItem
+                x:Name="topMenuItemOptionsLanguageTurkish"
+                Header="{Binding i18n.TopMenuLanguage.Turkish, Mode=OneWay}"
+                Command="{Binding SelectLanguageTurkishCmd, Mode=OneWay}">
+              <MenuItem.Icon>
+                <Image
+                    IsVisible="{Binding IsLanguageTurkish, Mode=OneWay}"
+                    Classes="MenuItemCheckMark">
+                  <Image.Source>
+                    <DrawingImage Drawing="{StaticResource IconCheck}"/>
+                  </Image.Source>
+                </Image>
+              </MenuItem.Icon>
+            </MenuItem>
           </MenuItem>
           <MenuItem
               x:Name="topMenuItemOptionsEnableTlsVerification"
