@@ -21,7 +21,7 @@
   "Collection/ImportEnvironmentDialogTitle": "Ortam dosyalarını içe aktar",
   "Collection/ImportEnvironmentDialogTypes": "Ortam dosyaları",
   "Collection/NewCollection": "Yeni koleksiyon",
-  "Collection/SetCollectionScopedHeaders": "Koleksiyon başlıklarını ayarla",
+  "Collection/SetCollectionScopedHeaders": "Koleksiyon başlıkları",
   "CollectionFolder/AddFolder": "Klasör ekle",
   "CollectionFolder/AddHttpRepeater": "HTTP tekrarlayıcı ekle",
   "CollectionFolder/AddHttpRequest": "HTTP isteği ekle",
@@ -97,7 +97,7 @@
   "HoverVariableInEditor/PredefinedVariable": "(ön tanımlı değişken)",
   "HttpRepeater/Delay": "Gecikme (ms)",
   "HttpRepeater/DelayTip": "Bir yanıt ile sonraki isteğin gönderilmesi arasındaki bekleme süresi.",
-  "HttpRepeater/ExportAllLogs": "Tüm günlükleri dışa aktar…",
+  "HttpRepeater/ExportAllLogs": "Logları dışa aktar…",
   "HttpRepeater/ExportReport": "Raporu dışa aktar…",
   "HttpRepeater/InputData": "Giriş verisi",
   "HttpRepeater/InputDataFileSearch": "Dosya ara…",
@@ -125,7 +125,7 @@
   "HttpRepeater/RepetitionSectionTitle": "Tekrar",
   "HttpRepeater/RepetitionSuccessTip": "Başarılı: HTTP 2xx durum kodu.",
   "HttpRepeater/Results": "Sonuçlar",
-  "HttpRepeater/SaveAllResponses": "Tüm yanıtları kaydet…",
+  "HttpRepeater/SaveAllResponses": "Yanıtları kaydet…",
   "HttpRepeater/SelectBaseRequest": "(temel HTTP isteğini seçin)",
   "HttpRepeater/Start": "Başlat",
   "HttpRepeater/StartTip": "Başlat (F5)",
@@ -162,7 +162,7 @@
   "HttpRequest/BodyUrlEncodedParamValue": "DEĞER",
   "HttpRequest/CancelRequest": "İptal et",
   "HttpRequest/CancelRequestToolTip": "İptal (F6)",
-  "HttpRequest/CustomAuth": "Özel kimlik doğrulama",
+  "HttpRequest/CustomAuth": "Kimlik doğrulama",
   "HttpRequest/HeaderAdd": "Başlık ekle",
   "HttpRequest/HeaderEnabled": "ETKİN",
   "HttpRequest/HeaderName": "BAŞLIK ADI",
@@ -385,5 +385,5 @@
   "Welcome/OpenDocsWebsite": "Belgeleri aç",
   "Welcome/SupportUs": "Bize destek olun!",
   "Welcome/Title": "Hoş geldiniz!",
-  "Welcome/VisitGitHubRepo": "GitHub deposunu ziyaret et"
+  "Welcome/VisitGitHubRepo": "GitHub’a git"
 }
