@@ -54,6 +54,7 @@
 
 - Turkish translation. (issue #174, thanks @Wezylnia!)
 - Shorter texts on HTTP repeater buttons for Spanish, German and Polish.
+- Increase initial window size.
 
 ### New Contributors
 
